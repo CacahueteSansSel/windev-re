@@ -1,43 +1,11 @@
-# Website
+# WINDEV Reverse Engineering
 
-This website is built using [Docusaurus](https://docusaurus.io/), a modern static website generator.
+> Avertissement : Ce projet et le travail de reverse-engineering et d'analyse des fichiers binaires ont été réalisés par IA.
 
-## Installation
+WINDEV-RE est une documentation présentant les principaux formats propriétaires de WINDEV et leur structure binaire devinée.
 
-```bash
-npm install
-```
+Elle peut servir de base de connaissance non négligeable pour comprendre les formats et les lire en dehors de l'écosystème WINDEV. La bibliothèque C# WindevReader, elle aussi réalisée par l'IA, accompagne cette documentation pour permettre la lecture des différents formats par un programme C#.
 
-**Note**: feel free to use the package manager of your choice.
+Les formats sont tous binaires, et sont d'une complexité plus que notable : entre du chiffrement, de la compression via un algorithme propriétaire, du XOR, etc. Cette complexité est probablement volontaire pour dissuader l'utilisation d'un autre outil et surtout de verrouiller le développeur dans l'écosystème.
 
-## Local Development
-
-```bash
-npm run start
-```
-
-This command starts a local development server and opens up a browser window. Most changes are reflected live without having to restart the server.
-
-## Build
-
-```bash
-npm run build
-```
-
-This command generates static content into the `build` directory and can be served using any static contents hosting service.
-
-## Deployment
-
-Using SSH:
-
-```bash
-USE_SSH=true npm run deploy
-```
-
-Not using SSH:
-
-```bash
-GIT_USER=<Your GitHub username> npm run deploy
-```
-
-If you are using GitHub Pages for hosting, this command is a convenient way to build the website and push to the `gh-pages` branch.
+Cette expérience vise à mieux comprendre les formats de cette technologie pour que le code source d'un développeur **puisse rester le sien**.
