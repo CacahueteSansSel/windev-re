@@ -1,0 +1,1 @@
+"use strict";(self.webpackChunkwindev_re=self.webpackChunkwindev_re||[]).push([["9494"],{5397(e){e.exports=JSON.parse('{"metadata":{"permalink":"/windev-re/blog","page":1,"postsPerPage":10,"totalPages":1,"totalCount":4,"blogDescription":"Blog","blogTitle":"Blog"}}')}}]);

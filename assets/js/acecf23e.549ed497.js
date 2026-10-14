@@ -1,0 +1,1 @@
+"use strict";(self.webpackChunkwindev_re=self.webpackChunkwindev_re||[]).push([["3220"],{1912(e){e.exports=JSON.parse('{"blogBasePath":"/windev-re/blog","blogTitle":"Blog","authorsListPath":"/windev-re/blog/authors"}')}}]);
