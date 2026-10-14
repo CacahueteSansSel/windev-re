@@ -1,0 +1,92 @@
+---
+id: 00-introduction
+title: "Introduction et périmètre"
+sidebar_label: "Introduction et périmètre"
+sidebar_position: 1
+description: "Structures binaires WINDEV illustrées par deux logiciels fictifs : SuperNoteExtra, pour la prise de note, et SuperMailExtra, client mail."
+---
+
+Cette documentation décrit les structures des fichiers WINDEV `.wdp`, `.wdw`, `.wdg`, `.wdd` et `.wde`, ainsi que le `.wda` présent dans le corpus. Elle accompagne le lecteur autonome WindevReader, mais reste exploitable pour écrire un autre décodeur.
+
+Les tables donnent les positions, les tailles en octets, la représentation binaire et les valeurs de référence et les exemples fictifs. Les chapitres décrivent aussi les transformations nécessaires avant de lire les données : une position dans un buffer décompressé n'est généralement pas une position dans le fichier.
+
+> **Périmètre de connaissance.** Le format complet de chaque propriété WINDEV n'est pas encore connu. Les champs interprétés sont distingués des valeurs seulement observées et des régions opaques. Documenter une région opaque signifie préciser son emplacement et ses frontières, sans inventer sa signification.
+
+## Deux logiciels fictifs pour les exemples
+
+Les exemples mettent en scène **le logiciel de prise de note SuperNoteExtra** et **le logiciel de client mail SuperMailExtra**. Ces deux projets sont fictifs et servent à illustrer les fichiers, chemins, fenêtres, procédures et analyses.
+
+Les noms applicatifs, chemins et identifiants présentés ont été anonymisés. Les constantes du format, les types binaires et les algorithmes conservent leur signification technique. Les cartes numériques de sections sont des profils de référence issus de l’étude ; les extraits textuels anonymisés sont des exemples pédagogiques autonomes, dont les longueurs sont calculées pour les valeurs affichées. Les résultats de validation concernent le corpus d’étude, et ne constituent pas des tests de projets compilés sous ces noms fictifs.
+
+## Formats couverts
+
+| Extension | Objet | Type PCS à l'offset `0x0008` | Version observée | Documents |
+| --- | --- | --- | --- | --- |
+| `.wdp` | Projet ou cache partiel de projet | `0x00001001` | 28 et 31 | 4, dont 2 caches |
+| `.wdw` | Fenêtre | `0x00000002` | 31 | 28 |
+| `.wdg` | Collection de procédures globales | `0x00000007` | 28 et 31 | 2 |
+| `.wdd` | Description du schéma HFSQL | `0x00070004` | 31 ; structure interne `0x061D` | 27 |
+| `.wde` | État | `0x00000003` | 31 | 10 |
+| `.wda` | Analyse éditable | `0x00080002` | 31 | 27 |
+
+Le corpus comprend 98 documents. Plusieurs fichiers sont des sauvegardes historiques ou des gabarits ; 98 documents ne signifient donc pas 98 formats indépendants.
+
+## Architecture générale
+
+```text
+Fichier PCS
+├── En-tête commun : signature, type, version, pointeur du contenu
+├── Répertoire des sections : tag u8 + longueur u32
+├── Paramètres auxiliaires entre le répertoire et le contenu
+└── Sections successives
+    ├── Données directement lisibles
+    ├── Enveloppes contenant des buffers LZW
+    ├── Données transformées, puis compressées : cas du WDD
+    └── Régions dont la sémantique reste inconnue
+```
+
+La lecture correcte comporte plusieurs niveaux : en-tête, découpage des sections, détection des blocs, transformation éventuelle, décompression, puis interprétation des enregistrements.
+
+## Niveaux de certitude
+
+| Mention | Signification | Exemple |
+| --- | --- | --- |
+| **Vérifié** | Structure lue et contrôlée sur les spécimens indiqués | Signature `PCS\0`, somme des sections, somme de contrôle WDD |
+| **Observé** | Octets et emplacement constatés ; rôle métier non établi | Mot de quatre octets avant une enveloppe de code |
+| **Inféré** | Interprétation déduite du contexte ou des noms | `BTN_` suggère un bouton |
+| **Inconnu** | Aucune interprétation fiable disponible | Organisation de nombreux réglages de projet |
+
+Un type numérique dans une table décrit la manière de lire le champ. Il ne prouve pas, à lui seul, la signification de ce nombre. Une région notée `octets[n]` ne doit pas être remplacée par une série de valeurs numériques supposées.
+
+## Parcours de lecture
+
+| Chapitre | Contenu |
+| --- | --- |
+| [Introduction et périmètre](./00-introduction.mdx) | Vue d’ensemble |
+| [Conventions, types et offsets](./01-conventions.mdx) | Structures communes |
+| [Conteneur PCS et en-tête commun](./02-conteneur-pcs.mdx) | Structures communes |
+| [Sections et enveloppes de blocs](./03-sections-et-blocs.mdx) | Structures communes |
+| [Chaînes de caractères et encodages](./04-chaines.mdx) | Structures communes |
+| [Compression LZW propriétaire](./05-compression-lzw.mdx) | Structures communes |
+| [Enregistrements de code WLangage](./06-code-wlangage.mdx) | Structures communes |
+| [Format WDP : projet](./07-wdp-projet.mdx) | Format particulier |
+| [Format WDW : fenêtre](./08-wdw-fenetre.mdx) | Format particulier |
+| [Format WDG : procédures globales](./09-wdg-procedures.mdx) | Format particulier |
+| [Format WDD : schéma de données](./10-wdd-analyse.mdx) | Format particulier |
+| [WDD : dérivation de clé et transformation](./11-wdd-transformation.mdx) | Format particulier |
+| [Format WDE : état](./12-wde-etat.mdx) | Format particulier |
+| [Format WDA : analyse éditable](./13-wda-analyse-source.mdx) | Format particulier |
+| [Annexe : valeurs et offsets du corpus](./14-annexe-valeurs.mdx) | Valeurs du corpus et limites |
+| [Validation, inconnues et sources](./15-validation-et-limites.mdx) | Valeurs du corpus et limites |
+
+## Ce que signifie une ouverture réussie
+
+Une ouverture réussie garantit que le conteneur est cohérent et que les structures prises en charge sont lisibles. Elle ne garantit pas que toutes les propriétés de l'éditeur, les styles ou le bytecode sont interprétés.
+
+La bibliothèque actuelle contrôle 289 assertions, ouvre les 98 documents, décode 362 buffers et extrait 8 224 lignes source, lignes vides comprises. Les 37 rubriques de l'analyse courante concordent avec la référence `analysis.json` sur leurs noms, types, tailles et libellés.
+
+## Intégration dans Docusaurus
+
+Ces fichiers utilisent le format `.mdx`, des métadonnées YAML, des titres, des tableaux, des liens relatifs et des blocs de code. Ils ne nécessitent aucun composant React personnalisé, image externe, feuille de style ou configuration supplémentaire fournie par cette documentation.
+
+Les métadonnées `sidebar_position` ordonnent les pages si la barre latérale est générée automatiquement. Les liens pointent vers les fichiers `.mdx` voisins. Ces conventions sont décrites dans la [documentation Markdown de Docusaurus](https://docusaurus.io/docs/markdown-features) et sa [documentation des liens](https://docusaurus.io/docs/markdown-features/links).

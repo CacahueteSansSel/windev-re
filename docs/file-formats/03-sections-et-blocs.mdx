@@ -1,0 +1,107 @@
+---
+id: 03-sections-et-blocs
+title: "Sections et enveloppes de blocs"
+sidebar_label: "Sections et enveloppes de blocs"
+sidebar_position: 4
+description: "Structures binaires WINDEV illustrées par deux logiciels fictifs : SuperNoteExtra, pour la prise de note, et SuperMailExtra, client mail."
+---
+
+> **Exemples fictifs.** Les noms, chemins et identifiants applicatifs sont anonymisés. Les cartes de sections sont des profils numériques de référence ; les extraits textuels sont des exemples autonomes. Voir les [conventions des exemples](./01-conventions.mdx#exemples-fictifs).
+
+## Section, bloc et enregistrement
+
+| Niveau | Frontière | Exemple |
+| --- | --- | --- |
+| Section stockée | Déterminée par le répertoire PCS | Section 2 d'un `.wdg` |
+| Enveloppe | Déterminée par son en-tête et sa longueur | Méthode LZW 04 et longueurs |
+| Buffer décodé | Résultat d'une enveloppe | Descriptions graphiques ou code |
+| Enregistrement | Structure interne du buffer | Événement source, rubrique WDD |
+
+Une section peut être vide, contenir des données brutes, contenir un bloc précédé d'un en-tête auxiliaire ou contenir plusieurs blocs. L'indice de section a une signification propre à chaque famille.
+
+## Tags rencontrés
+
+| Tag stocké (`u8`) | Valeur décimale | Contexte observé | Interprétation possible |
+| --- | --- | --- | --- |
+| `00` | 0 | Identité, sections auxiliaires, WDD transformé, WDA | Ne désigne pas systématiquement du texte brut |
+| `01` | 1 | Réglages opaques de projet ; section vide de WDG | Sémantique globale inconnue |
+| `02` | 2 | Section de code des projets, fenêtres, procédures et états | Correspondance vérifiée pour cet indice de section |
+| `06` | 6 | Chemins du projet ou petit buffer auxiliaire de fenêtre | Ne définit pas un format unique |
+| `08` | 8 | Gros buffer auxiliaire de fenêtre ou d'état | Compression LZW observée ; rôle final partiel |
+| `0A` | 10 | Sections terminales auxiliaires | Enveloppe LZW parfois à +12 |
+| `11` | 17 | Propriétés de fenêtre/état et métadonnées | Préfixe de 12 ou 28 octets suivant le contexte |
+| `13` | 19 | Métadonnées auxiliaires | Contenu souvent brut ; sémantique non entièrement établie |
+| `19` | 25 | Autre section auxiliaire | Enveloppe LZW parfois à +24 |
+
+Le tag `11` dans ce tableau est **hexadécimal**, donc 17 en décimal. Il ne faut pas le confondre avec la largeur ou la révision d'une autre structure.
+
+## Enveloppe LZW à onze octets d'en-tête
+
+Soit `E` le début de l'enveloppe dans la section :
+
+| Offset relatif à `E` | Taille | Type | Champ | Valeur / commentaire |
+| --- | --- | --- | --- | --- |
+| `+0` | 1 | `u8` | Méthode | `04` pour les blocs étudiés |
+| `+1` | 4 | `u32` | Longueur encodée `L` | Nombre d'octets du flux LZW, sans l'en-tête |
+| `+5` | 4 | `u32` | Longueur décodée `U` | Nombre attendu d'octets de sortie |
+| `+9` | 2 | `octets[2]` | Octets auxiliaires | `00 00` dans les enveloppes prises en charge |
+| `+11` | `L` | Flux binaire | Données LZW | Codes de largeur variable |
+
+```text
+taille_de_l_enveloppe = 11 + L
+fin_de_l_enveloppe = E + 11 + L
+```
+
+Les deux octets nuls à +9 ne sont pas consommés comme des codes LZW. Commencer la lecture des codes deux octets trop tôt produit des données invalides.
+
+## Préfixes observés avant l'enveloppe
+
+| Situation | Position `E` dans la section | Région précédente |
+| --- | --- | --- |
+| Buffer auxiliaire simple | 0 | Aucun préfixe |
+| Code WLangage | 4 | Quatre octets bruts ; valeurs 0, 15 ou 16 suivant le spécimen |
+| WDA, première section | 4 | Quatre octets bruts ; valeur observée 2 |
+| WDE, propriétés | 12 | Trois groupes de quatre octets, non entièrement interprétés |
+| WDP 28, configuration | 12 | En-tête de configuration avant le bloc |
+| Métadonnées de tag `0A` | 12 | Préfixe auxiliaire |
+| Certaines sections de tag `19` | 24 | Préfixe auxiliaire |
+| WDW, propriétés | 28 | Préfixe auxiliaire de 28 octets |
+
+Ces positions sont celles des spécimens étudiés. Une recherche bornée et une validation du flux restent nécessaires pour les sections auxiliaires. Le préfixe n'est pas inclus dans `L` ni dans `U`.
+
+## Exemple : code de SuperMailExtra
+
+La section 2 de `SuperMailExtra/ProcéduresGlobales.wdg` commence à l'offset fichier 349. L'enveloppe commence à `349 + 4 = 353` :
+
+```text
+Offset section 0 : 0F 00 00 00
+Offset section 4 : 04 C2 13 00 00 FB 3E 00 00 00 00
+```
+
+| Valeur | Résultat |
+| --- | --- |
+| Préfixe, vue `u32` | 15 ; rôle précis non établi |
+| `L` | `0x13C2 = 5 058` |
+| `U` | `0x3EFB = 16 123` |
+| Taille enveloppe | `11 + 5 058 = 5 069` |
+| Taille section | `4 + 5 069 = 5 073` |
+| Début du flux dans le fichier | `349 + 4 + 11 = 364`, soit `0x016C` |
+
+## Blocs non compressés et inconnus
+
+Certains sous-buffers semblent présenter une méthode 00 avec des longueurs et du contenu directement lisible. La sémantique générale de toutes ces enveloppes 00 n'est pas implémentée. La présente documentation donne leurs octets lorsqu'ils apparaissent dans un exemple, sans étendre la description de l'enveloppe 04 à toutes les méthodes.
+
+Une section de longueur nulle ne contient pas une enveloppe vide : elle ne contient **aucun octet**.
+
+## Validation d'un candidat LZW
+
+Un octet 04 isolé peut apparaître dans une image ou une région opaque. Un candidat n'est accepté que si :
+
+1. L'en-tête complet de onze octets existe.
+2. `L` ne déborde pas la section et `U` reste dans le budget mémoire.
+3. Les octets à +9 et +10 correspondent à la variante prise en charge.
+4. Les codes LZW sont valides.
+5. La sortie contient exactement `U` octets.
+6. Le code de fin se termine dans le dernier octet déclaré du flux.
+
+Le [chapitre LZW](./05-compression-lzw.mdx) détaille le traitement des codes.

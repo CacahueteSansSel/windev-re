@@ -1,0 +1,126 @@
+---
+id: 02-conteneur-pcs
+title: "Conteneur PCS et en-tête commun"
+sidebar_label: "Conteneur PCS et en-tête commun"
+sidebar_position: 3
+description: "Structures binaires WINDEV illustrées par deux logiciels fictifs : SuperNoteExtra, pour la prise de note, et SuperMailExtra, client mail."
+---
+
+> **Exemples fictifs.** Les noms, chemins et identifiants applicatifs sont anonymisés. Les cartes de sections sont des profils numériques de référence ; les extraits textuels sont des exemples autonomes. Voir les [conventions des exemples](./01-conventions.mdx#exemples-fictifs).
+
+## Vue d'ensemble
+
+Les six extensions utilisent le même conteneur PCS observé, révision 20. Un en-tête initial de 85 octets précède le répertoire des sections. Une zone auxiliaire de taille variable peut ensuite précéder les sections.
+
+```text
+[0, 85)                  En-tête initial
+[85, 85 + 5 × N)         Répertoire de N sections
+[85 + 5 × N, P)          Paramètres auxiliaires non entièrement interprétés
+[P, taille_du_fichier)   Sections successives
+```
+
+## Description complète de l'en-tête initial
+
+| Offset fichier | Taille | Type | Nom documentaire | Valeur / commentaire | Statut |
+| --- | --- | --- | --- | --- | --- |
+| `0x0000` / 0 | 4 | `octets[4]` | Signature | `50 43 53 00`, soit `PCS` suivi de NUL | Vérifié |
+| `0x0004` / 4 | 4 | `u32` | Révision du conteneur | 20, encodé `14 00 00 00` | Vérifié |
+| `0x0008` / 8 | 4 | `u32` | Type brut du document | Voir la table des types ci-dessous | Vérifié sur le corpus |
+| `0x000C` / 12 | 2 | `u16` | Mot de révision brut | 0 ou 2 dans les en-têtes des versions étudiées ; signification précise non établie | Observé |
+| `0x000E` / 14 | 2 | `u16` | Version majeure du produit | 28 ou 31 ; le second octet vaut 0 dans le corpus | Vérifié |
+| `0x0010` / 16 | 16 | `octets[16]` | Zone auxiliaire A | Paramètres et compteurs possibles ; aucune sémantique certifiée | Inconnu |
+| `0x0020` / 32 | 4 | `u32` | Position relative du contenu | `P = 32 + valeur` | Vérifié |
+| `0x0024` / 36 | 34 | `octets[34]` | Zone auxiliaire B | Contient des valeurs et mots de version répétés ; ne pas les interpréter arbitrairement | Inconnu |
+| `0x0046` / 70 | 10 | `octets[10]`, vue ASCII | Identifiant de build | `01A312018 ` ou `05F280095g`, sans suppression des espaces | Vérifié |
+| `0x0050` / 80 | 1 | `u8` brut | Octet auxiliaire | `00` dans les exemples détaillés | Observé, rôle inconnu |
+| `0x0051` / 81 | 4 | `u32` | Nombre de sections `N` | De 2 à 20 dans le corpus | Vérifié |
+
+Les lignes couvrent tous les octets de `[0, 85)`, y compris les régions non interprétées.
+
+> **Deux versions différentes.** `F[4] = 20` est la révision du conteneur. Cette valeur ne signifie pas « WINDEV 20 ». La version majeure étudiée est le `u16` à l'offset 14.
+
+## Types de document
+
+| Valeur `u32` | Octets à l'offset 8 | Extension | Sens |
+| --- | --- | --- | --- |
+| `0x00001001` | `01 10 00 00` | `.wdp` | Projet ; aussi utilisé par les caches de projet |
+| `0x00000002` | `02 00 00 00` | `.wdw` | Fenêtre |
+| `0x00000007` | `07 00 00 00` | `.wdg` | Procédures globales |
+| `0x00000003` | `03 00 00 00` | `.wde` | État |
+| `0x00070004` | `04 00 07 00` | `.wdd` | Schéma de données |
+| `0x00080002` | `02 00 08 00` | `.wda` | Analyse éditable |
+
+Les quatre octets doivent être comparés. Comparer uniquement le premier octet confondrait une fenêtre `.wdw` et une analyse éditable `.wda`.
+
+## Répertoire des sections
+
+Pour l'entrée d'indice `i` :
+
+| Offset fichier | Taille | Type | Valeur |
+| --- | --- | --- | --- |
+| `85 + 5 × i` | 1 | `u8` | Tag brut de la section |
+| `86 + 5 × i` | 4 | `u32` | Longueur stockée de la section |
+
+Il n'y a pas de pointeur individuel stocké dans chaque entrée. Les positions sont calculées cumulativement :
+
+```text
+P = 32 + lire_u32(F, 32)
+début_section[0] = P
+début_section[i] = P + somme(longueur_section[j] pour j de 0 à i - 1)
+fin_section[i] = début_section[i] + longueur_section[i]
+```
+
+Une longueur nulle est autorisée et ne consomme aucun octet. Plusieurs sections successives peuvent donc partager le même début calculé.
+
+## Contrôles structurels
+
+| Condition | Justification |
+| --- | --- |
+| Signature égale à `PCS\0` | Identification initiale |
+| Révision du conteneur reconnue | Empêche de réutiliser cette carte sur un autre conteneur |
+| `85 + 5 × N` au plus égal à `P` | Le contenu ne recouvre pas son propre répertoire |
+| Chaque longueur reste dans le fichier | Évite les débordements et les fichiers tronqués |
+| `P + somme(longueurs) = taille du fichier` | Couvre exactement tout le contenu stocké |
+| Version/type contrôlés séparément | Une signature correcte ne suffit pas à choisir le lecteur |
+
+La limite de 256 sections du lecteur est une **limite d'implémentation**, pas une limite du format démontrée.
+
+## Exemples de paramètres
+
+| Document | Type hexadécimal | Version (`u16`) | Build ASCII | Début `P` | Sections `N` |
+| --- | --- | --- | --- | --- | --- |
+| SuperNoteExtra (projet31) | 00001001 | 31 | 01A312018  | `0x0159` (345) | 20 |
+| SuperMailExtra (projet28) | 00001001 | 28 | 05F280095g | `0x0159` (345) | 20 |
+| FEN_Journal (fenetre) | 00000002 | 31 | 01A312018  | `0x00F1` (241) | 12 |
+| ProcéduresGlobales (procedures31) | 00000007 | 31 | 01A312018  | `0x00CA` (202) | 9 |
+| SuperNoteExtra (analyse) | 00070004 | 31 | 01A312018  | `0x006F` (111) | 2 |
+| ETAT_Test (etat) | 00000003 | 31 | 01A312018  | `0x00FE` (254) | 13 |
+| SuperNoteExtra (analyse-source) | 00080002 | 31 | 01A312018  | `0x0089` (137) | 4 |
+
+## Exemple hexadécimal : en-tête de SuperNoteExtra.wdp
+
+Les positions à gauche sont absolues dans le fichier :
+
+```text
+0000  50 43 53 00 14 00 00 00 01 10 00 00 02 00 1F 00
+0010  01 00 0C 04 94 03 00 00 00 00 00 00 00 00 00 00
+0020  39 01 00 00 40 00 1A 00 39 00 00 00 00 00 00 00
+0030  00 00 00 00 00 00 00 00 30 00 1A 00 1F 00 02 00
+0040  E5 01 0A 00 00 00 30 31 41 33 31 32 30 31 38 20
+0050  00 14 00 00 00
+```
+
+Le mot à `0x0020` vaut 313. Le début effectif des sections vaut donc `313 + 32 = 345`, soit `0x0159`.
+
+## Paramètres entre le répertoire et les sections
+
+| Famille | `N` | Fin du répertoire | Début `P` | Taille auxiliaire |
+| --- | --- | --- | --- | --- |
+| Projet complet | 20 | 185 | 345 | 160 octets |
+| Fenêtre | 12 | 145 | 241 | 96 octets |
+| Procédures globales | 9 | 130 | 202 | 72 octets |
+| État | 13 | 150 | 254 | 104 octets |
+| WDD | 2 | 95 | 111 | 16 octets |
+| WDA | 4 | 105 | 137 | 32 octets |
+
+La zone auxiliaire observée mesure huit octets par section dans ces familles. Cette régularité est **observée** ; sa signification et l'utilisation de chaque groupe de huit octets ne sont pas décodées. Le lecteur se sert du pointeur `P`, pas d'une hypothèse sur cette régularité.

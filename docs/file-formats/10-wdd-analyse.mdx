@@ -1,0 +1,279 @@
+---
+id: 10-wdd-analyse
+title: "Format WDD : schéma de données"
+sidebar_label: "Format WDD : schéma de données"
+sidebar_position: 11
+description: "Structures binaires WINDEV illustrées par deux logiciels fictifs : SuperNoteExtra, pour la prise de note, et SuperMailExtra, client mail."
+---
+
+> **Exemples fictifs.** Les noms, chemins et identifiants applicatifs sont anonymisés. Les cartes de sections sont des profils numériques de référence ; les extraits textuels sont des exemples autonomes. Voir les [conventions des exemples](./01-conventions.mdx#exemples-fictifs).
+
+## Identification
+
+| Propriété | Valeur |
+| --- | --- |
+| Extension | `.wdd` |
+| Type PCS | `0x00070004` |
+| Sections du spécimen | 2 |
+| Version du produit observée | 31 |
+| Variante interne du schéma | `0x0060 / 0x061D` |
+| Analyse courante | 6 tables, 37 rubriques, génération 24 |
+
+Le WDD contient la **description du schéma**, pas les enregistrements des fichiers de données `.fic`, `.ndx` ou `.mmo`. Les tailles et types ci-dessous décrivent les métadonnées du schéma ; ils ne constituent pas une spécification du stockage physique de chaque valeur HFSQL.
+
+## Carte du fichier courant
+
+Taille du fichier : 6 164 octets.
+
+| Section | Tag (`u8`) | Début dans le fichier | Longueur (`u32`) | Blocs décodés | Commentaire |
+| --- | --- | --- | --- | --- | --- |
+| 0 | `0x00` | `0x006F` (111) | 0 | Aucun bloc LZW identifié | Section vide |
+| 1 | `0x00` | `0x006F` (111) | 6053 | Transformation puis LZW → 15 821 octets, préfixe compris | Description de schéma transformée, puis compressée |
+
+## De la section stockée au schéma lisible
+
+| Étape | Taille | Position / commentaire |
+| --- | --- | --- |
+| Section 1 stockée | 6 053 octets | Commence à `F[111]` |
+| Préfixe en clair | 4 octets | `60 00 1D 06` |
+| Région transformée | 6 049 octets | Tout ce qui suit le préfixe dans la section |
+| Enveloppe après transformation | 6 049 octets | Méthode 04 à +4 de la section |
+| Flux LZW | 6 038 octets | À +15 de la section après transformation |
+| Sortie LZW | 15 817 octets | Débute par le somme de contrôle, sans les quatre octets initiaux |
+| Schéma reconstruit `H` | 15 821 octets | Préfixe original de 4 octets + sortie LZW |
+
+La [transformation héritée](./11-wdd-transformation.mdx) doit être appliquée avant le LZW. Les pointeurs du schéma s'appliquent à `H` ; ajouter leurs valeurs au début du fichier serait incorrect.
+
+## Premier en-tête du schéma reconstruit
+
+| Offset dans `H` | Taille | Type | Champ / commentaire |
+| --- | --- | --- | --- |
+| `0x0000` / 0 | 2 | `u16` | Mot 96 (`0x0060`) ; cette taille correspond au premier répertoire de huit entrées |
+| `0x0002` / 2 | 2 | `u16` | Variante interne `0x061D`, soit 1 565 |
+| `0x0004` / 4 | 4 | `u32` | Somme de contrôle de la région commençant à +8 |
+| `[8, 104)` | 96 | 8 couples `u64 + u32` | Premier répertoire |
+| `[104, 252)` dans le spécimen | 148 | `octets[148]` | Autres données d'en-tête ; sémantique non entièrement interprétée |
+| À la position donnée par le répertoire 0 | Variable | Enregistrement d'analyse | Commence à 252 dans le spécimen |
+
+Le début des métadonnées ne doit pas être supposé toujours égal à 252 : sa position est lue dans le premier couple du répertoire.
+
+## Répertoire de huit entrées
+
+Pour l'entrée `i` :
+
+| Offset dans `H` | Taille | Type | Champ |
+| --- | --- | --- | --- |
+| `8 + 12 × i` | 8 | `u64` | Position dans `H` |
+| `16 + 12 × i` | 4 | `u32` | Nombre d'éléments annoncé |
+
+Valeurs du WDD courant :
+
+| Entrée | Position du couple | Pointeur dans `H` | Compte (`u32`) | Commentaire |
+| --- | --- | --- | --- | --- |
+| 0 | `0x0008` (8) | `0x00FC` (252) | 1 | Métadonnées de l’analyse |
+| 1 | `0x0014` (20) | `0x029F` (671) | 6 | Descriptions de tables |
+| 2 | `0x0020` (32) | `0x0BD5` (3029) | 0 | Rôle de relations retenu par le lecteur ; aucun enregistrement non vide validé |
+| 3 | `0x002C` (44) | `0x3B7F` (15231) | 0 | Rôle inconnu |
+| 4 | `0x0038` (56) | `0x3BB0` (15280) | 6 | Index des noms de tables |
+| 5 | `0x0044` (68) | `0x3DCD` (15821) | 0 | Rôle inconnu |
+| 6 | `0x0050` (80) | `0x3DCD` (15821) | 0 | Rôle inconnu |
+| 7 | `0x005C` (92) | `0x3DCD` (15821) | 0 | Rôle inconnu |
+
+Un compte nul peut être associé à un pointeur égal à la fin du buffer ou à une position partagée avec une autre région. Il ne justifie pas de lire un enregistrement à cette position.
+
+L'identification de l'entrée 2 comme répertoire de relations vient du lecteur étudié ; tous les spécimens ont un compte nul. La représentation d'une relation non vide n'est donc pas validée.
+
+## Somme de contrôle
+
+```text
+somme = 0
+p = 8
+pendant qu'il reste au moins quatre octets :
+    somme = (somme + lire_u32(H, p)) modulo 2^32
+    p = p + 4
+pour chaque octet restant :
+    somme = (somme + H[p]) modulo 2^32
+exiger somme = lire_u32(H, 4)
+```
+
+Exemple arithmétique fictif, indépendant de la carte du WDD : une région à sommer contenant `04 03 02 01 FE FF FF FF 07 08` produit les valeurs suivantes.
+
+| Étape | Valeur / type |
+| --- | --- |
+| Premier mot | `0x01020304`, `u32` |
+| Deuxième mot | `0xFFFFFFFE`, `u32` |
+| Deux octets restants | 7 et 8, deux `u8` |
+| Somme modulo `2^32` | `0x01020311` |
+| Octets de cette somme dans un champ `u32` | `11 03 02 01` |
+
+Pour un WDD concret, la somme stockée est à `H[4]` et doit être comparée au résultat calculé sur la totalité de `H[8..fin]`. Une modification d’un nom ou d’un GUID impose de la recalculer.
+
+Ce contrôle fournit une validation indépendante du fait de retrouver quelques noms lisibles dans la sortie.
+
+## Enregistrement des métadonnées d'analyse
+
+Soit `A` la position donnée par l'entrée 0 :
+
+| Position | Taille | Type | Champ / commentaire |
+| --- | --- | --- | --- |
+| `A + 0` | 1 | `u8` | Tag 05 |
+| `A + 1` | Variable | `CString` | Nom du WDD |
+| Juste après | Variable | `CString` | Répertoire d'origine |
+| Juste après | Variable | `CString` | Métadonnée auxiliaire vide dans le spécimen ; rôle exact non établi |
+| Juste après | Variable | `CString` | GUID textuel de l'analyse |
+| Juste après le GUID | 4 | `u32` | Génération de l'analyse |
+| Reste de l'enregistrement | Variable | `octets[n]` | Autres paramètres non entièrement décodés |
+
+Exemple fictif : `SuperNoteExtra.wdd`, GUID `54077D9E89F753879ECE3503D29F691E`, génération 24. Le GUID mesure 33 octets avec son NUL.
+
+## Index des noms de tables
+
+L'entrée de répertoire 4, dont le couple commence à +56, pointe sur une liste :
+
+| Position relative à une entrée d'index | Taille | Type | Champ |
+| --- | --- | --- | --- |
+| `+0` | Variable `Z_n` | `CString` | Nom logique de table |
+| `+Z_n` | 8 | `u64` | Position de la description de table dans `H` |
+
+```text
+taille_entree_index_table = Z_n + 8
+```
+
+Le compte de cet index, à `H[64]`, est comparé au compte de tables à `H[28]`. Les deux valent 6 dans le WDD courant.
+
+## Description d'une table
+
+Soit `T` le début de la description :
+
+| Offset relatif à `T` | Taille | Type | Champ / commentaire |
+| --- | --- | --- | --- |
+| `+0` | 1 | `u8` | Tag 22 en hexadécimal |
+| `+1` | 4 | `u32` | Identifiant interne de table |
+| `+5` | 4 | `octets[4]` | Région auxiliaire ; zéros dans les exemples |
+| `+9` | Variable | `CString` | Nom logique |
+| Après le nom | Variable | `CString` | Nom physique |
+| Ensuite | Variable | `CString` | Répertoire |
+| Ensuite | Variable | `CString` | Libellé de table |
+| Ensuite | Variable | `CString` | Métadonnée auxiliaire ; vide dans les spécimens détaillés |
+| Ensuite | Variable | `CString` | Extension du fichier physique, `fic` dans le corpus |
+
+Soit `P_6` le curseur juste après ces six chaînes. La suite est :
+
+| Offset / curseur | Taille | Type | Champ / commentaire |
+| --- | --- | --- | --- |
+| `P_6` | 48 | `octets[48]` | Paramètres fixes, non entièrement interprétés |
+| `P_6 + 48` | Variable | `CString` | GUID textuel de la table |
+| Juste après | Variable | `CString` | GUID textuel de l'analyse |
+| Juste après | 2 | `octets[2]` | Données auxiliaires |
+| Ensuite | Variable | `CString` | Nom logique de table dupliqué |
+| Ensuite | 2 | `octets[2]` | Données auxiliaires |
+| Ensuite, curseur nommé `P` | Variable | Répertoires internes | Carte ci-dessous |
+
+Le nom initial, le nom de l'index et le nom dupliqué doivent concorder.
+
+## Répertoires internes de rubriques
+
+La position `P` dépend des longueurs des chaînes précédentes :
+
+| Offset relatif à `P` | Taille | Type | Champ / commentaire |
+| --- | --- | --- | --- |
+| `+0` | 8 | `u64` | Début annoncé de la région de rubriques |
+| `+8` | 4 | `u32` | Nombre de rubriques |
+| `[+12, +70)` | 58 | `octets[58]` | Autres paramètres et sous-répertoires non entièrement interprétés |
+| `+70` | 8 | `u64` | Position de l'index des rubriques utilisé par le lecteur |
+| `+78` | 4 | `u32` | Nombre d'entrées de cet index |
+| À partir de `+82` | Variable | `octets[n]` | Autres index et données de table, non entièrement interprétés |
+
+Les nombres à `P + 8` et `P + 78` doivent être identiques.
+
+### Index des rubriques
+
+Soit `I` sa position :
+
+| Position | Taille | Type | Champ / commentaire |
+| --- | --- | --- | --- |
+| `I + 0` | 4 | `octets[4]` | Préfixe brut, nul dans les exemples |
+| `I + 4 + 12 × j` | 8 | `u64` | Position exacte de la rubrique `j` dans `H` |
+| `I + 12 + 12 × j` | 4 | `u32` brut | Identifiant/numéro d'entrée observé ; sens global non établi |
+
+Le lecteur suit ces pointeurs, au lieu de rechercher les noms dans le binaire ou d'estimer la taille des descriptions.
+
+## Description d'une rubrique
+
+Soit `R` le début de la description :
+
+| Offset relatif à `R` | Taille | Type | Champ / commentaire |
+| --- | --- | --- | --- |
+| `+0` | 1 | `u8` | Tag 20 en hexadécimal |
+| `+1` | 4 | `u32` | Identifiant interne de rubrique |
+| `+5` | 4 | `octets[4]` | Région auxiliaire |
+| `+9` | 4 | `u32` | Identifiant de la table propriétaire |
+| `+13` | 4 | `octets[4]` | Région auxiliaire |
+| `+17` | Variable | `CString` | Nom de la rubrique |
+| Juste après | Variable | `CString` | Libellé |
+| Juste après | Variable | `CString` | GUID textuel |
+| Juste après | Variable | `CString` | Masque de saisie |
+
+Soit `Q` le curseur juste après le masque :
+
+| Offset relatif à `Q` | Taille | Type | Champ / commentaire |
+| --- | --- | --- | --- |
+| `+0` | 2 | `u16` | Code de type interne |
+| `+2` | 4 | `u32` | Flags bruts |
+| `+6` | 1 | `u8` brut | Octet auxiliaire, nul dans les exemples |
+| `+7` | 2 | `u16` | Taille déclarée dans le schéma |
+| `+9` | 2 | `u16` | Autre taille, exposée comme taille de stockage par le lecteur ; unité exacte dépendante du type |
+| À partir de `+11` | Variable | `octets[n]` | Règles, défauts et autres propriétés non entièrement interprétés |
+
+L'identifiant de table à `R + 9` doit correspondre à la table dont l'index a fourni la rubrique.
+
+## Codes de type rencontrés
+
+| Code binaire (`u16`) | Hexadécimal | Type métier retenu | Code public de référence dans `analysis.json` | Taille du spécimen |
+| --- | --- | --- | --- | --- |
+| 2 | `0002` | Texte | 2 | 50, 100 ou 200 |
+| 11 | `000B` | Heure | 11 | 4 |
+| 14 | `000E` | Date | 14 | 8 |
+| 24 | `0018` | Identifiant automatique sur 64 bits | 1 | 8 |
+| 25 | `0019` | Entier signé sur 64 bits | 19 | 8 |
+| 26 | `001A` | Entier non signé sur 32 bits, dans les rubriques testées | 22 | 4 |
+| 27 | `001B` | Entier non signé sur 64 bits | 20 | 8 |
+| 28 | `001C` | Binaire | 23 | 2 ou 50 |
+| 29 | `001D` | Mémo texte | 15 | 8 |
+| 34 | `0022` | Date-heure | 24 | 8 |
+| 36 | `0024` | Entier non signé sur 8 bits | 12 | 1 |
+| 37 | `0025` | Booléen | 27 | 1 |
+
+Le code interne et le code public ne sont pas interchangeables. Une taille 8 d'un mémo texte ne signifie pas que son texte est limité à huit caractères. Cette documentation ne déduit pas le format physique des valeurs de la seule taille déclarée.
+
+## Positions des tables et index dans le WDD courant
+
+| ID (`u32`) | Table | Début dans `H` | Nom physique | Rubriques | Curseur `P` | Index des rubriques `I` |
+| --- | --- | --- | --- | --- | --- | --- |
+| 1 | ENTREE_JOURNAL | `0x029F` (671) | entree_journal | 14 | `0x0360` (864) | `0x1D25` (7461) |
+| 2 | JOUR_FERIE | `0x0427` (1063) | jour_ferie | 5 | `0x04D8` (1240) | `0x2419` (9241) |
+| 3 | SEMAINE_COURS | `0x0597` (1431) | semaine_cours | 3 | `0x0654` (1620) | `0x281D` (10269) |
+| 4 | ENTREE_JOURNAL_DOC_JOINT | `0x0719` (1817) | entree_journal_doc_joint | 8 | `0x0802` (2050) | `0x321E` (12830) |
+| 5 | PROJET | `0x08DD` (2269) | projet | 4 | `0x097E` (2430) | `0x374E` (14158) |
+| 6 | ENTREE_COFFRE_FORT | `0x0A35` (2613) | entree_coffre_fort | 3 | `0x0B06` (2822) | `0x3B30` (15152) |
+
+## Exemple : première table et première rubrique
+
+| Champ | Position dans `H` | Valeur |
+| --- | --- | --- |
+| Début de table ENTREE_JOURNAL | 671 / `0x029F` | Tag 22 |
+| Identifiant de table | 672 | 1 |
+| Premier nom logique | 680 | `ENTREE_JOURNAL` |
+| Segment fixe de 48 octets | 731 | Données non entièrement interprétées |
+| GUID de table | 779 | `74D77310387B5AC2AED6DB363F282DD5` |
+| Curseur `P` | 864 | Pointeur de première rubrique et comptes |
+| Première rubrique | 3 029 / `0x0BD5` | `IDENTREE_JOURNAL`, tag 20 |
+| Index des rubriques | 7 461 / `0x1D25` | 14 entrées |
+
+La carte détaillée des 37 rubriques est donnée dans l'[annexe des valeurs](./14-annexe-valeurs.mdx).
+
+## Relations et propriétés encore inconnues
+
+Le répertoire retenu pour les relations annonce zéro élément dans tous les WDD fournis. Aucun décodeur sémantique de relations non vides n'est présenté.
+
+Les clés, contraintes, valeurs par défaut, connexions, encodages protégés et autres flags ne sont pas entièrement interprétés. Les flags sont exposés comme `u32` brut, sans nommer chaque bit d'après une simple corrélation de valeurs.
