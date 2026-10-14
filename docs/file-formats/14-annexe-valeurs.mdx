@@ -1,0 +1,231 @@
+---
+id: 14-annexe-valeurs
+title: "Annexe : valeurs et offsets du corpus"
+sidebar_label: "Annexe : valeurs et offsets du corpus"
+sidebar_position: 15
+description: "Structures binaires WINDEV illustrées par deux logiciels fictifs : SuperNoteExtra, pour la prise de note, et SuperMailExtra, client mail."
+---
+
+> **Exemples fictifs.** Les noms, chemins et identifiants applicatifs sont anonymisés. Les cartes de sections sont des profils numériques de référence ; les extraits textuels sont des exemples autonomes. Voir les [conventions des exemples](./01-conventions.mdx#exemples-fictifs).
+
+## Comment lire cette annexe
+
+Cette annexe illustre un profil de schéma associé au projet fictif `SuperNoteExtra/SuperNoteExtra.wdd`. Le profil de buffer reconstruit `H` mesure 15 821 octets, le GUID d’analyse fictif est `54077D9E89F753879ECE3503D29F691E` et la génération d’exemple vaut 24.
+
+Les tableaux séparent la position du début de la rubrique `R` et la position `Q` du code de type après les quatre CString. La largeur binaire du code est toujours **16 bits**, même lorsque la donnée métier décrite occupe 64 bits.
+
+| Colonne | Signification |
+| --- | --- |
+| Début `R` | Tag 20 de la description de rubrique dans `H` |
+| ID | Identifiant interne enregistré sur 32 bits |
+| Code de type à `Q` | Premier octet du `u16` de type ; les flags suivent à `Q + 2` |
+| Type interne | Code binaire, avec sa valeur décimale et hexadécimale |
+| Flags | Valeur entière brute sur 32 bits ; bits non nommés arbitrairement |
+| Taille | Valeur `u16` à `Q + 7` ; ne vaut pas nécessairement un nombre de caractères |
+| Autre taille | Valeur `u16` à `Q + 9`, exposée comme taille de stockage par le lecteur ; unité complète non certifiée pour chaque type |
+
+Les rubriques suivent l'ordre de l'index de leur table. La signification des codes figure dans le [chapitre WDD](./10-wdd-analyse.mdx).
+
+## ENTREE_JOURNAL
+
+Identifiant de table : 1. Description à `0x029F` (671). Nom physique : `entree_journal`. Toutes les positions sont mesurées dans le schéma reconstruit `H`.
+
+| Rubrique | ID (`u32`) | Début `R` | Code de type à `Q` | Type interne (`u16`) | Flags (`u32`) | Taille (`u16`) | Autre taille (`u16`) |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| IDENTREE_JOURNAL | 1 | `0x0BD5` (3029) | `0x0C37` (3127) | 24 / `0x0018` | `0x00000009` | 8 | 8 |
+| HEURE | 2 | `0x0D1E` (3358) | `0x0D5D` (3421) | 11 / `0x000B` | `0x00000081` | 4 | 5 |
+| DESCRIPTION | 3 | `0x0E21` (3617) | `0x0E6C` (3692) | 29 / `0x001D` | `0x00000013` | 8 | 8 |
+| DATE | 4 | `0x0F3C` (3900) | `0x0F79` (3961) | 14 / `0x000E` | `0x00000080` | 8 | 9 |
+| STATUT | 5 | `0x103B` (4155) | `0x10E7` (4327) | 36 / `0x0024` | `0x00000002` | 1 | 1 |
+| COMMENT_INTERNE | 6 | `0x1217` (4631) | `0x126E` (4718) | 29 / `0x001D` | `0x00000013` | 8 | 8 |
+| FLAG_SURBRILLANCE | 15 | `0x134B` (4939) | `0x139F` (5023) | 37 / `0x0025` | `0x00000001` | 1 | 1 |
+| FLAG_RAPPEL | 17 | `0x147C` (5244) | `0x14D8` (5336) | 37 / `0x0025` | `0x00000001` | 1 | 1 |
+| IDENTREE_JOURNAL_SOURCE | 18 | `0x15A9` (5545) | `0x1634` (5684) | 27 / `0x001B` | `0x00000005` | 8 | 8 |
+| IDPROJET | 29 | `0x171D` (5917) | `0x1789` (6025) | 25 / `0x0019` | `0x00000009` | 8 | 8 |
+| FLAG_PING | 30 | `0x1854` (6228) | `0x18AC` (6316) | 37 / `0x0025` | `0x00000001` | 1 | 1 |
+| DATE_MAJ_STATUT | 35 | `0x1979` (6521) | `0x19DA` (6618) | 34 / `0x0022` | `0x0000001A` | 8 | 8 |
+| DATE_DEB | 36 | `0x1AB2` (6834) | `0x1B21` (6945) | 34 / `0x0022` | `0x0000001A` | 8 | 8 |
+| DATE_FIN | 37 | `0x1BEB` (7147) | `0x1C57` (7255) | 34 / `0x0022` | `0x0000001A` | 8 | 8 |
+
+### Libellés et masques
+
+| Rubrique | Libellé enregistré | Masque CString |
+| --- | --- | --- |
+| IDENTREE_JOURNAL | Identifiant de ENTREE_JOURNAL | Chaîne vide, NUL seul |
+| HEURE | HEURE | Chaîne vide, NUL seul |
+| DESCRIPTION | DESCRIPTION | Chaîne vide, NUL seul |
+| DATE | DATE | Chaîne vide, NUL seul |
+| STATUT | 1: Attente; 2: En cours; 3: Terminé; 4: Repoussé; 5: Marqueur temporel; 6: de côté; 7: Remarque; 8: Proposition | `99` |
+| COMMENT_INTERNE | Commentaire interne | Chaîne vide, NUL seul |
+| FLAG_SURBRILLANCE | Surbrillance | `±9` |
+| FLAG_RAPPEL | Imposer lors de la clôture | `±9` |
+| IDENTREE_JOURNAL_SOURCE | Identifiant de l'entrée journal source | `9 999 999 999 999 999 999` |
+| IDPROJET | Identifiant de PROJET | `±9 999 999 999 999 999 999` |
+| FLAG_PING | Ping lors de l'ouverture | `±9` |
+| DATE_MAJ_STATUT | Date de mise à jour du statut | Chaîne vide, NUL seul |
+| DATE_DEB | Date de début de la tache (marquée comme en cours) | Chaîne vide, NUL seul |
+| DATE_FIN | Date de fin de la tache (marqué comme terminée) | Chaîne vide, NUL seul |
+
+
+## JOUR_FERIE
+
+Identifiant de table : 2. Description à `0x0427` (1063). Nom physique : `jour_ferie`. Toutes les positions sont mesurées dans le schéma reconstruit `H`.
+
+| Rubrique | ID (`u32`) | Début `R` | Code de type à `Q` | Type interne (`u16`) | Flags (`u32`) | Taille (`u16`) | Autre taille (`u16`) |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| IDJOUR_FERIE | 7 | `0x1E92` (7826) | `0x1EEC` (7916) | 24 / `0x0018` | `0x00000009` | 8 | 8 |
+| JOUR | 8 | `0x1FCB` (8139) | `0x2012` (8210) | 36 / `0x0024` | `0x00000002` | 1 | 1 |
+| MOIS | 9 | `0x20DD` (8413) | `0x211C` (8476) | 36 / `0x0024` | `0x00000002` | 1 | 1 |
+| LIBELLE | 10 | `0x21E3` (8675) | `0x2234` (8756) | 2 / `0x0002` | `0x00000012` | 50 | 51 |
+| MOISJOUR | 11 | `0x22FC` (8956) | `0x2344` (9028) | 28 / `0x001C` | `0x0000001C` | 2 | 4 |
+
+### Libellés et masques
+
+| Rubrique | Libellé enregistré | Masque CString |
+| --- | --- | --- |
+| IDJOUR_FERIE | Identifiant de JOUR_FERIE | Chaîne vide, NUL seul |
+| JOUR | Jour du mois | `99` |
+| MOIS | Mois | `99` |
+| LIBELLE | Libellé du jour férié | Chaîne vide, NUL seul |
+| MOISJOUR | MOIS + JOUR | Chaîne vide, NUL seul |
+
+
+## SEMAINE_COURS
+
+Identifiant de table : 3. Description à `0x0597` (1431). Nom physique : `semaine_cours`. Toutes les positions sont mesurées dans le schéma reconstruit `H`.
+
+| Rubrique | ID (`u32`) | Début `R` | Code de type à `Q` | Type interne (`u16`) | Flags (`u32`) | Taille (`u16`) | Autre taille (`u16`) |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| IDSEMAINE_COURS | 12 | `0x249C` (9372) | `0x24FC` (9468) | 24 / `0x0018` | `0x00000009` | 8 | 8 |
+| DATEDEB | 13 | `0x25E1` (9697) | `0x2638` (9784) | 14 / `0x000E` | `0x00000080` | 8 | 9 |
+| DATEFIN | 14 | `0x2700` (9984) | `0x2755` (10069) | 14 / `0x000E` | `0x00000080` | 8 | 9 |
+
+### Libellés et masques
+
+| Rubrique | Libellé enregistré | Masque CString |
+| --- | --- | --- |
+| IDSEMAINE_COURS | Identifiant de SEMAINE_COURS | Chaîne vide, NUL seul |
+| DATEDEB | Date de début de la semaine | Chaîne vide, NUL seul |
+| DATEFIN | Date de fin de la semaine | Chaîne vide, NUL seul |
+
+
+## ENTREE_JOURNAL_DOC_JOINT
+
+Identifiant de table : 4. Description à `0x0719` (1817). Nom physique : `entree_journal_doc_joint`. Toutes les positions sont mesurées dans le schéma reconstruit `H`.
+
+| Rubrique | ID (`u32`) | Début `R` | Code de type à `Q` | Type interne (`u16`) | Flags (`u32`) | Taille (`u16`) | Autre taille (`u16`) |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| IDENTREE_JOURNAL_DOC_JOINT | 19 | `0x286C` (10348) | `0x28E2` (10466) | 24 / `0x0018` | `0x00000009` | 8 | 8 |
+| IDENTREE_JOURNAL | 20 | `0x29DD` (10717) | `0x2A59` (10841) | 25 / `0x0019` | `0x00000009` | 8 | 8 |
+| LIBELLE | 21 | `0x2B34` (11060) | `0x2B85` (11141) | 2 / `0x0002` | `0x00000012` | 50 | 51 |
+| NOMFIC | 22 | `0x2C4D` (11341) | `0x2C9F` (11423) | 2 / `0x0002` | `0x00000012` | 200 | 201 |
+| TYPE | 23 | `0x2D65` (11621) | `0x2DDE` (11742) | 36 / `0x0024` | `0x00000002` | 1 | 1 |
+| LEGENDE | 24 | `0x2EC0` (11968) | `0x2F03` (12035) | 29 / `0x001D` | `0x00000013` | 8 | 8 |
+| FLAG_INCLURE_JOURNAL | 25 | `0x2FCB` (12235) | `0x3034` (12340) | 37 / `0x0025` | `0x00000001` | 1 | 1 |
+| HASH | 34 | `0x3117` (12567) | `0x315C` (12636) | 28 / `0x001C` | `0x0000001C` | 50 | 52 |
+
+### Libellés et masques
+
+| Rubrique | Libellé enregistré | Masque CString |
+| --- | --- | --- |
+| IDENTREE_JOURNAL_DOC_JOINT | Identifiant de ENTREE_JOURNAL_DOC_JOINT | Chaîne vide, NUL seul |
+| IDENTREE_JOURNAL | Identifiant de ENTREE_JOURNAL | `±9 999 999 999 999 999 999` |
+| LIBELLE | Libellé du jour férié | Chaîne vide, NUL seul |
+| NOMFIC | Nom du fichier physique | Chaîne vide, NUL seul |
+| TYPE | Type (1: Fichier externe; 2: Image incluse; 3: Fichier inclus) | `99` |
+| LEGENDE | Légende | Chaîne vide, NUL seul |
+| FLAG_INCLURE_JOURNAL | Inclure ou non dans le journal | `±9` |
+| HASH | Dernier hash | Chaîne vide, NUL seul |
+
+
+## PROJET
+
+Identifiant de table : 5. Description à `0x08DD` (2269). Nom physique : `projet`. Toutes les positions sont mesurées dans le schéma reconstruit `H`.
+
+| Rubrique | ID (`u32`) | Début `R` | Code de type à `Q` | Type interne (`u16`) | Flags (`u32`) | Taille (`u16`) | Autre taille (`u16`) |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| IDPROJET | 26 | `0x32F3` (13043) | `0x3345` (13125) | 24 / `0x0018` | `0x00000009` | 8 | 8 |
+| NOM | 27 | `0x341C` (13340) | `0x3461` (13409) | 2 / `0x0002` | `0x00000012` | 100 | 101 |
+| COULEUR | 28 | `0x3521` (13601) | `0x356F` (13679) | 26 / `0x001A` | `0x00000004` | 4 | 4 |
+| ICONE | 38 | `0x3638` (13880) | `0x3689` (13961) | 26 / `0x001A` | `0x00000004` | 4 | 4 |
+
+### Libellés et masques
+
+| Rubrique | Libellé enregistré | Masque CString |
+| --- | --- | --- |
+| IDPROJET | Identifiant de PROJET | Chaîne vide, NUL seul |
+| NOM | Nom du projet | Chaîne vide, NUL seul |
+| COULEUR | Couleur | `999 999 999` |
+| ICONE | Indice icone | `999 999 999` |
+
+
+## ENTREE_COFFRE_FORT
+
+Identifiant de table : 6. Description à `0x0A35` (2613). Nom physique : `entree_coffre_fort`. Toutes les positions sont mesurées dans le schéma reconstruit `H`.
+
+| Rubrique | ID (`u32`) | Début `R` | Code de type à `Q` | Type interne (`u16`) | Flags (`u32`) | Taille (`u16`) | Autre taille (`u16`) |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| IDENTREE_COFFRE_FORT | 31 | `0x37B7` (14263) | `0x3821` (14369) | 24 / `0x0018` | `0x00000009` | 8 | 8 |
+| LIBELLE | 32 | `0x3910` (14608) | `0x3961` (14689) | 2 / `0x0002` | `0x00000012` | 50 | 51 |
+| VALEUR | 33 | `0x3A29` (14889) | `0x3A6A` (14954) | 2 / `0x0002` | `0x00000012` | 50 | 51 |
+
+### Libellés et masques
+
+| Rubrique | Libellé enregistré | Masque CString |
+| --- | --- | --- |
+| IDENTREE_COFFRE_FORT | Identifiant de ENTREE_COFFRE_FORT | Chaîne vide, NUL seul |
+| LIBELLE | Libellé du jour férié | Chaîne vide, NUL seul |
+| VALEUR | Valeur | Chaîne vide, NUL seul |
+
+## Synthèse du schéma courant
+
+| Table | Nombre de rubriques |
+| --- | --- |
+| ENTREE_JOURNAL | 14 |
+| JOUR_FERIE | 5 |
+| SEMAINE_COURS | 3 |
+| ENTREE_JOURNAL_DOC_JOINT | 8 |
+| PROJET | 4 |
+| ENTREE_COFFRE_FORT | 3 |
+| **Total** | **37** |
+
+## Évolution des WDD du répertoire d'analyse
+
+Cette table inclut le WDD courant du répertoire `.ana`, les générations historiques et `LASTGEN`. Une autre copie courante se trouve directement dans le dossier du projet, d'où 27 WDD au total dans le corpus.
+
+La colonne « génération » provient de l'enregistrement interne, pas du seul nom de dossier. Les tailles encodées et reconstruites ne doivent pas être comparées comme s'il s'agissait de la même représentation.
+
+| Dossier | Génération interne | Fichier, octets | Schéma `H`, octets | Tables | Rubriques |
+| --- | --- | --- | --- | --- | --- |
+| ANA00001 | 1 | 1279 | 2152 | 1 | 3 |
+| ANA00002 | 2 | 1374 | 2433 | 1 | 4 |
+| ANA00003 | 3 | 1543 | 2783 | 1 | 5 |
+| ANA00004 | 4 | 1540 | 2783 | 1 | 5 |
+| ANA00005 | 5 | 1540 | 2783 | 1 | 5 |
+| ANA00006 | 6 | 2390 | 5117 | 2 | 11 |
+| ANA00007 | 7 | 2941 | 6568 | 3 | 14 |
+| ANA00008 | 8 | 2995 | 6638 | 3 | 14 |
+| ANA00009 | 9 | 3154 | 6993 | 3 | 15 |
+| ANA00010 | 10 | 3280 | 7320 | 3 | 16 |
+| ANA00011 | 11 | 3441 | 7718 | 3 | 17 |
+| ANA00012 | 12 | 3445 | 7744 | 3 | 17 |
+| ANA00013 | 13 | 4333 | 10340 | 4 | 23 |
+| ANA00014 | 14 | 4341 | 10340 | 4 | 23 |
+| ANA00015 | 15 | 4462 | 10698 | 4 | 24 |
+| ANA00016 | 16 | 4480 | 10730 | 4 | 24 |
+| ANA00017 | 17 | 4912 | 12072 | 5 | 27 |
+| ANA00018 | 18 | 5014 | 12409 | 5 | 28 |
+| ANA00019 | 19 | 5127 | 12728 | 5 | 29 |
+| ANA00020 | 20 | 5592 | 14206 | 6 | 32 |
+| ANA00021 | 21 | 5699 | 14499 | 6 | 33 |
+| ANA00022 | 22 | 5842 | 14838 | 6 | 34 |
+| ANA00023 | 23 | 6089 | 15517 | 6 | 36 |
+| ANA00024 | 24 | 6164 | 15821 | 6 | 37 |
+| LASTGEN | 23 | 6089 | 15517 | 6 | 36 |
+| SuperNoteExtra.ana | 24 | 6164 | 15821 | 6 | 37 |
+
+## Distinction entre valeur et sémantique
+
+Le lecteur restitue les libellés et masques tels qu’ils sont stockés ; les valeurs de cette annexe illustrent leur représentation dans le projet fictif. Un masque `999` ne suffit pas à définir toutes les contraintes d'une rubrique. Un flag à 1 n'est pas renommé « clé primaire » sans preuve sur le champ et son contexte.
+
+Les champs `COULEUR` et `ICONE`, par exemple, portent le code interne 26 et le code public 22 dans la référence JSON. Cette correspondance est vérifiée pour ces rubriques ; elle ne remplace pas une spécification exhaustive de tous les types et combinaisons de flags WINDEV.

@@ -1,0 +1,163 @@
+---
+id: 08-wdw-fenetre
+title: "Format WDW : fenêtre"
+sidebar_label: "Format WDW : fenêtre"
+sidebar_position: 9
+description: "Structures binaires WINDEV illustrées par deux logiciels fictifs : SuperNoteExtra, pour la prise de note, et SuperMailExtra, client mail."
+---
+
+> **Exemples fictifs.** Les noms, chemins et identifiants applicatifs sont anonymisés. Les cartes de sections sont des profils numériques de référence ; les extraits textuels sont des exemples autonomes. Voir les [conventions des exemples](./01-conventions.mdx#exemples-fictifs).
+
+## Identification et portée
+
+| Propriété | Valeur |
+| --- | --- |
+| Extension | `.wdw` |
+| Type PCS | `0x00000002` |
+| Version du produit étudiée | 31 |
+| Sections | 12 |
+| Descripteur racine des propriétés observé | 610, soit `0x00000262` |
+
+Le corpus comprend 22 fenêtres applicatives et six gabarits. Toutes les fenêtres de ce corpus sont enregistrées en version 31 ; une équivalence complète avec des fenêtres version 28 n'est pas validée.
+
+## Carte complète de FEN_Journal.wdw
+
+Taille : 168 298 octets. Début des sections : 241, soit `0x00F1`.
+
+| Section | Tag (`u8`) | Début dans le fichier | Longueur (`u32`) | Blocs décodés | Commentaire |
+| --- | --- | --- | --- | --- | --- |
+| 0 | `0x00` | `0x00F1` (241) | 143 | Aucun bloc LZW identifié | Identité de la fenêtre |
+| 1 | `0x11` | `0x0180` (384) | 28075 | +28 → 155383 octets | Buffer de propriétés graphiques |
+| 2 | `0x02` | `0x6F2B` (28459) | 47024 | +4 → 288361 octets | Code et événements WLangage |
+| 3 | `0x00` | `0x126DB` (75483) | 7354 | +0 → 27554 octets | Buffer auxiliaire LZW ; paramètres partiellement lisibles |
+| 4 | `0x08` | `0x14395` (82837) | 84326 | +0 → 3540482 octets | Grand buffer auxiliaire LZW ; contenu non entièrement interprété |
+| 5 | `0x13` | `0x28CFB` (167163) | 62 | Aucun bloc LZW identifié | Métadonnées auxiliaires |
+| 6 | `0x00` | `0x28D39` (167225) | 0 | Aucun bloc LZW identifié | Vide |
+| 7 | `0x00` | `0x28D39` (167225) | 0 | Aucun bloc LZW identifié | Vide |
+| 8 | `0x19` | `0x28D39` (167225) | 1012 | +24 → 2737 octets | Données auxiliaires ; LZW éventuel à +24 |
+| 9 | `0x0A` | `0x2912D` (168237) | 36 | +12 → 24 octets | Petit buffer auxiliaire, LZW à +12 |
+| 10 | `0x00` | `0x29151` (168273) | 0 | Aucun bloc LZW identifié | Vide |
+| 11 | `0x06` | `0x29151` (168273) | 25 | +0 → 35 octets | Petit buffer auxiliaire LZW |
+
+## Section 0 : identité
+
+Comme dans le WDP et le WDG, la section 0 commence par un mot brut de quatre octets égal à 7, puis une chaîne encadrée de nom à +4. Des métadonnées et un chemin de projet suivent.
+
+Pour `FEN_Journal`, la section commence à 241 et la chaîne de nom à 245.
+
+## Section 1 : enveloppe des propriétés
+
+Dans FEN_Journal, l'enveloppe LZW commence à +28. Les 28 octets précédents ne sont pas entièrement interprétés :
+
+| Offset section | Taille | Type | Octets / valeur observée | Commentaire |
+| --- | --- | --- | --- | --- |
+| `+0` | 4 | `octets[4]` | `00 00 00 00` | Sens inconnu |
+| `+4` | 4 | `octets[4]` | `01 00 01 00` | Deux mots possibles ; sens non certifié |
+| `+8` | 4 | `u32` | 28 063 | Égal à la taille de section moins 12 |
+| `+12` | 4 | `u32` brut | 2 | Mot auxiliaire |
+| `+16` | 4 | `octets[4]` | `07 00 06 00` | Mots internes possibles ; sens inconnu |
+| `+20` | 4 | `u32` brut | 7 275 | Sens inconnu |
+| `+24` | 4 | `u32` brut | 1 | Sens inconnu |
+| `+28` | 11 | En-tête LZW | Méthode 04, `L = 28 036`, `U = 155 383` | Vérifié |
+| `+39` | 28 036 | Flux LZW | Données encodées | Produit le buffer `D` de propriétés |
+
+La décompression produit 155 383 octets. Le début du flux encodé est `F[423]`, soit `384 + 28 + 11`.
+
+## Descripteur racine 610
+
+Soit `C_n` la taille de la chaîne encadrée de nom, qui commence à `D[8]`, et `R = 8 + C_n` la position juste après cette chaîne :
+
+| Offset dans `D` | Taille | Type | Champ / commentaire | Statut |
+| --- | --- | --- | --- | --- |
+| `+0` | 4 | `u32` brut | Valeur 0 dans l'exemple | Observé |
+| `+4` | 4 | `u32` | Descripteur 610 | Vérifié pour les racines étudiées |
+| `+8` | `C_n` | Chaîne encadrée | Nom de la fenêtre | Vérifié |
+| `R + 0` | 8 | `octets[8]` | Identifiant brut | Sens précis inconnu |
+| `R + 8` | 4 | `i32`, vue retenue | X | Vérifié sur les valeurs observées |
+| `R + 12` | 4 | `i32`, vue retenue | Y | Vérifié sur les valeurs observées |
+| `R + 16` | 4 | `i32`, vue retenue | Largeur | Vérifié |
+| `R + 20` | 4 | `i32`, vue retenue | Hauteur | Vérifié |
+| `R + 24` | 4 | `u32` brut | Deuxième valeur de largeur dans les exemples | Observé ; rôle exact non établi |
+| `R + 28` | 4 | `u32` brut | Deuxième valeur de hauteur dans les exemples | Observé ; rôle exact non établi |
+| `[R + 32, R + 571)` | 539 | `octets[539]` | Paramètres graphiques et auxiliaires non entièrement décodés | Inconnu |
+| `R + 571` | Variable | Chaîne encadrée ou sentinelle 00 | Titre de la fenêtre | Vérifié pour cette révision |
+| Après le titre | Variable | Chaînes et structures diverses | Icône, groupes et objets éventuels ; frontières complètes inconnues | Partiel |
+
+Cette carte n'est appliquée que si le descripteur vaut 610 et que le nom racine correspond à la fenêtre. Le mot 610 ne doit pas être assimilé à un nombre de champs.
+
+## Exemple chiffré : FEN_Journal
+
+| Champ | Offset décodé | Taille | Valeur |
+| --- | --- | --- | --- |
+| Nom encadré | 8 | 24 | `FEN_Journal` |
+| Identifiant brut | 32 | 8 | `11 22 33 44 55 66 77 88` (valeur fictive) |
+| X | 40 | 4 | 0 |
+| Y | 44 | 4 | 0 |
+| Largeur | 48 | 4 | 1 177 |
+| Hauteur | 52 | 4 | 752 |
+| Copie de largeur observée | 56 | 4 | 1 177 |
+| Copie de hauteur observée | 60 | 4 | 752 |
+| Titre | 603 | 33 | `Notes SuperNoteExtra` |
+
+Les dimensions sont celles décrites dans le buffer ; leur relation avec les unités physiques d'un écran, le facteur DPI et la taille de la zone cliente n'est pas entièrement certifiée.
+
+### Comparaison avec FEN_Rapport1
+
+| Champ | FEN_Journal | FEN_Rapport1 |
+| --- | --- | --- |
+| Taille du nom encadré | 24 | 25 |
+| Fin du nom `R` | 32 | 33 |
+| Position du champ largeur | 48 | 49 |
+| Largeur | 1 177 | 354 |
+| Hauteur | 752 | 126 |
+| Position du titre | 603 | 604 |
+| Titre | `Notes SuperNoteExtra` | `Rapport1` |
+
+Les offsets varient dès que la longueur du nom varie. Recopier 48 comme position universelle de la largeur serait donc incorrect.
+
+## Chaînes secondaires et contrôles
+
+Quelques chaînes fictives illustrant le début du buffer de propriétés. Le titre `Notes SuperNoteExtra` occupe 33 octets encadrés ; les chemins utilisent `D:\Projet\` pour conserver les tailles indiquées :
+
+| Offset dans `D` | Taille totale | Valeur | Commentaire |
+| --- | --- | --- | --- |
+| `0x0008` (8) | 24 | FEN_Journal | Chaîne encadrée ; rôle déterminé par le contexte |
+| `0x025B` (603) | 33 | Notes SuperNoteExtra | Chaîne encadrée ; rôle déterminé par le contexte |
+| `0x027C` (636) | 49 | D:\Projet\SuperNoteExtra\noteapp.ico | Chaîne encadrée ; rôle déterminé par le contexte |
+| `0x02DE` (734) | 39 | GR_JourActuel<br />GR_Passé<br /> | Chaîne encadrée ; rôle déterminé par le contexte |
+| `0x0374` (884) | 53 | D:\Projet\SuperNoteExtra\FEN_Journal.wdw | Chaîne encadrée ; rôle déterminé par le contexte |
+| `0x0431` (1073) | 14 | ? | Chaîne encadrée ; rôle déterminé par le contexte |
+| `0x0493` (1171) | 18 | _Menu | Chaîne encadrée ; rôle déterminé par le contexte |
+| `0x07A4` (1956) | 26 | MENU_SansNom1 | Chaîne encadrée ; rôle déterminé par le contexte |
+| `0x0AB4` (2740) | 41 | OPT_Marquer_comme_en_attente | Chaîne encadrée ; rôle déterminé par le contexte |
+| `0x0AE9` (2793) | 37 | Marquer comme en attente | Chaîne encadrée ; rôle déterminé par le contexte |
+| `0x0B0E` (2830) | 49 | D:\Projet\SuperNoteExtra\attente.png | Chaîne encadrée ; rôle déterminé par le contexte |
+| `0x0E23` (3619) | 33 | OPT_Marquer_en_cours | Chaîne encadrée ; rôle déterminé par le contexte |
+
+Les options de menu possèdent notamment des noms et des libellés encadrés. Exemple : `OPT_Marquer_comme_en_attente`, puis `Marquer comme en attente`, puis un chemin d'image. Cette proximité est observée ; elle ne constitue pas une description universelle de tous les contrôles.
+
+## Inférence des catégories d'éléments
+
+| Préfixe / identifiant | Catégorie suggérée | Niveau de certitude |
+| --- | --- | --- |
+| `BTN_`, `BT_` | Bouton | Inféré |
+| `SAI_` | Saisie | Inféré |
+| `LIB_` | Libellé | Inféré |
+| `TABLE_` | Table graphique | Inféré |
+| `COL_` | Colonne | Inféré |
+| `IMG_` | Image | Inféré |
+| `OPT_` | Option de menu | Inféré, corroboré par les exemples |
+| `MENU_`, `_Menu` | Menu | Inféré |
+| `GR_` | Groupe | Inféré |
+
+Les noms peuvent être modifiés par le développeur. Un contrôle portant un nom sans ces préfixes peut exister ; un nom ressemblant à un préfixe n'est pas une preuve de type. La hiérarchie parent/enfant et toutes les propriétés de chaque contrôle ne sont pas décodées.
+
+## Code et données auxiliaires
+
+La section 2 produit 288 361 octets de code et métadonnées dans FEN_Journal. Les propriétaires d'événements permettent de retrouver certains noms de contrôles et procédures locales ; voir le [chapitre WLangage](./06-code-wlangage.mdx).
+
+Les sections 3 et 4 sont décompressées, mais toutes leurs structures internes ne sont pas interprétées. La section 4 produit notamment 3 540 482 octets. Cette grande taille ne permet pas, à elle seule, de conclure que tout ce buffer est un bitmap ou une image particulière.
+
+## Limites
+
+Le titre et les dimensions du descripteur 610 sont identifiés. Les coordonnées des champs individuels, les styles, les liaisons de données, les images, les plans et la hiérarchie complète restent à cartographier. Les régions inconnues sont conservées dans les buffers décodés.

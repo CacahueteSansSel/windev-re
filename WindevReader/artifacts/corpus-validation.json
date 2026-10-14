@@ -1,0 +1,2562 @@
+[
+  {
+    "File": "bridge/bridge.cpl/EXPRESS/00000000/bridge.wdp",
+    "Success": true,
+    "Summary": {
+      "Name": "bridge",
+      "Kind": "Project",
+      "WindevVersion": 28,
+      "ProductBuild": "05F280095g",
+      "Sections": 2,
+      "DecodedBlocks": 0,
+      "SourceBlocks": 0,
+      "SourceLines": 0,
+      "Tables": null,
+      "Fields": null,
+      "Elements": null,
+      "References": 0,
+      "Diagnostics": [
+        {
+          "Code": "OpaqueProjectSettings",
+          "Severity": "Warning",
+          "Message": "Project settings in section 1 are preserved as bytes; their encoding is not decoded yet.",
+          "SectionIndex": 1
+        },
+        {
+          "Code": "NoConfigurationDirectory",
+          "Severity": "Warning",
+          "Message": "No supported build configuration directory was found (possibly a compilation cache).",
+          "SectionIndex": null
+        }
+      ]
+    }
+  },
+  {
+    "File": "bridge/bridge.wdp",
+    "Success": true,
+    "Summary": {
+      "Name": "bridge",
+      "Kind": "Project",
+      "WindevVersion": 28,
+      "ProductBuild": "05F280095g",
+      "Sections": 20,
+      "DecodedBlocks": 6,
+      "SourceBlocks": 18,
+      "SourceLines": 51,
+      "Tables": null,
+      "Fields": null,
+      "Elements": null,
+      "References": 2,
+      "Diagnostics": [
+        {
+          "Code": "OpaqueProjectSettings",
+          "Severity": "Warning",
+          "Message": "Project settings in section 1 are preserved as bytes; their encoding is not decoded yet.",
+          "SectionIndex": 1
+        }
+      ]
+    }
+  },
+  {
+    "File": "bridge/Proc\u00E9duresGlobales.wdg",
+    "Success": true,
+    "Summary": {
+      "Name": "Proc\u00E9duresGlobales",
+      "Kind": "GlobalProcedures",
+      "WindevVersion": 28,
+      "ProductBuild": "05F280095g",
+      "Sections": 9,
+      "DecodedBlocks": 1,
+      "SourceBlocks": 4,
+      "SourceLines": 134,
+      "Tables": null,
+      "Fields": null,
+      "Elements": null,
+      "References": null,
+      "Diagnostics": [
+        {
+          "Code": "PartialCodeMetadata",
+          "Severity": "Warning",
+          "Message": "Source lines and numeric event identifiers are decoded; compiled code and editor metadata remain binary.",
+          "SectionIndex": 2
+        }
+      ]
+    }
+  },
+  {
+    "File": "Origamide/ETAT_JOURNAL.wde",
+    "Success": true,
+    "Summary": {
+      "Name": "ETAT_JOURNAL",
+      "Kind": "Report",
+      "WindevVersion": 31,
+      "ProductBuild": "01A312018 ",
+      "Sections": 13,
+      "DecodedBlocks": 6,
+      "SourceBlocks": 69,
+      "SourceLines": 216,
+      "Tables": null,
+      "Fields": null,
+      "Elements": 19,
+      "References": null,
+      "Diagnostics": [
+        {
+          "Code": "PartialReportSemantics",
+          "Severity": "Warning",
+          "Message": "Report property buffers, named elements and source events are accessible. Pagination, styles and data-source bindings remain binary.",
+          "SectionIndex": 1
+        }
+      ]
+    }
+  },
+  {
+    "File": "Origamide/ETAT_Test.wde",
+    "Success": true,
+    "Summary": {
+      "Name": "ETAT_Test",
+      "Kind": "Report",
+      "WindevVersion": 31,
+      "ProductBuild": "01A312018 ",
+      "Sections": 13,
+      "DecodedBlocks": 5,
+      "SourceBlocks": 34,
+      "SourceLines": 68,
+      "Tables": null,
+      "Fields": null,
+      "Elements": 8,
+      "References": null,
+      "Diagnostics": [
+        {
+          "Code": "PartialReportSemantics",
+          "Severity": "Warning",
+          "Message": "Report property buffers, named elements and source events are accessible. Pagination, styles and data-source bindings remain binary.",
+          "SectionIndex": 1
+        }
+      ]
+    }
+  },
+  {
+    "File": "Origamide/FEN_ChoixFicExterne.wdw",
+    "Success": true,
+    "Summary": {
+      "Name": "FEN_ChoixFicExterne",
+      "Kind": "Window",
+      "WindevVersion": 31,
+      "ProductBuild": "01A312018 ",
+      "Sections": 12,
+      "DecodedBlocks": 7,
+      "SourceBlocks": 19,
+      "SourceLines": 46,
+      "Tables": null,
+      "Fields": null,
+      "Elements": 5,
+      "References": null,
+      "Diagnostics": [
+        {
+          "Code": "PartialUiSemantics",
+          "Severity": "Warning",
+          "Message": "Property buffers and source events are decoded. Element kinds are inferred from names; layout/styles/bindings and hierarchy are not fully mapped.",
+          "SectionIndex": 1
+        }
+      ]
+    }
+  },
+  {
+    "File": "Origamide/FEN_Cloture.wdw",
+    "Success": true,
+    "Summary": {
+      "Name": "FEN_Cloture",
+      "Kind": "Window",
+      "WindevVersion": 31,
+      "ProductBuild": "01A312018 ",
+      "Sections": 12,
+      "DecodedBlocks": 7,
+      "SourceBlocks": 16,
+      "SourceLines": 39,
+      "Tables": null,
+      "Fields": null,
+      "Elements": 3,
+      "References": null,
+      "Diagnostics": [
+        {
+          "Code": "PartialUiSemantics",
+          "Severity": "Warning",
+          "Message": "Property buffers and source events are decoded. Element kinds are inferred from names; layout/styles/bindings and hierarchy are not fully mapped.",
+          "SectionIndex": 1
+        }
+      ]
+    }
+  },
+  {
+    "File": "Origamide/FEN_CoffreFort.wdw",
+    "Success": true,
+    "Summary": {
+      "Name": "FEN_CoffreFort",
+      "Kind": "Window",
+      "WindevVersion": 31,
+      "ProductBuild": "01A312018 ",
+      "Sections": 12,
+      "DecodedBlocks": 7,
+      "SourceBlocks": 51,
+      "SourceLines": 120,
+      "Tables": null,
+      "Fields": null,
+      "Elements": 8,
+      "References": null,
+      "Diagnostics": [
+        {
+          "Code": "PartialUiSemantics",
+          "Severity": "Warning",
+          "Message": "Property buffers and source events are decoded. Element kinds are inferred from names; layout/styles/bindings and hierarchy are not fully mapped.",
+          "SectionIndex": 1
+        }
+      ]
+    }
+  },
+  {
+    "File": "Origamide/FEN_Confirme.wdw",
+    "Success": true,
+    "Summary": {
+      "Name": "FEN_Confirme",
+      "Kind": "Window",
+      "WindevVersion": 31,
+      "ProductBuild": "01A312018 ",
+      "Sections": 12,
+      "DecodedBlocks": 7,
+      "SourceBlocks": 22,
+      "SourceLines": 52,
+      "Tables": null,
+      "Fields": null,
+      "Elements": 5,
+      "References": null,
+      "Diagnostics": [
+        {
+          "Code": "PartialUiSemantics",
+          "Severity": "Warning",
+          "Message": "Property buffers and source events are decoded. Element kinds are inferred from names; layout/styles/bindings and hierarchy are not fully mapped.",
+          "SectionIndex": 1
+        }
+      ]
+    }
+  },
+  {
+    "File": "Origamide/FEN_DeclareSemaineCours.wdw",
+    "Success": true,
+    "Summary": {
+      "Name": "FEN_DeclareSemaineCours",
+      "Kind": "Window",
+      "WindevVersion": 31,
+      "ProductBuild": "01A312018 ",
+      "Sections": 12,
+      "DecodedBlocks": 7,
+      "SourceBlocks": 26,
+      "SourceLines": 123,
+      "Tables": null,
+      "Fields": null,
+      "Elements": 6,
+      "References": null,
+      "Diagnostics": [
+        {
+          "Code": "PartialUiSemantics",
+          "Severity": "Warning",
+          "Message": "Property buffers and source events are decoded. Element kinds are inferred from names; layout/styles/bindings and hierarchy are not fully mapped.",
+          "SectionIndex": 1
+        }
+      ]
+    }
+  },
+  {
+    "File": "Origamide/FEN_EntreeJournal.wdw",
+    "Success": true,
+    "Summary": {
+      "Name": "FEN_EntreeJournal",
+      "Kind": "Window",
+      "WindevVersion": 31,
+      "ProductBuild": "01A312018 ",
+      "Sections": 12,
+      "DecodedBlocks": 7,
+      "SourceBlocks": 111,
+      "SourceLines": 530,
+      "Tables": null,
+      "Fields": null,
+      "Elements": 32,
+      "References": null,
+      "Diagnostics": [
+        {
+          "Code": "PartialUiSemantics",
+          "Severity": "Warning",
+          "Message": "Property buffers and source events are decoded. Element kinds are inferred from names; layout/styles/bindings and hierarchy are not fully mapped.",
+          "SectionIndex": 1
+        }
+      ]
+    }
+  },
+  {
+    "File": "Origamide/FEN_IA_SLOP.wdw",
+    "Success": true,
+    "Summary": {
+      "Name": "FEN_IA_SLOP",
+      "Kind": "Window",
+      "WindevVersion": 31,
+      "ProductBuild": "01A312018 ",
+      "Sections": 12,
+      "DecodedBlocks": 6,
+      "SourceBlocks": 10,
+      "SourceLines": 28,
+      "Tables": null,
+      "Fields": null,
+      "Elements": 2,
+      "References": null,
+      "Diagnostics": [
+        {
+          "Code": "PartialUiSemantics",
+          "Severity": "Warning",
+          "Message": "Property buffers and source events are decoded. Element kinds are inferred from names; layout/styles/bindings and hierarchy are not fully mapped.",
+          "SectionIndex": 1
+        }
+      ]
+    }
+  },
+  {
+    "File": "Origamide/FEN_IA.wdw",
+    "Success": true,
+    "Summary": {
+      "Name": "FEN_IA",
+      "Kind": "Window",
+      "WindevVersion": 31,
+      "ProductBuild": "01A312018 ",
+      "Sections": 12,
+      "DecodedBlocks": 7,
+      "SourceBlocks": 28,
+      "SourceLines": 126,
+      "Tables": null,
+      "Fields": null,
+      "Elements": 8,
+      "References": null,
+      "Diagnostics": [
+        {
+          "Code": "PartialUiSemantics",
+          "Severity": "Warning",
+          "Message": "Property buffers and source events are decoded. Element kinds are inferred from names; layout/styles/bindings and hierarchy are not fully mapped.",
+          "SectionIndex": 1
+        }
+      ]
+    }
+  },
+  {
+    "File": "Origamide/FEN_ImgPreview.wdw",
+    "Success": true,
+    "Summary": {
+      "Name": "FEN_ImgPreview",
+      "Kind": "Window",
+      "WindevVersion": 31,
+      "ProductBuild": "01A312018 ",
+      "Sections": 12,
+      "DecodedBlocks": 7,
+      "SourceBlocks": 22,
+      "SourceLines": 56,
+      "Tables": null,
+      "Fields": null,
+      "Elements": 3,
+      "References": null,
+      "Diagnostics": [
+        {
+          "Code": "PartialUiSemantics",
+          "Severity": "Warning",
+          "Message": "Property buffers and source events are decoded. Element kinds are inferred from names; layout/styles/bindings and hierarchy are not fully mapped.",
+          "SectionIndex": 1
+        }
+      ]
+    }
+  },
+  {
+    "File": "Origamide/FEN_Journal.wdw",
+    "Success": true,
+    "Summary": {
+      "Name": "FEN_Journal",
+      "Kind": "Window",
+      "WindevVersion": 31,
+      "ProductBuild": "01A312018 ",
+      "Sections": 12,
+      "DecodedBlocks": 7,
+      "SourceBlocks": 283,
+      "SourceLines": 1574,
+      "Tables": null,
+      "Fields": null,
+      "Elements": 86,
+      "References": null,
+      "Diagnostics": [
+        {
+          "Code": "PartialUiSemantics",
+          "Severity": "Warning",
+          "Message": "Property buffers and source events are decoded. Element kinds are inferred from names; layout/styles/bindings and hierarchy are not fully mapped.",
+          "SectionIndex": 1
+        }
+      ]
+    }
+  },
+  {
+    "File": "Origamide/FEN_JoursFeries.wdw",
+    "Success": true,
+    "Summary": {
+      "Name": "FEN_JoursFeries",
+      "Kind": "Window",
+      "WindevVersion": 31,
+      "ProductBuild": "01A312018 ",
+      "Sections": 12,
+      "DecodedBlocks": 7,
+      "SourceBlocks": 57,
+      "SourceLines": 166,
+      "Tables": null,
+      "Fields": null,
+      "Elements": 8,
+      "References": null,
+      "Diagnostics": [
+        {
+          "Code": "PartialUiSemantics",
+          "Severity": "Warning",
+          "Message": "Property buffers and source events are decoded. Element kinds are inferred from names; layout/styles/bindings and hierarchy are not fully mapped.",
+          "SectionIndex": 1
+        }
+      ]
+    }
+  },
+  {
+    "File": "Origamide/FEN_Maintenance.wdw",
+    "Success": true,
+    "Summary": {
+      "Name": "FEN_Maintenance",
+      "Kind": "Window",
+      "WindevVersion": 31,
+      "ProductBuild": "01A312018 ",
+      "Sections": 12,
+      "DecodedBlocks": 7,
+      "SourceBlocks": 28,
+      "SourceLines": 79,
+      "Tables": null,
+      "Fields": null,
+      "Elements": 6,
+      "References": null,
+      "Diagnostics": [
+        {
+          "Code": "PartialUiSemantics",
+          "Severity": "Warning",
+          "Message": "Property buffers and source events are decoded. Element kinds are inferred from names; layout/styles/bindings and hierarchy are not fully mapped.",
+          "SectionIndex": 1
+        }
+      ]
+    }
+  },
+  {
+    "File": "Origamide/FEN_Markdown.wdw",
+    "Success": true,
+    "Summary": {
+      "Name": "FEN_Markdown",
+      "Kind": "Window",
+      "WindevVersion": 31,
+      "ProductBuild": "01A312018 ",
+      "Sections": 12,
+      "DecodedBlocks": 7,
+      "SourceBlocks": 23,
+      "SourceLines": 55,
+      "Tables": null,
+      "Fields": null,
+      "Elements": 4,
+      "References": null,
+      "Diagnostics": [
+        {
+          "Code": "PartialUiSemantics",
+          "Severity": "Warning",
+          "Message": "Property buffers and source events are decoded. Element kinds are inferred from names; layout/styles/bindings and hierarchy are not fully mapped.",
+          "SectionIndex": 1
+        }
+      ]
+    }
+  },
+  {
+    "File": "Origamide/FEN_Parametres.wdw",
+    "Success": true,
+    "Summary": {
+      "Name": "FEN_Parametres",
+      "Kind": "Window",
+      "WindevVersion": 31,
+      "ProductBuild": "01A312018 ",
+      "Sections": 12,
+      "DecodedBlocks": 7,
+      "SourceBlocks": 63,
+      "SourceLines": 195,
+      "Tables": null,
+      "Fields": null,
+      "Elements": 17,
+      "References": null,
+      "Diagnostics": [
+        {
+          "Code": "PartialUiSemantics",
+          "Severity": "Warning",
+          "Message": "Property buffers and source events are decoded. Element kinds are inferred from names; layout/styles/bindings and hierarchy are not fully mapped.",
+          "SectionIndex": 1
+        }
+      ]
+    }
+  },
+  {
+    "File": "Origamide/FEN_Projets.wdw",
+    "Success": true,
+    "Summary": {
+      "Name": "FEN_Projets",
+      "Kind": "Window",
+      "WindevVersion": 31,
+      "ProductBuild": "01A312018 ",
+      "Sections": 12,
+      "DecodedBlocks": 7,
+      "SourceBlocks": 114,
+      "SourceLines": 246,
+      "Tables": null,
+      "Fields": null,
+      "Elements": 18,
+      "References": null,
+      "Diagnostics": [
+        {
+          "Code": "PartialUiSemantics",
+          "Severity": "Warning",
+          "Message": "Property buffers and source events are decoded. Element kinds are inferred from names; layout/styles/bindings and hierarchy are not fully mapped.",
+          "SectionIndex": 1
+        }
+      ]
+    }
+  },
+  {
+    "File": "Origamide/FEN_Rappel.wdw",
+    "Success": true,
+    "Summary": {
+      "Name": "FEN_Rappel",
+      "Kind": "Window",
+      "WindevVersion": 31,
+      "ProductBuild": "01A312018 ",
+      "Sections": 12,
+      "DecodedBlocks": 7,
+      "SourceBlocks": 20,
+      "SourceLines": 49,
+      "Tables": null,
+      "Fields": null,
+      "Elements": 5,
+      "References": null,
+      "Diagnostics": [
+        {
+          "Code": "PartialUiSemantics",
+          "Severity": "Warning",
+          "Message": "Property buffers and source events are decoded. Element kinds are inferred from names; layout/styles/bindings and hierarchy are not fully mapped.",
+          "SectionIndex": 1
+        }
+      ]
+    }
+  },
+  {
+    "File": "Origamide/FEN_Rapport.wdw",
+    "Success": true,
+    "Summary": {
+      "Name": "FEN_Rapport",
+      "Kind": "Window",
+      "WindevVersion": 31,
+      "ProductBuild": "01A312018 ",
+      "Sections": 12,
+      "DecodedBlocks": 7,
+      "SourceBlocks": 224,
+      "SourceLines": 681,
+      "Tables": null,
+      "Fields": null,
+      "Elements": 40,
+      "References": null,
+      "Diagnostics": [
+        {
+          "Code": "PartialUiSemantics",
+          "Severity": "Warning",
+          "Message": "Property buffers and source events are decoded. Element kinds are inferred from names; layout/styles/bindings and hierarchy are not fully mapped.",
+          "SectionIndex": 1
+        }
+      ]
+    }
+  },
+  {
+    "File": "Origamide/FEN_Rapport1.wdw",
+    "Success": true,
+    "Summary": {
+      "Name": "FEN_Rapport1",
+      "Kind": "Window",
+      "WindevVersion": 31,
+      "ProductBuild": "01A312018 ",
+      "Sections": 12,
+      "DecodedBlocks": 6,
+      "SourceBlocks": 10,
+      "SourceLines": 55,
+      "Tables": null,
+      "Fields": null,
+      "Elements": 1,
+      "References": null,
+      "Diagnostics": [
+        {
+          "Code": "PartialUiSemantics",
+          "Severity": "Warning",
+          "Message": "Property buffers and source events are decoded. Element kinds are inferred from names; layout/styles/bindings and hierarchy are not fully mapped.",
+          "SectionIndex": 1
+        }
+      ]
+    }
+  },
+  {
+    "File": "Origamide/FEN_Recherche.wdw",
+    "Success": true,
+    "Summary": {
+      "Name": "FEN_Recherche",
+      "Kind": "Window",
+      "WindevVersion": 31,
+      "ProductBuild": "01A312018 ",
+      "Sections": 12,
+      "DecodedBlocks": 7,
+      "SourceBlocks": 135,
+      "SourceLines": 396,
+      "Tables": null,
+      "Fields": null,
+      "Elements": 24,
+      "References": null,
+      "Diagnostics": [
+        {
+          "Code": "PartialUiSemantics",
+          "Severity": "Warning",
+          "Message": "Property buffers and source events are decoded. Element kinds are inferred from names; layout/styles/bindings and hierarchy are not fully mapped.",
+          "SectionIndex": 1
+        }
+      ]
+    }
+  },
+  {
+    "File": "Origamide/FEN_RecherchePJ.wdw",
+    "Success": true,
+    "Summary": {
+      "Name": "FEN_RecherchePJ",
+      "Kind": "Window",
+      "WindevVersion": 31,
+      "ProductBuild": "01A312018 ",
+      "Sections": 12,
+      "DecodedBlocks": 7,
+      "SourceBlocks": 80,
+      "SourceLines": 235,
+      "Tables": null,
+      "Fields": null,
+      "Elements": 12,
+      "References": null,
+      "Diagnostics": [
+        {
+          "Code": "PartialUiSemantics",
+          "Severity": "Warning",
+          "Message": "Property buffers and source events are decoded. Element kinds are inferred from names; layout/styles/bindings and hierarchy are not fully mapped.",
+          "SectionIndex": 1
+        }
+      ]
+    }
+  },
+  {
+    "File": "Origamide/FEN_TachesEnCours.wdw",
+    "Success": true,
+    "Summary": {
+      "Name": "FEN_TachesEnCours",
+      "Kind": "Window",
+      "WindevVersion": 31,
+      "ProductBuild": "01A312018 ",
+      "Sections": 12,
+      "DecodedBlocks": 7,
+      "SourceBlocks": 149,
+      "SourceLines": 598,
+      "Tables": null,
+      "Fields": null,
+      "Elements": 40,
+      "References": null,
+      "Diagnostics": [
+        {
+          "Code": "PartialUiSemantics",
+          "Severity": "Warning",
+          "Message": "Property buffers and source events are decoded. Element kinds are inferred from names; layout/styles/bindings and hierarchy are not fully mapped.",
+          "SectionIndex": 1
+        }
+      ]
+    }
+  },
+  {
+    "File": "Origamide/FEN_test.wdw",
+    "Success": true,
+    "Summary": {
+      "Name": "FEN_test",
+      "Kind": "Window",
+      "WindevVersion": 31,
+      "ProductBuild": "01A312018 ",
+      "Sections": 12,
+      "DecodedBlocks": 7,
+      "SourceBlocks": 16,
+      "SourceLines": 40,
+      "Tables": null,
+      "Fields": null,
+      "Elements": 3,
+      "References": null,
+      "Diagnostics": [
+        {
+          "Code": "PartialUiSemantics",
+          "Severity": "Warning",
+          "Message": "Property buffers and source events are decoded. Element kinds are inferred from names; layout/styles/bindings and hierarchy are not fully mapped.",
+          "SectionIndex": 1
+        }
+      ]
+    }
+  },
+  {
+    "File": "Origamide/Origamide.ana/ANA00001/Origamide.wda",
+    "Success": true,
+    "Summary": {
+      "Name": "Origamide",
+      "Kind": "AnalysisSource",
+      "WindevVersion": 31,
+      "ProductBuild": "01A312018 ",
+      "Sections": 4,
+      "DecodedBlocks": 1,
+      "SourceBlocks": 0,
+      "SourceLines": 0,
+      "Tables": null,
+      "Fields": null,
+      "Elements": null,
+      "References": null,
+      "Diagnostics": [
+        {
+          "Code": "LowLevelAnalysisSource",
+          "Severity": "Warning",
+          "Message": ".wda exposes decompressed blocks and strings. Use WddWindevAnalysis for typed tables and fields.",
+          "SectionIndex": null
+        }
+      ]
+    }
+  },
+  {
+    "File": "Origamide/Origamide.ana/ANA00001/Origamide.wdd",
+    "Success": true,
+    "Summary": {
+      "Name": "Origamide",
+      "Kind": "Analysis",
+      "WindevVersion": 31,
+      "ProductBuild": "01A312018 ",
+      "Sections": 2,
+      "DecodedBlocks": 1,
+      "SourceBlocks": 0,
+      "SourceLines": 0,
+      "Tables": 1,
+      "Fields": 3,
+      "Elements": null,
+      "References": null,
+      "Diagnostics": [
+        {
+          "Code": "PartialSchemaProperties",
+          "Severity": "Warning",
+          "Message": "Table and field definitions are decoded. Key rules, defaults, connections and remaining flags retain their raw representation.",
+          "SectionIndex": null
+        }
+      ]
+    }
+  },
+  {
+    "File": "Origamide/Origamide.ana/ANA00002/Origamide.wda",
+    "Success": true,
+    "Summary": {
+      "Name": "Origamide",
+      "Kind": "AnalysisSource",
+      "WindevVersion": 31,
+      "ProductBuild": "01A312018 ",
+      "Sections": 4,
+      "DecodedBlocks": 1,
+      "SourceBlocks": 0,
+      "SourceLines": 0,
+      "Tables": null,
+      "Fields": null,
+      "Elements": null,
+      "References": null,
+      "Diagnostics": [
+        {
+          "Code": "LowLevelAnalysisSource",
+          "Severity": "Warning",
+          "Message": ".wda exposes decompressed blocks and strings. Use WddWindevAnalysis for typed tables and fields.",
+          "SectionIndex": null
+        }
+      ]
+    }
+  },
+  {
+    "File": "Origamide/Origamide.ana/ANA00002/Origamide.wdd",
+    "Success": true,
+    "Summary": {
+      "Name": "Origamide",
+      "Kind": "Analysis",
+      "WindevVersion": 31,
+      "ProductBuild": "01A312018 ",
+      "Sections": 2,
+      "DecodedBlocks": 1,
+      "SourceBlocks": 0,
+      "SourceLines": 0,
+      "Tables": 1,
+      "Fields": 4,
+      "Elements": null,
+      "References": null,
+      "Diagnostics": [
+        {
+          "Code": "PartialSchemaProperties",
+          "Severity": "Warning",
+          "Message": "Table and field definitions are decoded. Key rules, defaults, connections and remaining flags retain their raw representation.",
+          "SectionIndex": null
+        }
+      ]
+    }
+  },
+  {
+    "File": "Origamide/Origamide.ana/ANA00003/Origamide.wda",
+    "Success": true,
+    "Summary": {
+      "Name": "Origamide",
+      "Kind": "AnalysisSource",
+      "WindevVersion": 31,
+      "ProductBuild": "01A312018 ",
+      "Sections": 4,
+      "DecodedBlocks": 1,
+      "SourceBlocks": 0,
+      "SourceLines": 0,
+      "Tables": null,
+      "Fields": null,
+      "Elements": null,
+      "References": null,
+      "Diagnostics": [
+        {
+          "Code": "LowLevelAnalysisSource",
+          "Severity": "Warning",
+          "Message": ".wda exposes decompressed blocks and strings. Use WddWindevAnalysis for typed tables and fields.",
+          "SectionIndex": null
+        }
+      ]
+    }
+  },
+  {
+    "File": "Origamide/Origamide.ana/ANA00003/Origamide.wdd",
+    "Success": true,
+    "Summary": {
+      "Name": "Origamide",
+      "Kind": "Analysis",
+      "WindevVersion": 31,
+      "ProductBuild": "01A312018 ",
+      "Sections": 2,
+      "DecodedBlocks": 1,
+      "SourceBlocks": 0,
+      "SourceLines": 0,
+      "Tables": 1,
+      "Fields": 5,
+      "Elements": null,
+      "References": null,
+      "Diagnostics": [
+        {
+          "Code": "PartialSchemaProperties",
+          "Severity": "Warning",
+          "Message": "Table and field definitions are decoded. Key rules, defaults, connections and remaining flags retain their raw representation.",
+          "SectionIndex": null
+        }
+      ]
+    }
+  },
+  {
+    "File": "Origamide/Origamide.ana/ANA00004/Origamide.wda",
+    "Success": true,
+    "Summary": {
+      "Name": "Origamide",
+      "Kind": "AnalysisSource",
+      "WindevVersion": 31,
+      "ProductBuild": "01A312018 ",
+      "Sections": 4,
+      "DecodedBlocks": 1,
+      "SourceBlocks": 0,
+      "SourceLines": 0,
+      "Tables": null,
+      "Fields": null,
+      "Elements": null,
+      "References": null,
+      "Diagnostics": [
+        {
+          "Code": "LowLevelAnalysisSource",
+          "Severity": "Warning",
+          "Message": ".wda exposes decompressed blocks and strings. Use WddWindevAnalysis for typed tables and fields.",
+          "SectionIndex": null
+        }
+      ]
+    }
+  },
+  {
+    "File": "Origamide/Origamide.ana/ANA00004/Origamide.wdd",
+    "Success": true,
+    "Summary": {
+      "Name": "Origamide",
+      "Kind": "Analysis",
+      "WindevVersion": 31,
+      "ProductBuild": "01A312018 ",
+      "Sections": 2,
+      "DecodedBlocks": 1,
+      "SourceBlocks": 0,
+      "SourceLines": 0,
+      "Tables": 1,
+      "Fields": 5,
+      "Elements": null,
+      "References": null,
+      "Diagnostics": [
+        {
+          "Code": "PartialSchemaProperties",
+          "Severity": "Warning",
+          "Message": "Table and field definitions are decoded. Key rules, defaults, connections and remaining flags retain their raw representation.",
+          "SectionIndex": null
+        }
+      ]
+    }
+  },
+  {
+    "File": "Origamide/Origamide.ana/ANA00005/Origamide.wda",
+    "Success": true,
+    "Summary": {
+      "Name": "Origamide",
+      "Kind": "AnalysisSource",
+      "WindevVersion": 31,
+      "ProductBuild": "01A312018 ",
+      "Sections": 4,
+      "DecodedBlocks": 1,
+      "SourceBlocks": 0,
+      "SourceLines": 0,
+      "Tables": null,
+      "Fields": null,
+      "Elements": null,
+      "References": null,
+      "Diagnostics": [
+        {
+          "Code": "LowLevelAnalysisSource",
+          "Severity": "Warning",
+          "Message": ".wda exposes decompressed blocks and strings. Use WddWindevAnalysis for typed tables and fields.",
+          "SectionIndex": null
+        }
+      ]
+    }
+  },
+  {
+    "File": "Origamide/Origamide.ana/ANA00005/Origamide.wdd",
+    "Success": true,
+    "Summary": {
+      "Name": "Origamide",
+      "Kind": "Analysis",
+      "WindevVersion": 31,
+      "ProductBuild": "01A312018 ",
+      "Sections": 2,
+      "DecodedBlocks": 1,
+      "SourceBlocks": 0,
+      "SourceLines": 0,
+      "Tables": 1,
+      "Fields": 5,
+      "Elements": null,
+      "References": null,
+      "Diagnostics": [
+        {
+          "Code": "PartialSchemaProperties",
+          "Severity": "Warning",
+          "Message": "Table and field definitions are decoded. Key rules, defaults, connections and remaining flags retain their raw representation.",
+          "SectionIndex": null
+        }
+      ]
+    }
+  },
+  {
+    "File": "Origamide/Origamide.ana/ANA00006/Origamide.wda",
+    "Success": true,
+    "Summary": {
+      "Name": "Origamide",
+      "Kind": "AnalysisSource",
+      "WindevVersion": 31,
+      "ProductBuild": "01A312018 ",
+      "Sections": 4,
+      "DecodedBlocks": 1,
+      "SourceBlocks": 0,
+      "SourceLines": 0,
+      "Tables": null,
+      "Fields": null,
+      "Elements": null,
+      "References": null,
+      "Diagnostics": [
+        {
+          "Code": "LowLevelAnalysisSource",
+          "Severity": "Warning",
+          "Message": ".wda exposes decompressed blocks and strings. Use WddWindevAnalysis for typed tables and fields.",
+          "SectionIndex": null
+        }
+      ]
+    }
+  },
+  {
+    "File": "Origamide/Origamide.ana/ANA00006/Origamide.wdd",
+    "Success": true,
+    "Summary": {
+      "Name": "Origamide",
+      "Kind": "Analysis",
+      "WindevVersion": 31,
+      "ProductBuild": "01A312018 ",
+      "Sections": 2,
+      "DecodedBlocks": 1,
+      "SourceBlocks": 0,
+      "SourceLines": 0,
+      "Tables": 2,
+      "Fields": 11,
+      "Elements": null,
+      "References": null,
+      "Diagnostics": [
+        {
+          "Code": "PartialSchemaProperties",
+          "Severity": "Warning",
+          "Message": "Table and field definitions are decoded. Key rules, defaults, connections and remaining flags retain their raw representation.",
+          "SectionIndex": null
+        }
+      ]
+    }
+  },
+  {
+    "File": "Origamide/Origamide.ana/ANA00007/Origamide.wda",
+    "Success": true,
+    "Summary": {
+      "Name": "Origamide",
+      "Kind": "AnalysisSource",
+      "WindevVersion": 31,
+      "ProductBuild": "01A312018 ",
+      "Sections": 4,
+      "DecodedBlocks": 1,
+      "SourceBlocks": 0,
+      "SourceLines": 0,
+      "Tables": null,
+      "Fields": null,
+      "Elements": null,
+      "References": null,
+      "Diagnostics": [
+        {
+          "Code": "LowLevelAnalysisSource",
+          "Severity": "Warning",
+          "Message": ".wda exposes decompressed blocks and strings. Use WddWindevAnalysis for typed tables and fields.",
+          "SectionIndex": null
+        }
+      ]
+    }
+  },
+  {
+    "File": "Origamide/Origamide.ana/ANA00007/Origamide.wdd",
+    "Success": true,
+    "Summary": {
+      "Name": "Origamide",
+      "Kind": "Analysis",
+      "WindevVersion": 31,
+      "ProductBuild": "01A312018 ",
+      "Sections": 2,
+      "DecodedBlocks": 1,
+      "SourceBlocks": 0,
+      "SourceLines": 0,
+      "Tables": 3,
+      "Fields": 14,
+      "Elements": null,
+      "References": null,
+      "Diagnostics": [
+        {
+          "Code": "PartialSchemaProperties",
+          "Severity": "Warning",
+          "Message": "Table and field definitions are decoded. Key rules, defaults, connections and remaining flags retain their raw representation.",
+          "SectionIndex": null
+        }
+      ]
+    }
+  },
+  {
+    "File": "Origamide/Origamide.ana/ANA00008/Origamide.wda",
+    "Success": true,
+    "Summary": {
+      "Name": "Origamide",
+      "Kind": "AnalysisSource",
+      "WindevVersion": 31,
+      "ProductBuild": "01A312018 ",
+      "Sections": 4,
+      "DecodedBlocks": 1,
+      "SourceBlocks": 0,
+      "SourceLines": 0,
+      "Tables": null,
+      "Fields": null,
+      "Elements": null,
+      "References": null,
+      "Diagnostics": [
+        {
+          "Code": "LowLevelAnalysisSource",
+          "Severity": "Warning",
+          "Message": ".wda exposes decompressed blocks and strings. Use WddWindevAnalysis for typed tables and fields.",
+          "SectionIndex": null
+        }
+      ]
+    }
+  },
+  {
+    "File": "Origamide/Origamide.ana/ANA00008/Origamide.wdd",
+    "Success": true,
+    "Summary": {
+      "Name": "Origamide",
+      "Kind": "Analysis",
+      "WindevVersion": 31,
+      "ProductBuild": "01A312018 ",
+      "Sections": 2,
+      "DecodedBlocks": 1,
+      "SourceBlocks": 0,
+      "SourceLines": 0,
+      "Tables": 3,
+      "Fields": 14,
+      "Elements": null,
+      "References": null,
+      "Diagnostics": [
+        {
+          "Code": "PartialSchemaProperties",
+          "Severity": "Warning",
+          "Message": "Table and field definitions are decoded. Key rules, defaults, connections and remaining flags retain their raw representation.",
+          "SectionIndex": null
+        }
+      ]
+    }
+  },
+  {
+    "File": "Origamide/Origamide.ana/ANA00009/Origamide.wda",
+    "Success": true,
+    "Summary": {
+      "Name": "Origamide",
+      "Kind": "AnalysisSource",
+      "WindevVersion": 31,
+      "ProductBuild": "01A312018 ",
+      "Sections": 4,
+      "DecodedBlocks": 1,
+      "SourceBlocks": 0,
+      "SourceLines": 0,
+      "Tables": null,
+      "Fields": null,
+      "Elements": null,
+      "References": null,
+      "Diagnostics": [
+        {
+          "Code": "LowLevelAnalysisSource",
+          "Severity": "Warning",
+          "Message": ".wda exposes decompressed blocks and strings. Use WddWindevAnalysis for typed tables and fields.",
+          "SectionIndex": null
+        }
+      ]
+    }
+  },
+  {
+    "File": "Origamide/Origamide.ana/ANA00009/Origamide.wdd",
+    "Success": true,
+    "Summary": {
+      "Name": "Origamide",
+      "Kind": "Analysis",
+      "WindevVersion": 31,
+      "ProductBuild": "01A312018 ",
+      "Sections": 2,
+      "DecodedBlocks": 1,
+      "SourceBlocks": 0,
+      "SourceLines": 0,
+      "Tables": 3,
+      "Fields": 15,
+      "Elements": null,
+      "References": null,
+      "Diagnostics": [
+        {
+          "Code": "PartialSchemaProperties",
+          "Severity": "Warning",
+          "Message": "Table and field definitions are decoded. Key rules, defaults, connections and remaining flags retain their raw representation.",
+          "SectionIndex": null
+        }
+      ]
+    }
+  },
+  {
+    "File": "Origamide/Origamide.ana/ANA00010/Origamide.wda",
+    "Success": true,
+    "Summary": {
+      "Name": "Origamide",
+      "Kind": "AnalysisSource",
+      "WindevVersion": 31,
+      "ProductBuild": "01A312018 ",
+      "Sections": 4,
+      "DecodedBlocks": 1,
+      "SourceBlocks": 0,
+      "SourceLines": 0,
+      "Tables": null,
+      "Fields": null,
+      "Elements": null,
+      "References": null,
+      "Diagnostics": [
+        {
+          "Code": "LowLevelAnalysisSource",
+          "Severity": "Warning",
+          "Message": ".wda exposes decompressed blocks and strings. Use WddWindevAnalysis for typed tables and fields.",
+          "SectionIndex": null
+        }
+      ]
+    }
+  },
+  {
+    "File": "Origamide/Origamide.ana/ANA00010/Origamide.wdd",
+    "Success": true,
+    "Summary": {
+      "Name": "Origamide",
+      "Kind": "Analysis",
+      "WindevVersion": 31,
+      "ProductBuild": "01A312018 ",
+      "Sections": 2,
+      "DecodedBlocks": 1,
+      "SourceBlocks": 0,
+      "SourceLines": 0,
+      "Tables": 3,
+      "Fields": 16,
+      "Elements": null,
+      "References": null,
+      "Diagnostics": [
+        {
+          "Code": "PartialSchemaProperties",
+          "Severity": "Warning",
+          "Message": "Table and field definitions are decoded. Key rules, defaults, connections and remaining flags retain their raw representation.",
+          "SectionIndex": null
+        }
+      ]
+    }
+  },
+  {
+    "File": "Origamide/Origamide.ana/ANA00011/Origamide.wda",
+    "Success": true,
+    "Summary": {
+      "Name": "Origamide",
+      "Kind": "AnalysisSource",
+      "WindevVersion": 31,
+      "ProductBuild": "01A312018 ",
+      "Sections": 4,
+      "DecodedBlocks": 1,
+      "SourceBlocks": 0,
+      "SourceLines": 0,
+      "Tables": null,
+      "Fields": null,
+      "Elements": null,
+      "References": null,
+      "Diagnostics": [
+        {
+          "Code": "LowLevelAnalysisSource",
+          "Severity": "Warning",
+          "Message": ".wda exposes decompressed blocks and strings. Use WddWindevAnalysis for typed tables and fields.",
+          "SectionIndex": null
+        }
+      ]
+    }
+  },
+  {
+    "File": "Origamide/Origamide.ana/ANA00011/Origamide.wdd",
+    "Success": true,
+    "Summary": {
+      "Name": "Origamide",
+      "Kind": "Analysis",
+      "WindevVersion": 31,
+      "ProductBuild": "01A312018 ",
+      "Sections": 2,
+      "DecodedBlocks": 1,
+      "SourceBlocks": 0,
+      "SourceLines": 0,
+      "Tables": 3,
+      "Fields": 17,
+      "Elements": null,
+      "References": null,
+      "Diagnostics": [
+        {
+          "Code": "PartialSchemaProperties",
+          "Severity": "Warning",
+          "Message": "Table and field definitions are decoded. Key rules, defaults, connections and remaining flags retain their raw representation.",
+          "SectionIndex": null
+        }
+      ]
+    }
+  },
+  {
+    "File": "Origamide/Origamide.ana/ANA00012/Origamide.wda",
+    "Success": true,
+    "Summary": {
+      "Name": "Origamide",
+      "Kind": "AnalysisSource",
+      "WindevVersion": 31,
+      "ProductBuild": "01A312018 ",
+      "Sections": 4,
+      "DecodedBlocks": 1,
+      "SourceBlocks": 0,
+      "SourceLines": 0,
+      "Tables": null,
+      "Fields": null,
+      "Elements": null,
+      "References": null,
+      "Diagnostics": [
+        {
+          "Code": "LowLevelAnalysisSource",
+          "Severity": "Warning",
+          "Message": ".wda exposes decompressed blocks and strings. Use WddWindevAnalysis for typed tables and fields.",
+          "SectionIndex": null
+        }
+      ]
+    }
+  },
+  {
+    "File": "Origamide/Origamide.ana/ANA00012/Origamide.wdd",
+    "Success": true,
+    "Summary": {
+      "Name": "Origamide",
+      "Kind": "Analysis",
+      "WindevVersion": 31,
+      "ProductBuild": "01A312018 ",
+      "Sections": 2,
+      "DecodedBlocks": 1,
+      "SourceBlocks": 0,
+      "SourceLines": 0,
+      "Tables": 3,
+      "Fields": 17,
+      "Elements": null,
+      "References": null,
+      "Diagnostics": [
+        {
+          "Code": "PartialSchemaProperties",
+          "Severity": "Warning",
+          "Message": "Table and field definitions are decoded. Key rules, defaults, connections and remaining flags retain their raw representation.",
+          "SectionIndex": null
+        }
+      ]
+    }
+  },
+  {
+    "File": "Origamide/Origamide.ana/ANA00013/Origamide.wda",
+    "Success": true,
+    "Summary": {
+      "Name": "Origamide",
+      "Kind": "AnalysisSource",
+      "WindevVersion": 31,
+      "ProductBuild": "01A312018 ",
+      "Sections": 4,
+      "DecodedBlocks": 1,
+      "SourceBlocks": 0,
+      "SourceLines": 0,
+      "Tables": null,
+      "Fields": null,
+      "Elements": null,
+      "References": null,
+      "Diagnostics": [
+        {
+          "Code": "LowLevelAnalysisSource",
+          "Severity": "Warning",
+          "Message": ".wda exposes decompressed blocks and strings. Use WddWindevAnalysis for typed tables and fields.",
+          "SectionIndex": null
+        }
+      ]
+    }
+  },
+  {
+    "File": "Origamide/Origamide.ana/ANA00013/Origamide.wdd",
+    "Success": true,
+    "Summary": {
+      "Name": "Origamide",
+      "Kind": "Analysis",
+      "WindevVersion": 31,
+      "ProductBuild": "01A312018 ",
+      "Sections": 2,
+      "DecodedBlocks": 1,
+      "SourceBlocks": 0,
+      "SourceLines": 0,
+      "Tables": 4,
+      "Fields": 23,
+      "Elements": null,
+      "References": null,
+      "Diagnostics": [
+        {
+          "Code": "PartialSchemaProperties",
+          "Severity": "Warning",
+          "Message": "Table and field definitions are decoded. Key rules, defaults, connections and remaining flags retain their raw representation.",
+          "SectionIndex": null
+        }
+      ]
+    }
+  },
+  {
+    "File": "Origamide/Origamide.ana/ANA00014/Origamide.wda",
+    "Success": true,
+    "Summary": {
+      "Name": "Origamide",
+      "Kind": "AnalysisSource",
+      "WindevVersion": 31,
+      "ProductBuild": "01A312018 ",
+      "Sections": 4,
+      "DecodedBlocks": 1,
+      "SourceBlocks": 0,
+      "SourceLines": 0,
+      "Tables": null,
+      "Fields": null,
+      "Elements": null,
+      "References": null,
+      "Diagnostics": [
+        {
+          "Code": "LowLevelAnalysisSource",
+          "Severity": "Warning",
+          "Message": ".wda exposes decompressed blocks and strings. Use WddWindevAnalysis for typed tables and fields.",
+          "SectionIndex": null
+        }
+      ]
+    }
+  },
+  {
+    "File": "Origamide/Origamide.ana/ANA00014/Origamide.wdd",
+    "Success": true,
+    "Summary": {
+      "Name": "Origamide",
+      "Kind": "Analysis",
+      "WindevVersion": 31,
+      "ProductBuild": "01A312018 ",
+      "Sections": 2,
+      "DecodedBlocks": 1,
+      "SourceBlocks": 0,
+      "SourceLines": 0,
+      "Tables": 4,
+      "Fields": 23,
+      "Elements": null,
+      "References": null,
+      "Diagnostics": [
+        {
+          "Code": "PartialSchemaProperties",
+          "Severity": "Warning",
+          "Message": "Table and field definitions are decoded. Key rules, defaults, connections and remaining flags retain their raw representation.",
+          "SectionIndex": null
+        }
+      ]
+    }
+  },
+  {
+    "File": "Origamide/Origamide.ana/ANA00015/Origamide.wda",
+    "Success": true,
+    "Summary": {
+      "Name": "Origamide",
+      "Kind": "AnalysisSource",
+      "WindevVersion": 31,
+      "ProductBuild": "01A312018 ",
+      "Sections": 4,
+      "DecodedBlocks": 1,
+      "SourceBlocks": 0,
+      "SourceLines": 0,
+      "Tables": null,
+      "Fields": null,
+      "Elements": null,
+      "References": null,
+      "Diagnostics": [
+        {
+          "Code": "LowLevelAnalysisSource",
+          "Severity": "Warning",
+          "Message": ".wda exposes decompressed blocks and strings. Use WddWindevAnalysis for typed tables and fields.",
+          "SectionIndex": null
+        }
+      ]
+    }
+  },
+  {
+    "File": "Origamide/Origamide.ana/ANA00015/Origamide.wdd",
+    "Success": true,
+    "Summary": {
+      "Name": "Origamide",
+      "Kind": "Analysis",
+      "WindevVersion": 31,
+      "ProductBuild": "01A312018 ",
+      "Sections": 2,
+      "DecodedBlocks": 1,
+      "SourceBlocks": 0,
+      "SourceLines": 0,
+      "Tables": 4,
+      "Fields": 24,
+      "Elements": null,
+      "References": null,
+      "Diagnostics": [
+        {
+          "Code": "PartialSchemaProperties",
+          "Severity": "Warning",
+          "Message": "Table and field definitions are decoded. Key rules, defaults, connections and remaining flags retain their raw representation.",
+          "SectionIndex": null
+        }
+      ]
+    }
+  },
+  {
+    "File": "Origamide/Origamide.ana/ANA00016/Origamide.wda",
+    "Success": true,
+    "Summary": {
+      "Name": "Origamide",
+      "Kind": "AnalysisSource",
+      "WindevVersion": 31,
+      "ProductBuild": "01A312018 ",
+      "Sections": 4,
+      "DecodedBlocks": 1,
+      "SourceBlocks": 0,
+      "SourceLines": 0,
+      "Tables": null,
+      "Fields": null,
+      "Elements": null,
+      "References": null,
+      "Diagnostics": [
+        {
+          "Code": "LowLevelAnalysisSource",
+          "Severity": "Warning",
+          "Message": ".wda exposes decompressed blocks and strings. Use WddWindevAnalysis for typed tables and fields.",
+          "SectionIndex": null
+        }
+      ]
+    }
+  },
+  {
+    "File": "Origamide/Origamide.ana/ANA00016/Origamide.wdd",
+    "Success": true,
+    "Summary": {
+      "Name": "Origamide",
+      "Kind": "Analysis",
+      "WindevVersion": 31,
+      "ProductBuild": "01A312018 ",
+      "Sections": 2,
+      "DecodedBlocks": 1,
+      "SourceBlocks": 0,
+      "SourceLines": 0,
+      "Tables": 4,
+      "Fields": 24,
+      "Elements": null,
+      "References": null,
+      "Diagnostics": [
+        {
+          "Code": "PartialSchemaProperties",
+          "Severity": "Warning",
+          "Message": "Table and field definitions are decoded. Key rules, defaults, connections and remaining flags retain their raw representation.",
+          "SectionIndex": null
+        }
+      ]
+    }
+  },
+  {
+    "File": "Origamide/Origamide.ana/ANA00017/Origamide.wda",
+    "Success": true,
+    "Summary": {
+      "Name": "Origamide",
+      "Kind": "AnalysisSource",
+      "WindevVersion": 31,
+      "ProductBuild": "01A312018 ",
+      "Sections": 4,
+      "DecodedBlocks": 1,
+      "SourceBlocks": 0,
+      "SourceLines": 0,
+      "Tables": null,
+      "Fields": null,
+      "Elements": null,
+      "References": null,
+      "Diagnostics": [
+        {
+          "Code": "LowLevelAnalysisSource",
+          "Severity": "Warning",
+          "Message": ".wda exposes decompressed blocks and strings. Use WddWindevAnalysis for typed tables and fields.",
+          "SectionIndex": null
+        }
+      ]
+    }
+  },
+  {
+    "File": "Origamide/Origamide.ana/ANA00017/Origamide.wdd",
+    "Success": true,
+    "Summary": {
+      "Name": "Origamide",
+      "Kind": "Analysis",
+      "WindevVersion": 31,
+      "ProductBuild": "01A312018 ",
+      "Sections": 2,
+      "DecodedBlocks": 1,
+      "SourceBlocks": 0,
+      "SourceLines": 0,
+      "Tables": 5,
+      "Fields": 27,
+      "Elements": null,
+      "References": null,
+      "Diagnostics": [
+        {
+          "Code": "PartialSchemaProperties",
+          "Severity": "Warning",
+          "Message": "Table and field definitions are decoded. Key rules, defaults, connections and remaining flags retain their raw representation.",
+          "SectionIndex": null
+        }
+      ]
+    }
+  },
+  {
+    "File": "Origamide/Origamide.ana/ANA00018/Origamide.wda",
+    "Success": true,
+    "Summary": {
+      "Name": "Origamide",
+      "Kind": "AnalysisSource",
+      "WindevVersion": 31,
+      "ProductBuild": "01A312018 ",
+      "Sections": 4,
+      "DecodedBlocks": 1,
+      "SourceBlocks": 0,
+      "SourceLines": 0,
+      "Tables": null,
+      "Fields": null,
+      "Elements": null,
+      "References": null,
+      "Diagnostics": [
+        {
+          "Code": "LowLevelAnalysisSource",
+          "Severity": "Warning",
+          "Message": ".wda exposes decompressed blocks and strings. Use WddWindevAnalysis for typed tables and fields.",
+          "SectionIndex": null
+        }
+      ]
+    }
+  },
+  {
+    "File": "Origamide/Origamide.ana/ANA00018/Origamide.wdd",
+    "Success": true,
+    "Summary": {
+      "Name": "Origamide",
+      "Kind": "Analysis",
+      "WindevVersion": 31,
+      "ProductBuild": "01A312018 ",
+      "Sections": 2,
+      "DecodedBlocks": 1,
+      "SourceBlocks": 0,
+      "SourceLines": 0,
+      "Tables": 5,
+      "Fields": 28,
+      "Elements": null,
+      "References": null,
+      "Diagnostics": [
+        {
+          "Code": "PartialSchemaProperties",
+          "Severity": "Warning",
+          "Message": "Table and field definitions are decoded. Key rules, defaults, connections and remaining flags retain their raw representation.",
+          "SectionIndex": null
+        }
+      ]
+    }
+  },
+  {
+    "File": "Origamide/Origamide.ana/ANA00019/Origamide.wda",
+    "Success": true,
+    "Summary": {
+      "Name": "Origamide",
+      "Kind": "AnalysisSource",
+      "WindevVersion": 31,
+      "ProductBuild": "01A312018 ",
+      "Sections": 4,
+      "DecodedBlocks": 1,
+      "SourceBlocks": 0,
+      "SourceLines": 0,
+      "Tables": null,
+      "Fields": null,
+      "Elements": null,
+      "References": null,
+      "Diagnostics": [
+        {
+          "Code": "LowLevelAnalysisSource",
+          "Severity": "Warning",
+          "Message": ".wda exposes decompressed blocks and strings. Use WddWindevAnalysis for typed tables and fields.",
+          "SectionIndex": null
+        }
+      ]
+    }
+  },
+  {
+    "File": "Origamide/Origamide.ana/ANA00019/Origamide.wdd",
+    "Success": true,
+    "Summary": {
+      "Name": "Origamide",
+      "Kind": "Analysis",
+      "WindevVersion": 31,
+      "ProductBuild": "01A312018 ",
+      "Sections": 2,
+      "DecodedBlocks": 1,
+      "SourceBlocks": 0,
+      "SourceLines": 0,
+      "Tables": 5,
+      "Fields": 29,
+      "Elements": null,
+      "References": null,
+      "Diagnostics": [
+        {
+          "Code": "PartialSchemaProperties",
+          "Severity": "Warning",
+          "Message": "Table and field definitions are decoded. Key rules, defaults, connections and remaining flags retain their raw representation.",
+          "SectionIndex": null
+        }
+      ]
+    }
+  },
+  {
+    "File": "Origamide/Origamide.ana/ANA00020/Origamide.wda",
+    "Success": true,
+    "Summary": {
+      "Name": "Origamide",
+      "Kind": "AnalysisSource",
+      "WindevVersion": 31,
+      "ProductBuild": "01A312018 ",
+      "Sections": 4,
+      "DecodedBlocks": 1,
+      "SourceBlocks": 0,
+      "SourceLines": 0,
+      "Tables": null,
+      "Fields": null,
+      "Elements": null,
+      "References": null,
+      "Diagnostics": [
+        {
+          "Code": "LowLevelAnalysisSource",
+          "Severity": "Warning",
+          "Message": ".wda exposes decompressed blocks and strings. Use WddWindevAnalysis for typed tables and fields.",
+          "SectionIndex": null
+        }
+      ]
+    }
+  },
+  {
+    "File": "Origamide/Origamide.ana/ANA00020/Origamide.wdd",
+    "Success": true,
+    "Summary": {
+      "Name": "Origamide",
+      "Kind": "Analysis",
+      "WindevVersion": 31,
+      "ProductBuild": "01A312018 ",
+      "Sections": 2,
+      "DecodedBlocks": 1,
+      "SourceBlocks": 0,
+      "SourceLines": 0,
+      "Tables": 6,
+      "Fields": 32,
+      "Elements": null,
+      "References": null,
+      "Diagnostics": [
+        {
+          "Code": "PartialSchemaProperties",
+          "Severity": "Warning",
+          "Message": "Table and field definitions are decoded. Key rules, defaults, connections and remaining flags retain their raw representation.",
+          "SectionIndex": null
+        }
+      ]
+    }
+  },
+  {
+    "File": "Origamide/Origamide.ana/ANA00021/Origamide.wda",
+    "Success": true,
+    "Summary": {
+      "Name": "Origamide",
+      "Kind": "AnalysisSource",
+      "WindevVersion": 31,
+      "ProductBuild": "01A312018 ",
+      "Sections": 4,
+      "DecodedBlocks": 1,
+      "SourceBlocks": 0,
+      "SourceLines": 0,
+      "Tables": null,
+      "Fields": null,
+      "Elements": null,
+      "References": null,
+      "Diagnostics": [
+        {
+          "Code": "LowLevelAnalysisSource",
+          "Severity": "Warning",
+          "Message": ".wda exposes decompressed blocks and strings. Use WddWindevAnalysis for typed tables and fields.",
+          "SectionIndex": null
+        }
+      ]
+    }
+  },
+  {
+    "File": "Origamide/Origamide.ana/ANA00021/Origamide.wdd",
+    "Success": true,
+    "Summary": {
+      "Name": "Origamide",
+      "Kind": "Analysis",
+      "WindevVersion": 31,
+      "ProductBuild": "01A312018 ",
+      "Sections": 2,
+      "DecodedBlocks": 1,
+      "SourceBlocks": 0,
+      "SourceLines": 0,
+      "Tables": 6,
+      "Fields": 33,
+      "Elements": null,
+      "References": null,
+      "Diagnostics": [
+        {
+          "Code": "PartialSchemaProperties",
+          "Severity": "Warning",
+          "Message": "Table and field definitions are decoded. Key rules, defaults, connections and remaining flags retain their raw representation.",
+          "SectionIndex": null
+        }
+      ]
+    }
+  },
+  {
+    "File": "Origamide/Origamide.ana/ANA00022/Origamide.wda",
+    "Success": true,
+    "Summary": {
+      "Name": "Origamide",
+      "Kind": "AnalysisSource",
+      "WindevVersion": 31,
+      "ProductBuild": "01A312018 ",
+      "Sections": 4,
+      "DecodedBlocks": 1,
+      "SourceBlocks": 0,
+      "SourceLines": 0,
+      "Tables": null,
+      "Fields": null,
+      "Elements": null,
+      "References": null,
+      "Diagnostics": [
+        {
+          "Code": "LowLevelAnalysisSource",
+          "Severity": "Warning",
+          "Message": ".wda exposes decompressed blocks and strings. Use WddWindevAnalysis for typed tables and fields.",
+          "SectionIndex": null
+        }
+      ]
+    }
+  },
+  {
+    "File": "Origamide/Origamide.ana/ANA00022/Origamide.wdd",
+    "Success": true,
+    "Summary": {
+      "Name": "Origamide",
+      "Kind": "Analysis",
+      "WindevVersion": 31,
+      "ProductBuild": "01A312018 ",
+      "Sections": 2,
+      "DecodedBlocks": 1,
+      "SourceBlocks": 0,
+      "SourceLines": 0,
+      "Tables": 6,
+      "Fields": 34,
+      "Elements": null,
+      "References": null,
+      "Diagnostics": [
+        {
+          "Code": "PartialSchemaProperties",
+          "Severity": "Warning",
+          "Message": "Table and field definitions are decoded. Key rules, defaults, connections and remaining flags retain their raw representation.",
+          "SectionIndex": null
+        }
+      ]
+    }
+  },
+  {
+    "File": "Origamide/Origamide.ana/ANA00023/Origamide.wda",
+    "Success": true,
+    "Summary": {
+      "Name": "Origamide",
+      "Kind": "AnalysisSource",
+      "WindevVersion": 31,
+      "ProductBuild": "01A312018 ",
+      "Sections": 4,
+      "DecodedBlocks": 1,
+      "SourceBlocks": 0,
+      "SourceLines": 0,
+      "Tables": null,
+      "Fields": null,
+      "Elements": null,
+      "References": null,
+      "Diagnostics": [
+        {
+          "Code": "LowLevelAnalysisSource",
+          "Severity": "Warning",
+          "Message": ".wda exposes decompressed blocks and strings. Use WddWindevAnalysis for typed tables and fields.",
+          "SectionIndex": null
+        }
+      ]
+    }
+  },
+  {
+    "File": "Origamide/Origamide.ana/ANA00023/Origamide.wdd",
+    "Success": true,
+    "Summary": {
+      "Name": "Origamide",
+      "Kind": "Analysis",
+      "WindevVersion": 31,
+      "ProductBuild": "01A312018 ",
+      "Sections": 2,
+      "DecodedBlocks": 1,
+      "SourceBlocks": 0,
+      "SourceLines": 0,
+      "Tables": 6,
+      "Fields": 36,
+      "Elements": null,
+      "References": null,
+      "Diagnostics": [
+        {
+          "Code": "PartialSchemaProperties",
+          "Severity": "Warning",
+          "Message": "Table and field definitions are decoded. Key rules, defaults, connections and remaining flags retain their raw representation.",
+          "SectionIndex": null
+        }
+      ]
+    }
+  },
+  {
+    "File": "Origamide/Origamide.ana/ANA00024/Origamide.wda",
+    "Success": true,
+    "Summary": {
+      "Name": "Origamide",
+      "Kind": "AnalysisSource",
+      "WindevVersion": 31,
+      "ProductBuild": "01A312018 ",
+      "Sections": 4,
+      "DecodedBlocks": 1,
+      "SourceBlocks": 0,
+      "SourceLines": 0,
+      "Tables": null,
+      "Fields": null,
+      "Elements": null,
+      "References": null,
+      "Diagnostics": [
+        {
+          "Code": "LowLevelAnalysisSource",
+          "Severity": "Warning",
+          "Message": ".wda exposes decompressed blocks and strings. Use WddWindevAnalysis for typed tables and fields.",
+          "SectionIndex": null
+        }
+      ]
+    }
+  },
+  {
+    "File": "Origamide/Origamide.ana/ANA00024/Origamide.wdd",
+    "Success": true,
+    "Summary": {
+      "Name": "Origamide",
+      "Kind": "Analysis",
+      "WindevVersion": 31,
+      "ProductBuild": "01A312018 ",
+      "Sections": 2,
+      "DecodedBlocks": 1,
+      "SourceBlocks": 0,
+      "SourceLines": 0,
+      "Tables": 6,
+      "Fields": 37,
+      "Elements": null,
+      "References": null,
+      "Diagnostics": [
+        {
+          "Code": "PartialSchemaProperties",
+          "Severity": "Warning",
+          "Message": "Table and field definitions are decoded. Key rules, defaults, connections and remaining flags retain their raw representation.",
+          "SectionIndex": null
+        }
+      ]
+    }
+  },
+  {
+    "File": "Origamide/Origamide.ana/LASTGEN/Origamide.wda",
+    "Success": true,
+    "Summary": {
+      "Name": "Origamide",
+      "Kind": "AnalysisSource",
+      "WindevVersion": 31,
+      "ProductBuild": "01A312018 ",
+      "Sections": 4,
+      "DecodedBlocks": 1,
+      "SourceBlocks": 0,
+      "SourceLines": 0,
+      "Tables": null,
+      "Fields": null,
+      "Elements": null,
+      "References": null,
+      "Diagnostics": [
+        {
+          "Code": "LowLevelAnalysisSource",
+          "Severity": "Warning",
+          "Message": ".wda exposes decompressed blocks and strings. Use WddWindevAnalysis for typed tables and fields.",
+          "SectionIndex": null
+        }
+      ]
+    }
+  },
+  {
+    "File": "Origamide/Origamide.ana/LASTGEN/Origamide.wdd",
+    "Success": true,
+    "Summary": {
+      "Name": "Origamide",
+      "Kind": "Analysis",
+      "WindevVersion": 31,
+      "ProductBuild": "01A312018 ",
+      "Sections": 2,
+      "DecodedBlocks": 1,
+      "SourceBlocks": 0,
+      "SourceLines": 0,
+      "Tables": 6,
+      "Fields": 36,
+      "Elements": null,
+      "References": null,
+      "Diagnostics": [
+        {
+          "Code": "PartialSchemaProperties",
+          "Severity": "Warning",
+          "Message": "Table and field definitions are decoded. Key rules, defaults, connections and remaining flags retain their raw representation.",
+          "SectionIndex": null
+        }
+      ]
+    }
+  },
+  {
+    "File": "Origamide/Origamide.ana/lastsave/Origamide.wda",
+    "Success": true,
+    "Summary": {
+      "Name": "Origamide",
+      "Kind": "AnalysisSource",
+      "WindevVersion": 31,
+      "ProductBuild": "01A312018 ",
+      "Sections": 4,
+      "DecodedBlocks": 1,
+      "SourceBlocks": 0,
+      "SourceLines": 0,
+      "Tables": null,
+      "Fields": null,
+      "Elements": null,
+      "References": null,
+      "Diagnostics": [
+        {
+          "Code": "LowLevelAnalysisSource",
+          "Severity": "Warning",
+          "Message": ".wda exposes decompressed blocks and strings. Use WddWindevAnalysis for typed tables and fields.",
+          "SectionIndex": null
+        }
+      ]
+    }
+  },
+  {
+    "File": "Origamide/Origamide.ana/Origamide.wda",
+    "Success": true,
+    "Summary": {
+      "Name": "Origamide",
+      "Kind": "AnalysisSource",
+      "WindevVersion": 31,
+      "ProductBuild": "01A312018 ",
+      "Sections": 4,
+      "DecodedBlocks": 1,
+      "SourceBlocks": 0,
+      "SourceLines": 0,
+      "Tables": null,
+      "Fields": null,
+      "Elements": null,
+      "References": null,
+      "Diagnostics": [
+        {
+          "Code": "LowLevelAnalysisSource",
+          "Severity": "Warning",
+          "Message": ".wda exposes decompressed blocks and strings. Use WddWindevAnalysis for typed tables and fields.",
+          "SectionIndex": null
+        }
+      ]
+    }
+  },
+  {
+    "File": "Origamide/Origamide.ana/Origamide.wdd",
+    "Success": true,
+    "Summary": {
+      "Name": "Origamide",
+      "Kind": "Analysis",
+      "WindevVersion": 31,
+      "ProductBuild": "01A312018 ",
+      "Sections": 2,
+      "DecodedBlocks": 1,
+      "SourceBlocks": 0,
+      "SourceLines": 0,
+      "Tables": 6,
+      "Fields": 37,
+      "Elements": null,
+      "References": null,
+      "Diagnostics": [
+        {
+          "Code": "PartialSchemaProperties",
+          "Severity": "Warning",
+          "Message": "Table and field definitions are decoded. Key rules, defaults, connections and remaining flags retain their raw representation.",
+          "SectionIndex": null
+        }
+      ]
+    }
+  },
+  {
+    "File": "Origamide/Origamide.cpl/gdavid@imci.fr/00000000/Origamide.wdp",
+    "Success": true,
+    "Summary": {
+      "Name": "Origamide",
+      "Kind": "Project",
+      "WindevVersion": 31,
+      "ProductBuild": "01A312018 ",
+      "Sections": 2,
+      "DecodedBlocks": 0,
+      "SourceBlocks": 0,
+      "SourceLines": 0,
+      "Tables": null,
+      "Fields": null,
+      "Elements": null,
+      "References": 0,
+      "Diagnostics": [
+        {
+          "Code": "OpaqueProjectSettings",
+          "Severity": "Warning",
+          "Message": "Project settings in section 1 are preserved as bytes; their encoding is not decoded yet.",
+          "SectionIndex": 1
+        },
+        {
+          "Code": "NoConfigurationDirectory",
+          "Severity": "Warning",
+          "Message": "No supported build configuration directory was found (possibly a compilation cache).",
+          "SectionIndex": null
+        }
+      ]
+    }
+  },
+  {
+    "File": "Origamide/Origamide.wdd",
+    "Success": true,
+    "Summary": {
+      "Name": "Origamide",
+      "Kind": "Analysis",
+      "WindevVersion": 31,
+      "ProductBuild": "01A312018 ",
+      "Sections": 2,
+      "DecodedBlocks": 1,
+      "SourceBlocks": 0,
+      "SourceLines": 0,
+      "Tables": 6,
+      "Fields": 37,
+      "Elements": null,
+      "References": null,
+      "Diagnostics": [
+        {
+          "Code": "PartialSchemaProperties",
+          "Severity": "Warning",
+          "Message": "Table and field definitions are decoded. Key rules, defaults, connections and remaining flags retain their raw representation.",
+          "SectionIndex": null
+        }
+      ]
+    }
+  },
+  {
+    "File": "Origamide/Origamide.wdp",
+    "Success": true,
+    "Summary": {
+      "Name": "Origamide",
+      "Kind": "Project",
+      "WindevVersion": 31,
+      "ProductBuild": "01A312018 ",
+      "Sections": 20,
+      "DecodedBlocks": 5,
+      "SourceBlocks": 19,
+      "SourceLines": 54,
+      "Tables": null,
+      "Fields": null,
+      "Elements": null,
+      "References": 27,
+      "Diagnostics": [
+        {
+          "Code": "OpaqueProjectSettings",
+          "Severity": "Warning",
+          "Message": "Project settings in section 1 are preserved as bytes; their encoding is not decoded yet.",
+          "SectionIndex": 1
+        }
+      ]
+    }
+  },
+  {
+    "File": "Origamide/Proc\u00E9duresGlobales.wdg",
+    "Success": true,
+    "Summary": {
+      "Name": "Proc\u00E9duresGlobales",
+      "Kind": "GlobalProcedures",
+      "WindevVersion": 31,
+      "ProductBuild": "01A312018 ",
+      "Sections": 9,
+      "DecodedBlocks": 1,
+      "SourceBlocks": 11,
+      "SourceLines": 312,
+      "Tables": null,
+      "Fields": null,
+      "Elements": null,
+      "References": null,
+      "Diagnostics": [
+        {
+          "Code": "PartialCodeMetadata",
+          "Severity": "Warning",
+          "Message": "Source lines and numeric event identifiers are decoded; compiled code and editor metadata remain binary.",
+          "SectionIndex": 2
+        }
+      ]
+    }
+  },
+  {
+    "File": "Origamide/Themes/WD/280 Eleven/Eleven_0_D.wdw",
+    "Success": true,
+    "Summary": {
+      "Name": "Eleven_0_D",
+      "Kind": "Window",
+      "WindevVersion": 31,
+      "ProductBuild": "01A311072 ",
+      "Sections": 12,
+      "DecodedBlocks": 7,
+      "SourceBlocks": 13,
+      "SourceLines": 39,
+      "Tables": null,
+      "Fields": null,
+      "Elements": 1,
+      "References": null,
+      "Diagnostics": [
+        {
+          "Code": "PartialUiSemantics",
+          "Severity": "Warning",
+          "Message": "Property buffers and source events are decoded. Element kinds are inferred from names; layout/styles/bindings and hierarchy are not fully mapped.",
+          "SectionIndex": 1
+        }
+      ]
+    }
+  },
+  {
+    "File": "Origamide/Themes/WD/280 Eleven/Eleven_1.wdw",
+    "Success": true,
+    "Summary": {
+      "Name": "Eleven_1",
+      "Kind": "Window",
+      "WindevVersion": 31,
+      "ProductBuild": "01A311072 ",
+      "Sections": 12,
+      "DecodedBlocks": 9,
+      "SourceBlocks": 19,
+      "SourceLines": 51,
+      "Tables": null,
+      "Fields": null,
+      "Elements": 2,
+      "References": null,
+      "Diagnostics": [
+        {
+          "Code": "PartialUiSemantics",
+          "Severity": "Warning",
+          "Message": "Property buffers and source events are decoded. Element kinds are inferred from names; layout/styles/bindings and hierarchy are not fully mapped.",
+          "SectionIndex": 1
+        }
+      ]
+    }
+  },
+  {
+    "File": "Origamide/Themes/WD/280 Eleven/Eleven_13.wdw",
+    "Success": true,
+    "Summary": {
+      "Name": "Eleven_13",
+      "Kind": "Window",
+      "WindevVersion": 31,
+      "ProductBuild": "01A311072 ",
+      "Sections": 12,
+      "DecodedBlocks": 19,
+      "SourceBlocks": 151,
+      "SourceLines": 559,
+      "Tables": null,
+      "Fields": null,
+      "Elements": 28,
+      "References": null,
+      "Diagnostics": [
+        {
+          "Code": "PartialUiSemantics",
+          "Severity": "Warning",
+          "Message": "Property buffers and source events are decoded. Element kinds are inferred from names; layout/styles/bindings and hierarchy are not fully mapped.",
+          "SectionIndex": 1
+        }
+      ]
+    }
+  },
+  {
+    "File": "Origamide/Themes/WD/280 Eleven/Eleven_22.wdw",
+    "Success": true,
+    "Summary": {
+      "Name": "Eleven_22",
+      "Kind": "Window",
+      "WindevVersion": 31,
+      "ProductBuild": "01A311072 ",
+      "Sections": 12,
+      "DecodedBlocks": 9,
+      "SourceBlocks": 47,
+      "SourceLines": 105,
+      "Tables": null,
+      "Fields": null,
+      "Elements": 9,
+      "References": null,
+      "Diagnostics": [
+        {
+          "Code": "PartialUiSemantics",
+          "Severity": "Warning",
+          "Message": "Property buffers and source events are decoded. Element kinds are inferred from names; layout/styles/bindings and hierarchy are not fully mapped.",
+          "SectionIndex": 1
+        }
+      ]
+    }
+  },
+  {
+    "File": "Origamide/Themes/WD/280 Eleven/Eleven_23.wdw",
+    "Success": true,
+    "Summary": {
+      "Name": "Eleven_23",
+      "Kind": "Window",
+      "WindevVersion": 31,
+      "ProductBuild": "01A311072 ",
+      "Sections": 12,
+      "DecodedBlocks": 19,
+      "SourceBlocks": 133,
+      "SourceLines": 523,
+      "Tables": null,
+      "Fields": null,
+      "Elements": 25,
+      "References": null,
+      "Diagnostics": [
+        {
+          "Code": "PartialUiSemantics",
+          "Severity": "Warning",
+          "Message": "Property buffers and source events are decoded. Element kinds are inferred from names; layout/styles/bindings and hierarchy are not fully mapped.",
+          "SectionIndex": 1
+        }
+      ]
+    }
+  },
+  {
+    "File": "Origamide/Themes/WD/280 Eleven/Eleven_24.wdw",
+    "Success": true,
+    "Summary": {
+      "Name": "Eleven_24",
+      "Kind": "Window",
+      "WindevVersion": 31,
+      "ProductBuild": "01A311072 ",
+      "Sections": 12,
+      "DecodedBlocks": 9,
+      "SourceBlocks": 47,
+      "SourceLines": 105,
+      "Tables": null,
+      "Fields": null,
+      "Elements": 9,
+      "References": null,
+      "Diagnostics": [
+        {
+          "Code": "PartialUiSemantics",
+          "Severity": "Warning",
+          "Message": "Property buffers and source events are decoded. Element kinds are inferred from names; layout/styles/bindings and hierarchy are not fully mapped.",
+          "SectionIndex": 1
+        }
+      ]
+    }
+  },
+  {
+    "File": "Origamide/Themes/WD/280 Eleven/Eleven_Etiquette.wde",
+    "Success": true,
+    "Summary": {
+      "Name": "Eleven_Etiquette",
+      "Kind": "Report",
+      "WindevVersion": 31,
+      "ProductBuild": "01A311072 ",
+      "Sections": 13,
+      "DecodedBlocks": 6,
+      "SourceBlocks": 11,
+      "SourceLines": 23,
+      "Tables": null,
+      "Fields": null,
+      "Elements": 3,
+      "References": null,
+      "Diagnostics": [
+        {
+          "Code": "PartialReportSemantics",
+          "Severity": "Warning",
+          "Message": "Report property buffers, named elements and source events are accessible. Pagination, styles and data-source bindings remain binary.",
+          "SectionIndex": 1
+        }
+      ]
+    }
+  },
+  {
+    "File": "Origamide/Themes/WD/280 Eleven/Eleven_Fiche.wde",
+    "Success": true,
+    "Summary": {
+      "Name": "Eleven_Fiche",
+      "Kind": "Report",
+      "WindevVersion": 31,
+      "ProductBuild": "01A311072 ",
+      "Sections": 13,
+      "DecodedBlocks": 8,
+      "SourceBlocks": 47,
+      "SourceLines": 84,
+      "Tables": null,
+      "Fields": null,
+      "Elements": 17,
+      "References": null,
+      "Diagnostics": [
+        {
+          "Code": "PartialReportSemantics",
+          "Severity": "Warning",
+          "Message": "Report property buffers, named elements and source events are accessible. Pagination, styles and data-source bindings remain binary.",
+          "SectionIndex": 1
+        }
+      ]
+    }
+  },
+  {
+    "File": "Origamide/Themes/WD/280 Eleven/Eleven_Form.wde",
+    "Success": true,
+    "Summary": {
+      "Name": "Eleven_Form",
+      "Kind": "Report",
+      "WindevVersion": 31,
+      "ProductBuild": "01A311072 ",
+      "Sections": 13,
+      "DecodedBlocks": 8,
+      "SourceBlocks": 47,
+      "SourceLines": 84,
+      "Tables": null,
+      "Fields": null,
+      "Elements": 17,
+      "References": null,
+      "Diagnostics": [
+        {
+          "Code": "PartialReportSemantics",
+          "Severity": "Warning",
+          "Message": "Report property buffers, named elements and source events are accessible. Pagination, styles and data-source bindings remain binary.",
+          "SectionIndex": 1
+        }
+      ]
+    }
+  },
+  {
+    "File": "Origamide/Themes/WD/280 Eleven/Eleven_Label.wde",
+    "Success": true,
+    "Summary": {
+      "Name": "Eleven_Label",
+      "Kind": "Report",
+      "WindevVersion": 31,
+      "ProductBuild": "01A311072 ",
+      "Sections": 13,
+      "DecodedBlocks": 6,
+      "SourceBlocks": 11,
+      "SourceLines": 17,
+      "Tables": null,
+      "Fields": null,
+      "Elements": 3,
+      "References": null,
+      "Diagnostics": [
+        {
+          "Code": "PartialReportSemantics",
+          "Severity": "Warning",
+          "Message": "Report property buffers, named elements and source events are accessible. Pagination, styles and data-source bindings remain binary.",
+          "SectionIndex": 1
+        }
+      ]
+    }
+  },
+  {
+    "File": "Origamide/Themes/WD/280 Eleven/Eleven_Mailing.wde",
+    "Success": true,
+    "Summary": {
+      "Name": "Eleven_Mailing",
+      "Kind": "Report",
+      "WindevVersion": 31,
+      "ProductBuild": "01A311072 ",
+      "Sections": 13,
+      "DecodedBlocks": 8,
+      "SourceBlocks": 35,
+      "SourceLines": 65,
+      "Tables": null,
+      "Fields": null,
+      "Elements": 15,
+      "References": null,
+      "Diagnostics": [
+        {
+          "Code": "PartialReportSemantics",
+          "Severity": "Warning",
+          "Message": "Report property buffers, named elements and source events are accessible. Pagination, styles and data-source bindings remain binary.",
+          "SectionIndex": 1
+        }
+      ]
+    }
+  },
+  {
+    "File": "Origamide/Themes/WD/280 Eleven/Eleven_MailingUS.wde",
+    "Success": true,
+    "Summary": {
+      "Name": "Eleven_MailingUS",
+      "Kind": "Report",
+      "WindevVersion": 31,
+      "ProductBuild": "01A311072 ",
+      "Sections": 13,
+      "DecodedBlocks": 8,
+      "SourceBlocks": 35,
+      "SourceLines": 65,
+      "Tables": null,
+      "Fields": null,
+      "Elements": 14,
+      "References": null,
+      "Diagnostics": [
+        {
+          "Code": "PartialReportSemantics",
+          "Severity": "Warning",
+          "Message": "Report property buffers, named elements and source events are accessible. Pagination, styles and data-source bindings remain binary.",
+          "SectionIndex": 1
+        }
+      ]
+    }
+  },
+  {
+    "File": "Origamide/Themes/WD/280 Eleven/Eleven_Table.wde",
+    "Success": true,
+    "Summary": {
+      "Name": "Eleven_Table",
+      "Kind": "Report",
+      "WindevVersion": 31,
+      "ProductBuild": "01A311072 ",
+      "Sections": 13,
+      "DecodedBlocks": 8,
+      "SourceBlocks": 50,
+      "SourceLines": 90,
+      "Tables": null,
+      "Fields": null,
+      "Elements": 20,
+      "References": null,
+      "Diagnostics": [
+        {
+          "Code": "PartialReportSemantics",
+          "Severity": "Warning",
+          "Message": "Report property buffers, named elements and source events are accessible. Pagination, styles and data-source bindings remain binary.",
+          "SectionIndex": 1
+        }
+      ]
+    }
+  },
+  {
+    "File": "Origamide/Themes/WD/280 Eleven/Eleven_TableUS.wde",
+    "Success": true,
+    "Summary": {
+      "Name": "Eleven_TableUS",
+      "Kind": "Report",
+      "WindevVersion": 31,
+      "ProductBuild": "01A311072 ",
+      "Sections": 13,
+      "DecodedBlocks": 8,
+      "SourceBlocks": 50,
+      "SourceLines": 90,
+      "Tables": null,
+      "Fields": null,
+      "Elements": 20,
+      "References": null,
+      "Diagnostics": [
+        {
+          "Code": "PartialReportSemantics",
+          "Severity": "Warning",
+          "Message": "Report property buffers, named elements and source events are accessible. Pagination, styles and data-source bindings remain binary.",
+          "SectionIndex": 1
+        }
+      ]
+    }
+  }
+]
