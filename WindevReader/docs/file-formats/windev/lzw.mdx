@@ -1,0 +1,136 @@
+---
+title: "Compression LZW"
+sidebar_label: "Compression LZW"
+sidebar_position: 13
+description: "Compression LZW — structures, positions en octets et limites du lecteur autonome."
+---
+
+LZW construit un dictionnaire pendant la lecture. WINDEV emploie ici une variante avec ses propres codes et règles de largeur. Le principe est connu ; les paramètres du flux doivent correspondre exactement.
+
+Les positions sont exprimées en **octets**. Les inconnues sont indiquées comme telles ; voir les [conventions](../conventions.mdx).
+
+WINDEV utilise une version modifiée du LZW (Lempel–Ziv–Welch) : un algorithme de compression sans perte, dérivé de LZ78 et publié par Terry Welch en 1984. Il remplace les séquences répétées par des codes dans un dictionnaire construit progressivement.
+Les modifications aperçues dans la version utilisée par WINDEV sont :
+- des codes sur 9 à 16 bits ;
+- un code 0 pour réinitialiser le dictionnaire ;
+- des codes 1 à 256 pour représenter les octets 0 à 255 ;
+- un code 257 pour terminer le flux ;
+- une enveloppe WINDEV contenant notamment les tailles compressée et décompressée.
+Ces conventions **empêchent d’utiliser directement un décodeur prévu pour une autre variante**. Par exemple, le LZW de GIF utilise d’autres codes de réinitialisation et limite leur largeur à 12 bits.
+
+## Paramètres de la variante étudiée
+
+| Paramètre | Valeur | Commentaire |
+| --- | --- | --- |
+| Ordre des bits | Bit faible en premier | À l'intérieur du flux LZW |
+| Largeur initiale | 9 bits | Peut augmenter jusqu'à 16 |
+| Largeur maximale | 16 bits | 65 536 indices possibles |
+| Code de réinitialisation | 0 | Vide les entrées dynamiques |
+| Codes littéraux | 1 à 256 | L'octet produit vaut `code - 1` |
+| Code de fin | 257 | Arrête le décodage |
+| Première entrée dynamique | 258 | Créée à partir de deux chaînes successives |
+| Longueur attendue | `U`, donnée par l'enveloppe | Doit être atteinte exactement |
+
+Ce flux ne doit pas être envoyé tel quel à un décodeur GIF, TIFF, ZIP ou zlib. Des décodeurs LZW standards peuvent avoir d'autres codes spéciaux, d'autres tailles maximales ou d'autres règles d'augmentation de largeur.
+
+## Lecture d'un code
+
+Si le curseur `b` est mesuré en bits et la largeur vaut `w` :
+
+```text
+code = 0
+pour j de 0 à w - 1 :
+    position = b + j
+    octet = flux[position div 8]
+    bit = (octet >> (position mod 8)) ET 1
+    code = code OU (bit << j)
+b = b + w
+```
+
+Les codes ne sont pas nécessairement alignés sur un octet. Après 9 bits lus, le code suivant commence au deuxième bit de l'octet suivant.
+
+## Dictionnaire et état initial
+
+| État | Valeur initiale |
+| --- | --- |
+| `largeur` | 9 |
+| `prochain` | 257 avant le premier littéral |
+| `précédent` | Aucun |
+| Entrées 1 à 256 | Suites d'un seul octet, 0 à 255 |
+| Entrées dynamiques | Absentes |
+
+Le compteur initial `prochain = 257` est une convention du décodeur fourni : le code de fin est traité avant la consultation du dictionnaire, et le compteur avance à 258 après le premier littéral. Aucune chaîne dynamique n'est stockée à l'indice 257.
+
+## Traitement des codes
+
+| Code reçu | Action |
+| --- | --- |
+| 0 | Remettre la largeur à 9, `prochain` à 257 et oublier la chaîne précédente |
+| 257 | Vérifier les longueurs et terminer |
+| 1 à 256 | Produire l'octet littéral `code - 1` |
+| Entrée dynamique déjà définie | Développer sa chaîne |
+| `code = prochain` avec une chaîne précédente | Cas particulier : chaîne précédente suivie de son premier octet |
+| Autre code non défini | Rejeter le flux |
+
+Après avoir trouvé la chaîne actuelle, ajouter, lorsqu'une chaîne précédente existe :
+
+```text
+dictionnaire[prochain] = chaîne_précédente + premier_octet(chaîne_actuelle)
+```
+
+Puis avancer le compteur selon la convention ci-dessus. L'implémentation évite de conserver toutes les chaînes développées : une entrée est représentée par un préfixe d'indice `u16` et un suffixe `u8`.
+
+## Augmentation de largeur
+
+| Valeur atteinte par `prochain` | Nouvelle largeur |
+| --- | --- |
+| 512 | 10 bits |
+| 1 024 | 11 bits |
+| 2 048 | 12 bits |
+| 4 096 | 13 bits |
+| 8 192 | 14 bits |
+| 16 384 | 15 bits |
+| 32 768 | 16 bits |
+
+La largeur est augmentée **après** le traitement du code et l'avancement du compteur, avant la lecture suivante. Une variation d'une entrée au passage de puissance de deux décale le reste du flux.
+
+Lorsque le dictionnaire de 16 bits est plein, le lecteur n'ajoute plus d'entrée jusqu'à une éventuelle réinitialisation. Les entrées déjà définies restent disponibles.
+
+## Cas particulier d'une chaîne encore en construction
+
+```text
+chaîne_précédente = [41]
+code reçu = prochain indice disponible
+chaîne actuelle = [41, 41]
+```
+
+Cette situation est normale en LZW. La rejeter systématiquement ferait échouer des flux valides contenant des répétitions.
+
+## Fin du flux et bourrage
+
+Le code 257 est nécessaire. Le nombre d'octets produits doit être `U`.
+
+```text
+octets_encodés_consumés = (bits_consumés + 7) div 8
+exiger octets_encodés_consumés = L
+```
+
+Des bits inutilisés peuvent rester dans le dernier octet. Le lecteur vérifie que le code de fin se situe dans ce dernier octet, mais ne certifie pas une valeur particulière de chaque bit inutilisé. Des octets supplémentaires après le code de fin sont refusés dans la longueur encodée déclarée.
+
+## Exemple chiffré
+
+| Buffer | Octets LZW `L` | Octets après décompression `U` | Position de l'enveloppe dans la section |
+| --- | --- | --- | --- |
+| Code de SuperMailExtra, WDG | 5 058 | 16 123 | +4 |
+| Code des procédures de SuperNoteExtra, WDG | 9 562 | 37 286 | +4 |
+| Propriétés de FEN_Journal | 28 036 | 155 383 | +28 |
+| Propriétés d'ETAT_Test | 1 266 | 5 615 | +12 |
+| Première section du WDA courant | 6 811 | 26 160 | +4 |
+
+Ces valeurs proviennent des en-têtes d'enveloppes réels. Les tailles stockées des sections incluent les préfixes et les onze octets d'en-tête en plus de `L`.
+
+## Mémoire et refus d'un flux invalide
+
+Le lecteur limite la taille attendue avant allocation, borne les chaînes développées, refuse les cycles ou indices de dictionnaire invalides et contrôle les tailles à chaque émission. Les budgets mémoire sont des choix d'implémentation décrits dans le [chapitre de validation](../validation.mdx).
+
+La piste LZW a été guidée par un [retour de rétro-ingénierie de l'auteur John N](https://stackoverflow.com/questions/21599884/windev-compress-which-compression-format-is-used), puis vérifiée indépendamment sur les fichiers fournis. Les positions et enveloppes de cette documentation sont celles mesurées dans le corpus.

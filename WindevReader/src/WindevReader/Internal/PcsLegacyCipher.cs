@@ -4,6 +4,12 @@ namespace WindevReader.Internal;
 internal static class PcsLegacyCipher
 {
     private static readonly byte[] AnalysisKey = DeriveKey([15, 80, 90, 110, 56, 23, 19, 8, 13, 21]);
+    // Static archive-format parameter recovered from the supplied runtime, not an application password.
+    private static readonly byte[] LibraryKey = DeriveKey("&K_G@HjO:#pl\\i)r"u8.ToArray());
+    internal static byte[] DecodeLibrary(ReadOnlySpan<byte> source)
+    {
+        byte[] result = source.ToArray(); Decrypt(result, LibraryKey); return result;
+    }
     private static byte[] DeriveKey(byte[] password)
     {
         byte[] key = Convert.FromHexString("8805090245001233010403091C226566");

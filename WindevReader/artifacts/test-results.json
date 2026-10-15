@@ -1,6 +1,6 @@
 {
   "Passed": true,
-  "Assertions": 289,
+  "Assertions": 2894,
   "Documents": 98,
   "DecodedBuffers": 362,
   "SourceLines": 8224,
@@ -11,6 +11,13 @@
     "Window geometry/titles, local source, menu option and report blocks verified.",
     "Project configuration references verified, including compressed WINDEV 28 directory.",
     "Malformed magic, truncation, directory counts, damaged payloads, type mismatch, untested versions and decompression limits rejected.",
+    "28 standard BMP previews validated, including dimensions, exact bytes and RGBA orientation/alpha handling.",
+    "WDL: 138 entries, 134 resources; all chunks bounded; 128 complete PNGs with valid CRCs, 2 compressed ICOs and independent PNG comparison.",
+    "427 physical HFSQL headers validated; companion GUID links and application-analysis mismatch verified. Record/index/memo decoding and passwords remain unsupported.",
+    "New-family negative tests: truncated/altered archives, oversized metadata, entry budgets, wrong physical types, invalid GUIDs and corrupt BMP boundaries.",
+    "PERSONNE WINDEV 28: matching FIC/NDX, three relocated 60-byte descriptors, five clear physical 124-byte slots via explicit layout; values, sentinel and malformed-layout checks. Logical live/deleted state and automatic schema remain unknown.",
+    "ERP 28: WDD checksum, two tables/eight fields, physical GUID links, WDA corroboration, schema-assisted PERSONNE layout and first relation decoded; state/cardinality semantics remain partial.",
+    "HFSQL 31: both FICs matched WDD; eight holiday slots plus one week slot; compound key omitted from FIC; 7 flat NDX pages, 35 real keys and 7 sentinels; every key cross-checked against FIC; date strings, CP1252, corruption and budgets verified.",
     "Complete corpus: 98 documents, 362 decoded buffers, 8224 source lines."
   ]
 }

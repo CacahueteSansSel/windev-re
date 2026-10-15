@@ -1,16 +1,14 @@
 ---
-sidebar_position: 1
+title: "Comprendre les fichiers et utiliser le lecteur"
+displayed_sidebar: formatsSidebar
+sidebar_position: 0
 ---
 
-# Introduction
+Ce site présente une étude des formats binaires WINDEV et HFSQL, accompagnée d’une bibliothèque .NET autonome en lecture seule.
 
-Ce site documente les différents formats de fichiers utilisés par WINDEV.
-Cette documentation qui documente les différents formats de manière primitive a été réalisée via reverse-engineering à l'aide de l'IA (ChatGPT).
+- [Formats de fichiers](./file-formats/index.mdx) : une page par format, avec ses sections, blocs, offsets en octets et types de champs.
+- [Documentation .NET](./dotnet/index.mdx) : installation, exemples C#, API, commandes CLI et gestion des erreurs.
 
-Elle peut servir de base de connaissance non négligeable pour comprendre les formats et les lire en dehors de l'écosystème WINDEV. La bibliothèque C# WindevReader, elle aussi réalisée par l'IA, accompagne cette documentation pour permettre la lecture des différents formats par un programme C#.
+Les explications distinguent les observations confirmées, les profils particuliers et les parties encore inconnues. Une ouverture réussie ne signifie pas que chaque propriété du format soit décodée.
 
-Les formats sont tous binaires, et sont d'une complexité plus que notable : entre du chiffrement, de la compression via un algorithme propriétaire, du XOR, etc. Cette complexité est probablement volontaire pour dissuader l'utilisation d'un autre outil et surtout de verrouiller le développeur dans l'écosystème.
-
-Les exemples utilisent deux projets fictifs : **le logiciel de prise de note SuperNoteExtra** et **le logiciel de client mail SuperMailExtra**. Ils servent à illustrer la documentation ; les noms et valeurs applicatives ont été anonymisés.
-
-Lien de la bibliothèque sur GitHub en open-source [ici](https://github.com/CacahueteSansSel/windev-re/tree/main/WindevReader).
+Les exemples applicatifs utilisent **le logiciel de prise de note SuperNoteExtra** et **le logiciel de client mail SuperMailExtra**, deux projets fictifs. Les schémas explicatifs sont des SVG ; leurs légendes précisent les coordonnées et les tailles qui font foi.

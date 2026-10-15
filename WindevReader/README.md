@@ -1,80 +1,102 @@
-# WindevReader — lecteur .NET indépendant
+# WindevReader 0.5.0
 
-Bibliothèque **.NET 8**, en C# managé, en lecture seule, sans package externe, DLL PC SOFT, WINDEV installé, COM, P/Invoke ou exécution de l’EXE fourni.
+Bibliothèque .NET 8 autonome, en lecture seule, pour les formats WINDEV et HFSQL étudiés. Aucun composant officiel WINDEV n’est chargé ou exécuté. Les fichiers privés du corpus ne sont pas distribués.
 
-Il s’agit d’un lecteur expérimental issu de l’analyse du corpus Origamide / bridge. **L’ouverture binaire et l’extraction du code fonctionnent ; la description sémantique de toutes les propriétés de WINDEV n’est pas complète.** Les zones inconnues restent accessibles, et les limites apparaissent dans `Diagnostics`.
+## Installation
 
-## Utilisation
+Le package local est `artifacts/WindevReader.0.5.0.nupkg` :
+
+```sh
+dotnet add package WindevReader --version 0.5.0 --source /chemin/vers/WindevReader/artifacts
+```
+
+On peut aussi référencer `src/WindevReader/WindevReader.csproj`. La bibliothèque n’a aucune dépendance NuGet externe.
+
+## Ouvrir un fichier
 
 ```csharp
 using WindevReader;
 
-var projet = WdpWindevProject.Open("Origamide.wdp");
-var fenetre = WdwWindevWindow.Open("FEN_Journal.wdw");
-var procedures = WdgWindevGlobalProcedures.Open("ProcéduresGlobales.wdg");
-var analyse = WddWindevAnalysis.Open("Origamide.wdd");
-var etat = WdeWindevReport.Open("ETAT_JOURNAL.wde");
-
-Console.WriteLine($"{fenetre.Name}: {fenetre.Caption}, {fenetre.Bounds}");
+IWindevFile fichier = WindevFile.Open("SuperNoteExtra.wdd");
+var analyse = WddWindevAnalysis.Open("SuperNoteExtra.wdd");
 foreach (var table in analyse.Tables)
-    foreach (var rubrique in table.Fields)
-        Console.WriteLine($"{table.Name}.{rubrique.Name}: {rubrique.Type}, {rubrique.Size}");
-
-foreach (var procedure in procedures.Procedures)
-    Console.WriteLine($"{procedure.Name}\n{procedure.Source}");
-
-// Choix automatique par extension :
-WindevDocument document = WindevDocument.Open("ETAT_Test.wde");
-// Accès aux données non interprétées, avec offsets :
-ReadOnlyMemory<byte> section = document.Sections[1].RawData;
-var buffers = document.Sections[1].DecodedBlocks;
+    Console.WriteLine($"{table.Name} : {table.Fields.Count} rubriques");
 ```
 
-Référencer `src/WindevReader/WindevReader.csproj`, ou la DLL dans `artifacts/lib/net8.0/`, ou installer le `.nupkg` depuis un dossier NuGet local. Les fichiers d’entrée restent intacts.
+`WindevFile.Open` choisit selon le type PCS. Chaque famille possède aussi sa méthode statique `Open` : `WdpWindevProject`, `WdwWindevWindow`, `WdgWindevGlobalProcedures`, `WddWindevAnalysis`, `WdaWindevAnalysisSource`, `WdeWindevReport`, `WdlWindevLibrary`, `FicHfsqlDataFile`, `NdxHfsqlIndexFile`, `MmoHfsqlMemoFile`.
 
-## Couverture réelle
+## Apport du WDD/WDA correspondant à PERSONNE
 
-| Format / classe | Données exposées | Limites |
-|---|---|---|
-| `.wdp` / `WdpWindevProject` | En-tête, nom, références de configuration, code du projet, sections et chaînes | Réglages section 1 encore opaques ; noms de configuration 28 non identifiés ; configurations multiples non validées |
-| `.wdw` / `WdwWindevWindow` | Nom, titre et dimensions du descripteur 610, buffers de propriétés, chaînes, identifiants d’éléments, événements et procédures locales | Types d’éléments inférés par nom ; styles, coordonnées des champs, hiérarchie et liaisons non entièrement interprétés |
-| `.wdg` / `WdgWindevGlobalProcedures` | Déclarations globales, noms et sources des procédures, lignes avec auteur/timestamp brut, identifiants d’événements | Bytecode et métadonnées de l’éditeur conservés sans interprétation |
-| `.wdd` / `WddWindevAnalysis` | Déchiffrement autonome, décompression, checksum, GUID/génération, tables physiques, rubriques, libellés, masques, types bruts, tailles et flags | Clés, valeurs par défaut, connexions et relations non entièrement interprétées ; schéma interne `0x061D` seulement |
-| `.wde` / `WdeWindevReport` | Nom, message sans données, buffers de propriétés, éléments/blocs nommés, événements et source | Mise en page d’impression, styles et sources de données non entièrement interprétés |
-| `.wda` / `WdaWindevAnalysisSource` | Accès supplémentaire aux blocs décompressés et chaînes de l’analyse éditable | Lecture à bas niveau ; utiliser `.wdd` pour les tables/rubriques typées |
+La version 0.5.0 reconnaît les descriptions de tables et rubriques du WDD 28, expose huit rubriques dans deux tables et la liaison entre PERSONNE et PERSONNE_MESSAGE. Les paramètres de contrainte restent bruts.
 
-`Elements` constitue un inventaire d’identifiants candidats, **pas un arbre exhaustif de contrôles**. `InferredKind` est explicitement une inférence ; `NearbyStrings` désigne les chaînes suivantes dans le buffer, pas des propriétés certifiées du contrôle. Les événements restent numérotés : aucun nom d’événement arbitraire n’est inventé.
+Le schéma confirme les cinq rubriques physiques PERSONNE : IDPERSONNE (8), NOM (51 stockés pour 50 déclarés), PRENOM (51), AGE1 (4), FLAGADMIN (1). Le WDD et le WDA confirment le pas de 124 octets. Les neuf octets précédant les valeurs restent des données de gestion non interprétées.
 
-Les offsets de `Sections` se rapportent au fichier. Ceux de `DecodedBlocks` se rapportent à la section stockée. Les offsets de chaînes, lignes, objets et rubriques se rapportent au buffer décodé correspondant. Pour les éléments graphiques, `BufferOffset` identifie ce buffer au sein de la section 1.
+```csharp
+var fic = FicHfsqlDataFile.Open("PERSONNE.fic");
+var disposition = fic.CreateFixedRecordLayout(analyse, dataOffset: 1776, recordCount: 5);
+foreach (var emplacement in fic.ReadFixedRecords(disposition))
+    Console.WriteLine($"{emplacement.Values["NOM"]} : {emplacement.Values["FLAGADMIN"]}");
+```
 
-## Compiler et exécuter
+Utiliser le WDD qui correspond réellement aux deux GUID du FIC. Le nom de présentation SuperNoteExtra est fictif. `CreateFixedRecordLayout` refuse une analyse incompatible, des types non pris en charge ou un pas incohérent. Ce profil fixe a été recoupé sur PERSONNE 28 ; il ne généralise pas sa disposition aux FIC RAD.
+
+Le début 1776 et le nombre 5 restent explicites. Les états actif/rayé/supprimé ne sont pas déterminés ; chaque emplacement est conservé, y compris l’identifiant brut tout à 1. `CanReadRecords` reste `false` pour la découverte automatique complète. `PasswordStatus` reste `Unknown` car l’absence de mot de passe n’est pas détectée par le lecteur.
+
+## CLI
+
+```sh
+dotnet artifacts/cli/WindevReader.Cli.dll inspect SuperNoteExtra.wdd
+dotnet artifacts/cli/WindevReader.Cli.dll layout PERSONNE.fic SuperNoteExtra.wdd 1776 5 disposition.json
+dotnet artifacts/cli/WindevReader.Cli.dll records PERSONNE.fic disposition.json emplacements.json
+dotnet artifacts/cli/WindevReader.Cli.dll preview FEN_Notes.wdw previsualisation.bmp
+```
+
+Les autres commandes sont `json`, `code`, `extract-resource` et `corpus`. Les fichiers runtime de `artifacts/cli/` doivent rester ensemble.
+
+## Documentation
+
+- `docs/dotnet/index.mdx` : installation, premiers pas, guides, CLI, API et limites.
+- `docs/file-formats/index.mdx` : structures binaires, section WINDEV et section HFSQL.
+- `docs/file-formats/hfsql/cas-personne.mdx` : étude croisée du FIC, NDX, WDD et WDA.
+
+Les pages sont en français, avec tables d’offsets et quatre schémas SVG. Les exemples utilisent le logiciel fictif de prise de note SuperNoteExtra et le logiciel fictif de client mail SuperMailExtra.
+
+## Compilation et validation
 
 ```sh
 dotnet build WindevReader.sln -c Release -p:UseSharedCompilation=false -m:1 -nr:false
-dotnet run --project tools/WindevReader.Cli -- inspect /chemin/Origamide.wdd
-dotnet run --project tools/WindevReader.Cli -- json /chemin/FEN_Journal.wdw fenetre.json
-dotnet run --project tools/WindevReader.Cli -- code /chemin/ProcéduresGlobales.wdg procedures.wl
-dotnet run --project tools/WindevReader.Cli -- corpus /chemin/Origamide corpus.json
+dotnet run --project tests/WindevReader.Tests -c Release -- /chemin/corpus-initial resultats.json /chemin/personne /chemin/cas-analyse
 ```
 
-La sérialisation JSON expose les données structurées et les chaînes ; les mémoires binaires sont exclues du JSON par `[JsonIgnore]`, et restent disponibles dans l’API. Les commandes CLI ne créent un fichier de sortie que si un chemin est fourni.
+Les chemins des corpus doivent conserver leurs noms et arborescences d’origine, attendus par les tests. Les deux derniers dossiers sont facultatifs et ajoutent respectivement PERSONNE, puis son analyse et ses compagnons. Les quatre fichiers du nouveau cas sont requis dans le dernier dossier. La suite complète passe **2 894 assertions** ; 534 fichiers ont été étudiés, avec 433 fichiers physiques HFSQL représentant 17 contenus distincts. Les exemples C# de la documentation compilent également.
 
-## Validation reproductible
+Les rapports se trouvent dans `artifacts/test-results.json`, `artifacts/extension-validation.json` et `artifacts/analysis-validation.json`.
+
+## Portée
+
+Les références de projet, les sources reconnues, les propriétés partielles d’interfaces, les schémas WDD, les BMP de prévisualisation et les ressources du patch WDL étudié sont exposés. Les valeurs FIC fixes sont accessibles avec une disposition explicite ou construite depuis le WDD 28 compatible.
+
+Les métadonnées opaques FIC, les états logiques, le parcours général du B-tree NDX et l’allocation des mémos restent ouverts. Les tableaux plats de clés 31 sont maintenant lisibles. Le WDA expose ses buffers sans reconstruire un modèle éditable complet. Le lecteur n’exécute pas le WLangage, ne décompile pas le bytecode et ne réécrit pas les formats. Les budgets de `WindevOpenOptions` et les diagnostics décrivent les limites de chaque ouverture.
+
+
+## Nouveaux profils HFSQL 31
+
+Les quatre témoins jours fériés et semaines correspondent au WDD 31 initial. Le lecteur de disposition prend désormais en charge JOUR et MOIS en `UInt8`, ainsi que les dates `Date8Z` (huit chiffres ASCII suivis de NUL, retournés en `string`). Il reconnaît le marqueur brut à Q+31 de la clé composée MOISJOUR et l’omet des valeurs FIC. Une rubrique binaire ordinaire n’est pas reclassée à partir de ses seuls flags.
+
+```csharp
+var jours = FicHfsqlDataFile.Open("jour_ferie.fic");
+var lignes = jours.ReadFixedRecords(jours.CreateFixedRecordLayout(analyse, 1763, 8));
+var semaines = FicHfsqlDataFile.Open("semaine_cours.fic");
+var semaine = semaines.ReadFixedRecords(semaines.CreateFixedRecordLayout(analyse, 1627, 1));
+var indexJours = NdxHfsqlIndexFile.Open("jour_ferie.ndx");
+var cles = indexJours.ReadFlatIndex(3); // profil composé MOIS puis JOUR du témoin
+```
+
+Utiliser l’analyse 31 qui correspond à ces GUID. Les dispositions d’exemple sont dans `examples/`. `ReadFlatIndex` expose un profil clair 31 au tag 7 avec en-tête de 29 octets : 35 clés au total sur les sept tableaux étudiés, chaque clé recoupée avec le FIC. La sentinelle finale est vérifiée et exclue. Les deux références sont conservées brutes ; leur rôle exact n’est pas distinguable quand identifiant et rang physique coïncident. Aucun parcours général de B-tree n’est prétendu implémenté. `MaxIndexEntries` borne l’allocation, par défaut à 100 000 entrées par tableau.
 
 ```sh
-dotnet run --project tests/WindevReader.Tests -c Release -- /chemin/Origamide resultats.json
+dotnet artifacts/cli/WindevReader.Cli.dll index-entries jour_ferie.ndx 3 cles.json
+dotnet run --project tests/WindevReader.Tests -c Release -- /chemin/corpus-initial resultats.json /chemin/personne /chemin/cas-analyse /chemin/hfsql31
 ```
 
-Le dossier de corpus doit contenir `analysis.json`, `Origamide/` et `bridge/`, comme le dossier fourni. Les sources privées et les DLL du corpus ne sont pas recopiées dans cette distribution. Les tests ne chargent ni DLL ni EXE.
-
-Les tests vérifient l’enveloppe exacte de chaque fichier, les tailles après décompression, le checksum du WDD, les historiques du schéma, les noms/types/tailles/libellés des 37 rubriques contre une référence JSON indépendante, des procédures et propriétés connues, ainsi que les erreurs de corruption et les limites de mémoire. Le rapport enregistré se trouve dans `artifacts/test-results.json` ; l’inventaire est dans `artifacts/corpus-validation.json`.
-
-Versions de produits observées : **28 et 31**. Toutes les fenêtres/états du corpus sont en 31 ; le support de leurs équivalents en 28 n’est donc pas certifié. Les autres versions sont refusées par défaut. `AllowUntestedVersions = true` autorise un essai structurel, sans garantir la lecture des structures internes. Le byte `0x14` à l’offset 4 désigne la révision du conteneur, **pas WINDEV 20**.
-
-## Erreurs et limites
-
-`WindevFormatException` signale une structure incorrecte, un checksum invalide, une taille incohérente ou une limite dépassée. `UnsupportedWindevFormatException` signale une version/type/encodage non pris en charge. Les budgets configurables de `WindevOpenOptions` limitent le fichier, chaque buffer, la décompression totale, le nombre de buffers et les chaînes.
-
-Ce lecteur ne modifie/réécrit pas les formats, n’exécute pas le WLangage, n’émule pas les fenêtres et ne lit pas les enregistrements HFSQL `.fic/.ndx/.mmo`. Un schéma `.wdd` contenant un autre mode de transformation, notamment une variante protégée non présente dans le corpus, peut être refusé.
-
-Voir `docs/FORMAT.md` pour la structure déterminée et `docs/RESEARCH.md` pour les sources et la méthode.
+Le dossier final contient les quatre nouveaux témoins. Leurs fichiers sont lus sans modification et ne sont pas inclus dans la distribution. Le chapitre `docs/file-formats/hfsql/cas-hfsql31.mdx` donne les cartes binaires, les tableaux d’offsets et les inconnues.

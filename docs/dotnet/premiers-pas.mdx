@@ -1,0 +1,51 @@
+---
+title: "Ouvrir un premier fichier"
+sidebar_position: 2
+---
+
+## Ouverture typée
+
+Chaque famille possède une classe avec une méthode statique `Open`. Un mauvais type, une structure invalide ou une version refusée provoque une exception.
+
+```csharp
+using WindevReader;
+
+var analyse = WddWindevAnalysis.Open("SuperNoteExtra.wdd");
+Console.WriteLine($"{analyse.Name} : {analyse.Tables.Count} tables");
+foreach (var table in analyse.Tables)
+    Console.WriteLine($"{table.Name} : {table.Fields.Count} rubriques");
+```
+
+Le chemin peut être relatif au répertoire courant ou absolu. Aucun fichier compagnon n’est ouvert automatiquement.
+
+## Choisir la classe automatiquement
+
+```csharp
+IWindevFile fichier = WindevFile.Open("document-a-inspecter.bin");
+Console.WriteLine(fichier.Name);
+
+switch (fichier)
+{
+    case WddWindevAnalysis schema:
+        Console.WriteLine($"{schema.Tables.Count} tables");
+        break;
+    case NdxHfsqlIndexFile index:
+        Console.WriteLine($"{index.DeclaredIndexCount} descripteurs");
+        break;
+}
+```
+
+`WindevFile.Open` choisit selon le type PCS, y compris lorsque le suffixe d’un patch WDL est numérique. `WindevDocument.Open` est plus ancien : il choisit selon l’extension et se limite aux six documents WDP, WDW, WDG, WDD, WDA et WDE.
+
+## Consulter les diagnostics
+
+```csharp
+foreach (var diagnostic in fichier.Diagnostics)
+    Console.WriteLine($"{diagnostic.Severity} {diagnostic.Code}: {diagnostic.Message}");
+```
+
+Une ouverture réussie valide les structures prises en charge. Les diagnostics précisent les propriétés restées opaques ; ils ne signifient pas que toutes les données du format sont interprétées.
+
+## Retrouver les octets
+
+`RawData` conserve le fichier stocké. Les documents WINDEV exposent aussi `Sections`, puis les `DecodedBlocks` trouvés dans chaque section. Les données binaires utilisent `ReadOnlyMemory<byte>` et ne sont pas incluses dans le JSON par défaut du modèle. Une position dans un buffer décompressé doit être appliquée à ce buffer, pas à `RawData`.

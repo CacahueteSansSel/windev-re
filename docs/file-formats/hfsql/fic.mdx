@@ -1,0 +1,73 @@
+---
+title: "FIC : emplacements et valeurs"
+sidebar_label: "FIC : emplacements et valeurs"
+sidebar_position: 1
+description: "FIC : emplacements et valeurs — structures, positions en octets et limites du lecteur autonome."
+---
+
+Le FIC stocke les valeurs et des structures de gestion. Un emplacement physique n’est pas nécessairement un enregistrement actif. Le cas PERSONNE fournit un profil fixe dont les rubriques sont maintenant confirmées par le WDD.
+
+Les positions sont exprimées en **octets**. Les inconnues sont indiquées comme telles ; voir les [conventions](../conventions.mdx).
+
+## Structure reconnue
+
+Le type `0x00070001` identifie les FIC étudiés. Les 90 premiers octets suivent l’[en-tête physique commun](./en-tete.mdx). Le reste demeure disponible dans `UninterpretedBody`.
+
+Les tailles des rubriques du WDD ne suffisent pas à découper le FIC en lignes : il faut aussi connaître les structures de gestion, les états d’enregistrement, les valeurs variables et la protection éventuelle.
+
+## Carte du profil RADFic.FIC
+
+| Intervalle fichier, fin exclue | Taille | Type documentaire | Contenu / commentaire |
+| --- | --- | --- | --- |
+| `[0, 20)` | 20 | En-tête PCS | Type FIC |
+| `[20, 53)` | 33 | `CString` | GUID de l’analyse propriétaire |
+| `[53, 86)` | 33 | `CString` | GUID de table, commun au NDX associé |
+| `[86, 90)` | 4 | `u16 + u8 + u8` | Valeurs 0, 1, 0 dans le profil |
+| `[90, 802)` | 712 | `octets[712]` | Région opaque, transformation non établie |
+| `[802, 1826)` | 1 024 | `octets[1024]` | Octets nuls |
+| `[1826, 1830)` | 4 | `u32` brut | Valeur 1, sans sémantique de compte certifiée |
+| `[1830, 1862)` | 32 | `octets[32]` | Octets nuls |
+| `[1862, 1870)` | 8 | `u64` brut | Sentinelle `0xFFFFFFFFFFFFFFFF` |
+| `[1870, 1918)` | 48 | `octets[48]` | Région finale opaque |
+| 1 918 | 0 | Fin exclusive | Taille du fichier complet |
+
+Ces frontières sont constatées par lecture des octets. Une région nulle n’est pas automatiquement une page libre ou un tableau d’enregistrements.
+
+## Variations observées
+
+| Profil | Taille fichier | Début de la première longue région nulle | Région opaque depuis 90 |
+| --- | --- | --- | --- |
+| RADFic.FIC | 1 918 | 802 | 712 octets |
+| RADRub.FIC | 1 985 | 862 | 772 octets |
+| RADProp.FIC | 1 672 | 579 | 489 octets |
+
+Le quatrième contenu FIC distinct, celui des tâches, mesure 2 582 octets. La position 802 n’est pas un début de données universel.
+
+## Protection et résultats des essais
+
+La transformation WDD utilisée telle quelle n’a pas fourni de structure FIC validée. Le paramètre fixe des métadonnées WDL n’a pas non plus donné de structure validée dans les régions FIC examinées. Ces essais bornés n’identifient pas l’algorithme de protection et ne constituent pas une recherche exhaustive de mot de passe.
+
+Pour les fichiers RAD, le corps reste brut ; aucun mot de passe n’est exposé. Le GUID d’analyse RAD diffère de celui du WDD applicatif fourni, qui ne peut pas être appliqué arbitrairement à ces octets.
+
+## API
+
+```csharp
+var fichier = FicHfsqlDataFile.Open(@"D:\Projet\SuperNoteExtra\RADFic.FIC");
+Console.WriteLine(fichier.Header.TableGuid);
+Console.WriteLine(fichier.PasswordStatus); // Unknown
+ReadOnlyMemory<byte> corps = fichier.UninterpretedBody;
+```
+
+Une ouverture réussie valide les champs pris en charge, pas la découverte automatique des enregistrements. `ReadFixedRecords(layout)` permet désormais une lecture des emplacements en clair lorsque l’appelant connaît leurs positions et types. Le [cas PERSONNE sans mot de passe](./cas-personne.mdx) donne une disposition vérifiée de cinq emplacements de 124 octets. Cette disposition ne s’applique pas aux fichiers RAD et ne reconstitue pas leur schéma.
+
+
+## Relier les valeurs au schéma
+
+Dans le cas PERSONNE 28, le WDD confirme IDPERSONNE (8 octets), NOM (51 octets stockés pour 50 déclarés), PRENOM (51), AGE1 (4), FLAGADMIN (1). Le pas de 124 est présent dans le WDD et le WDA. La lecture n’a plus besoin de noms ou de types de travail ; elle conserve un début de données et un compte explicites.
+
+Le [guide .NET](../../dotnet/schema-et-donnees.mdx) utilise `CreateFixedRecordLayout`. Le [cas complet](./cas-personne.mdx) garde la carte du fichier et des octets de gestion. Le profil de neuf octets de préfixe est vérifié sur ce témoin ; il n’est pas généralisé aux FIC opaques RAD.
+
+
+## Extension aux valeurs 31
+
+Les nouveaux témoins JOUR_FERIE et SEMAINE_COURS reprennent le préfixe observé de neuf octets. Leurs pas sont 70 et 35, avec des débuts de données à 1763 et 1627. Les dates stockent huit chiffres ASCII suivis de NUL. Une clé composée du schéma, MOISJOUR, n’occupe aucun octet de valeur supplémentaire dans le FIC. Voir le [cas 31](./cas-hfsql31.mdx).

@@ -1,0 +1,70 @@
+{
+  "Version": "0.3.0",
+  "ResearchDate": "2026-10-15",
+  "PasswordAbsence": "Declared by user; not detected by the API",
+  "FicByteLength": 2396,
+  "NdxByteLength": 12920,
+  "WindevVersion": 28,
+  "CompanionIdentityMatches": true,
+  "FicOpaqueRanges": [
+    [
+      90,
+      584
+    ],
+    [
+      1652,
+      1776
+    ]
+  ],
+  "FicZeroRange": [
+    584,
+    1592
+  ],
+  "ExplicitPhysicalLayout": {
+    "DataOffset": 1776,
+    "RecordByteLength": 124,
+    "RecordCount": 5,
+    "Identifiers": [
+      1,
+      3,
+      4,
+      5,
+      -1
+    ],
+    "LogicalRecordStates": "Unknown",
+    "AutomaticSchemaDiscovery": false
+  },
+  "NdxTerminalDirectoryOffset": 12896,
+  "NdxDescriptorOffsets": [
+    5034,
+    9229,
+    12836
+  ],
+  "NdxDescriptorByteLength": 60,
+  "NdxPointersAt16": [
+    1484,
+    6323,
+    10423
+  ],
+  "NdxLengthsAt24": [
+    852,
+    448,
+    145
+  ],
+  "NdxPointersAt28": [
+    135,
+    5094,
+    9289
+  ],
+  "NdxPointersAt36": [
+    2336,
+    6771,
+    10568
+  ],
+  "NdxKeysDecoded": false,
+  "IndependentPythonCliComparisonPassed": true,
+  "Net8BuildPassed": true,
+  "DocusaurusBuildPassed": true,
+  "RegressionAssertions": 2762,
+  "OriginalCorpusFilesOpened": 526
+}

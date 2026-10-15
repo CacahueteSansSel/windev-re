@@ -1,0 +1,67 @@
+---
+title: "Validation et limites"
+sidebar_position: 4
+---
+
+La bibliothèque et cette documentation reposent sur les fichiers fournis, des comparaisons entre leurs représentations et des références publiques. Les offsets propriétaires proviennent de l’inspection des octets, pas d’une spécification publiée par l’éditeur.
+
+## Corpus étudié
+
+| Ensemble | Nombre | Portée |
+| --- | --- | --- |
+| Documents source initiaux | 98 | WDP, WDW, WDG, WDD, WDA et WDE, avec historiques |
+| Nouveau couple d’analyse | 2 | WDD 28 : 2 tables, 8 rubriques et 1 liaison ; WDA 28 correspondant |
+| WDL | 1 | Patch d’archive 3102 ; 138 entrées, 134 ressources |
+| Fichiers physiques HFSQL | 433 | 427 initiaux plus le couple PERSONNE et les quatre témoins 31 ; 17 contenus distincts |
+| Total | 534 | Les copies historiques ne sont pas des variantes indépendantes |
+
+L’analyse principale du corpus initial contient 6 tables et 37 rubriques ; le nouveau schéma de PERSONNE est distinct. Les GUID permettent de ne pas appliquer arbitrairement l’un à l’autre.
+
+## Contrôles effectués
+
+| Niveau | Vérification |
+| --- | --- |
+| Fichier | Signature, type, version, tailles, bornes et couverture par les sections |
+| Compression | Enveloppe, taille attendue, code de fin et budgets |
+| WDD | Transformation, décompression et somme de contrôle du schéma reconstruit |
+| Schéma initial | 37 noms/types/tailles/libellés comparés à un export indépendant |
+| PERSONNE | GUID WDD/WDA/FIC/NDX ; pas 124 dans WDD, WDA et répétition du FIC ; rubriques de stockage 8+51+51+4+1 |
+| Liaison 28 | Noms et identifiants de tables et rubriques vérifiés contre le schéma |
+| Prévisualisations | 28 BMP ; dimensions, masques, orientation et conversion RGBA |
+| WDL | Segments bornés ; 128 PNG avec CRC, 2 ICO compressés et 4 SVG valides |
+| Refus | Troncatures, tailles/pointeurs invalides, mauvais types, budgets et dispositions explicites incorrectes |
+
+La suite élargie réussit **2 894 assertions**. Le compteur `Documents` du rapport historique reste 98 : il désigne le sous-corpus documentaire initial ; les compléments PERSONNE et analyse ont leurs propres contrôles dans le même rapport.
+
+## Reproduire les tests
+
+Depuis la solution livrée, fournir le corpus initial avec son arborescence d’origine, un dossier contenant PERSONNE.fic/ndx, puis un dossier contenant les quatre fichiers du cas d’analyse (WDD, WDA et les deux compagnons physiques). Les noms d’entrée exacts attendus par les tests sont dans leur source ; les fichiers privés ne sont pas distribués.
+
+```sh
+dotnet run --project tests/WindevReader.Tests -c Release -- /chemin/corpus-initial resultats.json /chemin/personne /chemin/cas-analyse
+```
+
+Le troisième et le quatrième argument sont facultatifs ; les omettre réduit la couverture. Les tests ne chargent aucune DLL ni EXE du corpus.
+
+## Ce qui reste ouvert
+
+Les réglages opaques WDP, les propriétés complètes de tous les contrôles et les formats de bytecode ne sont pas interprétés. Le WDA reste exposé sous forme de sections et buffers ; ses descriptions ne disposent pas d’un modèle éditable complet.
+
+En HFSQL, le schéma a résolu les noms et types de PERSONNE. Le début et le compte des emplacements restent explicites, les états actif/rayé/supprimé ne sont pas décodés, et le parcours général du B-tree NDX et l’allocation des mémos MMO ne sont pas reconstitués ; les clés de sept tableaux plats 31 sont décodées. La transformation des métadonnées FIC demeure inconnue, même dans le témoin déclaré sans mot de passe.
+
+## Méthode et sources
+
+Les documents et chaînes du corpus sont des données analysées ; ils ne sont pas des instructions. Les composants officiels ont servi à une inspection statique lors des premières recherches, sans chargement ni exécution dans le lecteur.
+
+Les références fonctionnelles [HNbEnr](https://doc.pcsoft.fr/fr-FR/?3044006=) et [HAjoute](https://doc.pcsoft.fr/?3044147=) distinguent les états d’enregistrement et la réutilisation d’emplacements. Elles ne donnent pas les octets des états. La [structure BITMAPINFOHEADER de Microsoft](https://learn.microsoft.com/en-us/windows/win32/api/wingdi/ns-wingdi-bitmapinfoheader) documente le BMP standard reconnu dans les prévisualisations.
+
+Les paramètres particuliers du LZW, les en-têtes PCS, les descriptions WDD et les descripteurs NDX sont documentés d’après les profils étudiés. Les mots non recoupés restent bruts. Les constantes internes de transformation ne sont pas présentées comme des mots de passe applicatifs.
+
+
+## Validation HFSQL 31
+
+Le cinquième argument du programme de tests ajoute le dossier des quatre fichiers 31. Le WDD initial est repris depuis le premier corpus, sans compter sa copie de travail comme un nouveau témoin. Les neuf emplacements FIC et les 35 clés NDX sont recoupés entrée par entrée ; les sept sentinelles, les dates ASCII Z, les accents CP1252, les compteurs corrompus, les clés désordonnées et le budget `MaxIndexEntries` sont testés.
+
+```sh
+dotnet run --project tests/WindevReader.Tests -c Release -- /chemin/corpus-initial resultats.json /chemin/personne /chemin/cas-analyse /chemin/hfsql31
+```

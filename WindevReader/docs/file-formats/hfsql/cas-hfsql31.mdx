@@ -1,0 +1,157 @@
+---
+title: "HFSQL 31 : jours fériés et semaines"
+sidebar_label: "Étude des FIC et NDX 31"
+sidebar_position: 7
+description: "Emplacements de 70 et 35 octets, dates ASCII, clé composée et tableaux plats NDX de 29 octets d’en-tête."
+---
+
+Les quatre témoins sont deux couples FIC/NDX WINDEV 31. Leurs GUID correspondent aux tables JOUR_FERIE et SEMAINE_COURS du WDD initial. Les identifiants applicatifs restent anonymisés ; les noms génériques des tables sont conservés pour expliquer les correspondances.
+
+## Résultat de la comparaison
+
+| Couple | FIC | NDX | Emplacements FIC recoupés | Pas |
+| --- | --- | --- | --- | --- |
+| jour_ferie | 2 323 octets | 10 003 octets | 8 | 70 octets |
+| semaine_cours | 1 662 octets | 8 553 octets | 1 | 35 octets |
+
+Les valeurs sont lisibles sans transformation. Les métadonnées initiales restent opaques. L’en-tête physique porte les modes nuls à 88 et 89, et `0x8000` à 86, comme PERSONNE. Cela ne constitue toujours pas un détecteur universel de mot de passe.
+
+## Carte des deux FIC
+
+Les intervalles sont absolus dans le fichier, avec fin exclue. Les neuf octets de gestion de chaque emplacement précèdent les valeurs.
+
+| Région | jour_ferie.fic | Taille | semaine_cours.fic | Taille | Lecture |
+| --- | --- | --- | --- | --- | --- |
+| En-tête | `[0, 90)` | 90 | `[0, 90)` | 90 | Champs PCS et GUID |
+| Région initiale opaque | `[90, 625)` | 535 | `[90, 524)` | 434 | Transformation non déterminée |
+| Région nulle | `[625, 1649)` | 1 024 | `[524, 1548)` | 1 024 | Octets nuls |
+| Mots de gestion | `[1649, 1693)` | 44 | `[1548, 1592)` | 44 | Voir tableau suivant |
+| Région opaque de la longueur du pas | `[1693, 1763)` | 70 | `[1592, 1627)` | 35 | Son rôle de modèle/valeurs initiales n’est pas confirmé |
+| Emplacements en clair | `[1763, 2323)` | `8 × 70` | `[1627, 1662)` | `1 × 35` | Frontières recoupées avec le WDD |
+
+### Mots de gestion
+
+Soit `G = 1649` pour les jours fériés, ou `G = 1548` pour la semaine.
+
+| Offset relatif | Taille | Type de lecture | Jours fériés | Semaine | Interprétation |
+| --- | --- | --- | --- | --- | --- |
+| `G+0` | 4 | `u32` brut | 9 | 2 | Coïncide ici avec le prochain identifiant ; rôle non certifié |
+| `G+4` | 8 | `u64` brut | 8 | 1 | Coïncide avec le nombre d’emplacements lus |
+| `G+12` | 8 | `u64` brut | 0 | 0 | Rôle non attribué |
+| `G+20` | 8 | `u64` brut | 0 | 0 | Rôle non attribué |
+| `G+28` | 8 | `u64` brut | 8 | 1 | Coïncide avec le nombre d’emplacements lus |
+| `G+36` | 8 | `u64` brut | Tout à 1 | Tout à 1 | Sentinelle sans rôle attribué |
+
+Ces coïncidences renforcent des hypothèses de compteurs, mais ne suffisent pas à les utiliser comme méthode universelle de localisation. Le lecteur conserve donc un début et un nombre d’emplacements explicites. Les valeurs PERSONNE, après modifications/suppressions possibles, ne se réduisent pas aux mêmes égalités.
+
+## JOUR_FERIE : valeurs et clé composée
+
+Le WDD annonce cinq rubriques mais seulement quatre occupent une zone de valeurs dans le FIC. Pour l’emplacement `i`, `S = 1763 + i × 70`, avec `i` de 0 à 7.
+
+| Offset relatif | Premier offset absolu | Taille | Nom / type | Commentaire |
+| --- | --- | --- | --- | --- |
+| `S+0` | 1 763 | 9 | Gestion brute | Premier octet `0x10` dans les huit emplacements ; état non certifié |
+| `S+9` | 1 772 | 8 | IDJOUR_FERIE, lecture `i64` LE | Valeurs 1 à 8 |
+| `S+17` | 1 780 | 1 | JOUR, `u8` | Jour du mois |
+| `S+18` | 1 781 | 1 | MOIS, `u8` | Mois |
+| `S+19` | 1 782 | 51 | LIBELLE, CP1252 Z | Taille déclarée 50, stockage 51 ; accents recoupés |
+| Aucun | Aucun | 0 dans le FIC | MOISJOUR, clé composée | Présente dans le schéma et l’index, pas comme valeur supplémentaire |
+
+Le profil WDD de MOISJOUR est `RawTypeCode = 28`, `RawFlags = 0x1C`, `Size = 2`, `StorageSize = 4`. Son suffixe typé commence à `H[9028]` ; l’octet à **Q+31**, donc `H[9059]`, vaut 1. Il est exposé comme `RawCompositeMarker`. La rubrique binaire HASH du même schéma porte aussi le code 28 et les flags 0x1C, mais cet octet vaut 0 : les flags seuls ne distinguent donc pas ces deux cas.
+
+`IsCompositeKey` exige le type 28 et ce marqueur à 1 ; le libellé devient `CompositeKey`. L’association du marqueur est recoupée sur MOISJOUR et reste une interprétation du profil étudié. Les autres rubriques binaires conservent leur type. Les composants et l’ordre de la clé sont vérifiés dans le NDX, pas reconstitués automatiquement par le lecteur WDD.
+
+`8 + 1 + 1 + 51 + 9 = 70`. Ajouter les quatre octets de métadonnée de stockage de MOISJOUR donnerait 74, en contradiction avec le WDD et les répétitions du FIC. Le lecteur de disposition omet cette clé composée et ne crée pas une valeur synthétique dans `Values`.
+
+## SEMAINE_COURS : dates sur neuf octets
+
+| Offset relatif à 1 627 | Offset absolu | Taille | Nom / type | Valeur lue |
+| --- | --- | --- | --- | --- |
+| `+0` | 1 627 | 9 | Gestion brute | Non interprétée |
+| `+9` | 1 636 | 8 | IDSEMAINE_COURS, lecture `i64` LE | 1 |
+| `+17` | 1 644 | 9 | DATEDEB, huit chiffres ASCII + NUL | `20260504` |
+| `+26` | 1 653 | 9 | DATEFIN, huit chiffres ASCII + NUL | `20260508` |
+
+Le WDD confirme le code de type 14, une taille déclarée 8 et un stockage 9. L’API explicite `Date8Z` retourne une chaîne de huit chiffres, sans conversion en fuseau horaire ou en horodatage. Elle vérifie les huit chiffres et le NUL ; la validation du calendrier est laissée à l’appelant. Le format logique AAAAMMJJ est aussi décrit dans la [documentation PC SOFT des requêtes](https://doc.pcsoft.fr/fr-fr/?1000024948=), sans y préciser ce stockage physique de neuf octets.
+
+## NDX : répertoires et tableaux de clés en clair
+
+| Fichier | Compte à 107 (`u16`) | Répertoire à 111 (`u64`) | Descripteurs annoncés |
+| --- | --- | --- | --- |
+| jour_ferie.ndx | 4 | 9 971 | 135 ; 2 893 ; 5 221 ; 7 549 |
+| semaine_cours.ndx | 3 | 8 529 | 135 ; 2 893 ; 5 711 |
+
+Les descripteurs mesurent toujours 60 octets. Dans ce profil, `P16` est tout à 1 et `L24` vaut zéro. `P28` pointe juste après le descripteur, sur un tableau plat, et `P36` borne la région qui le contient. Cette observation ne nomme pas ces pointeurs pour les autres profils.
+
+| Fichier / indice | Descripteur | Tableau `P28` | Borne `P36` | Largeur de clé à `D+14` | Compte, sentinelle incluse | Correspondance recoupée |
+| --- | --- | --- | --- | --- | --- | --- |
+| Jours / 0 | 135 | 195 | 1 544 | 8 | 9 | IDJOUR_FERIE |
+| Jours / 1 | 2 893 | 2 953 | 4 087 | 1 | 9 | JOUR |
+| Jours / 2 | 5 221 | 5 281 | 6 415 | 1 | 9 | MOIS |
+| Jours / 3 | 7 549 | 7 609 | 8 790 | 2 | 9 | MOISJOUR : MOIS puis JOUR |
+| Semaine / 0 | 135 | 195 | 1 544 | 8 | 2 | IDSEMAINE_COURS |
+| Semaine / 1 | 2 893 | 2 953 | 4 332 | 9 | 2 | DATEDEB |
+| Semaine / 2 | 5 711 | 5 771 | 7 150 | 9 | 2 | DATEFIN |
+
+Ces correspondances sont vérifiées contre les valeurs FIC. Le lecteur ne déduit pas automatiquement le nom de l’index du seul descripteur.
+
+### En-tête du tableau : 29 octets
+
+Soit `P` le début annoncé par `P28`.
+
+| Offset relatif | Taille | Type | Valeur / rôle reconnu |
+| --- | --- | --- | --- |
+| `P+0` | 2 | `u16` brut | Mot variable ; checksum non établi |
+| `P+2` | 2 | `u16` | 29 dans le profil étudié |
+| `P+4` | 4 | `u32` brut | Copie du compte ; exigée égale au compte à +9 |
+| `P+8` | 1 | `u8` | Tag 7 |
+| `P+9` | 4 | `u32` | Compte d’entrées incluant la sentinelle |
+| `P+13` | 8 | `u64` brut | Tout à 1 |
+| `P+21` | 8 | `u64` brut | Tout à 1 |
+| `P+29` | Variable | Tableau d’entrées | Pas `largeur_clé + 16` |
+
+### Une entrée
+
+| Offset dans l’entrée | Taille | Type | Contenu |
+| --- | --- | --- | --- |
+| 0 | `K` | `octets[K]` | Clé, ordre binaire lexicographique non décroissant |
+| `K` | 8 | `u64` LE | Première référence brute |
+| `K+8` | 8 | `u64` LE | Seconde référence brute |
+
+Les deux références sont égales dans tous ces témoins. Elles correspondent à la fois aux identifiants et aux rangs physiques à partir de 1, car les identifiants sont ici continus et dans l’ordre. **Leur nature exacte ne peut pas être distinguée sur ces seuls fichiers** ; l’API conserve des noms neutres.
+
+La dernière entrée contient uniquement des octets `FF`, clé et références comprises. Elle est validée puis exclue de `Entries`. Les 35 entrées retournées se répartissent en `4 × 8 + 3 × 1`. Il n’y a pas 42 lignes métier : les mêmes valeurs sont indexées plusieurs fois et les sept sentinelles ne sont pas des lignes.
+
+### Représentation des clés
+
+| Champ recoupé | Octets de clé observés | Remarque |
+| --- | --- | --- |
+| Identifiant 1 | `80 00 00 00 00 00 00 01` | Compatible avec un entier BE dont le bit de signe est inversé ; validé ici seulement sur les identifiants positifs présents |
+| JOUR / MOIS | Un octet | Valeur égale au `u8` du FIC ; les doublons sont conservés |
+| MOISJOUR | Deux octets | Mois suivi du jour : par exemple `05 08` |
+| DATEDEB | `32 30 32 36 30 35 30 34 00` | Même ASCII Z que dans le FIC |
+
+Les deux références restent en **petit-boutiste**, même quand la clé d’identifiant présente un ordre d’octets différent. Ne pas appliquer l’endianess des entiers FIC à tous les octets d’une clé d’index.
+
+### Pourquoi les chaînes brutes ne suffisent pas
+
+D’autres régions NDX contiennent des textes de dates, notamment des valeurs antérieures, avec un autre tag et un compte nul dans le profil observé. Elles ne sont pas parcourues par `ReadFlatIndex`. Extraire tous les motifs `2026...` du fichier produirait des valeurs qui ne correspondent pas à l’unique emplacement de SEMAINE_COURS.
+
+## Utilisation de la bibliothèque 0.5.0
+
+```csharp
+var analyse = WddWindevAnalysis.Open("SuperNoteExtra.wdd");
+var jours = FicHfsqlDataFile.Open("jour_ferie.fic");
+var disposition = jours.CreateFixedRecordLayout(analyse, 1763, 8);
+foreach (var ligne in jours.ReadFixedRecords(disposition))
+    Console.WriteLine($"{ligne.Values["JOUR"]}/{ligne.Values["MOIS"]}");
+
+var index = NdxHfsqlIndexFile.Open("jour_ferie.ndx");
+var cleComposee = index.ReadFlatIndex(3);
+foreach (var entree in cleComposee.Entries)
+    Console.WriteLine($"{entree.KeyHex} : {entree.RawReference1}");
+```
+
+Le nom d’analyse ci-dessus est fictif ; utiliser le WDD 31 correspondant réellement aux GUID. Les dispositions vérifiées sont aussi livrées dans `examples/jour-ferie-schema-layout.json` et `examples/semaine-cours-schema-layout.json`.
+
+`ReadFlatIndex` reste une méthode ciblée : version 31, mode brut 0, descripteur et en-tête conformes au profil, compte borné, sentinelle et ordre des clés vérifiés. Elle ne suit pas les liens du B-tree et refuse les NDX RAD opaques ou le profil PERSONNE 28. Les autres méthodes de lecture brute restent disponibles.

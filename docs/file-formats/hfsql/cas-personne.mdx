@@ -1,0 +1,161 @@
+---
+title: "Étude PERSONNE avec son analyse"
+sidebar_label: "Étude PERSONNE avec son analyse"
+sidebar_position: 6
+description: "Étude PERSONNE avec son analyse — structures, positions en octets et limites du lecteur autonome."
+---
+
+Le couple PERSONNE peut désormais être confronté à son WDD et à son WDA. Cette page réunit les positions vérifiées et précise ce qui vient du schéma, des octets du FIC ou d’une hypothèse encore ouverte.
+
+Les positions sont exprimées en **octets**. Les inconnues sont indiquées comme telles ; voir les [conventions](../conventions.mdx).
+
+## Ce que ce témoin établit
+
+Le couple fourni le 15 octobre 2026 comporte un FIC de **2 396 octets** et un NDX de **12 920 octets**. L’utilisateur le déclare sans mot de passe. Un WDD de 3 427 octets et un WDA de 10 464 octets ont ensuite été fournis. Leurs deux GUID correspondent au FIC et au NDX. Aucun MMO de ce couple n’a été fourni.
+
+| Résultat | Niveau de certitude | Limite |
+| --- | --- | --- |
+| Version 28, en-têtes communs de 90 octets | Lecture directe | Ne pas confondre la révision 20 à l’offset 4 avec la version WINDEV |
+| Même GUID d’analyse et même GUID de table | Comparaison directe | L’identité ne donne pas le schéma des rubriques |
+| Cinq emplacements répétés de 124 octets à partir de 1 776 | Découpage vérifié jusqu’à la fin exacte | Pas confirmé par le WDD et le WDA ; début et nombre d’emplacements encore explicites |
+| Identifiants, deux chaînes et entier final lisibles | Lecture directe selon la disposition explicitée | Noms et types désormais récupérés dans le WDD 28 |
+| Trois descripteurs NDX de 60 octets | Répertoire terminal et longueurs vérifiés | Clés et parcours B-tree non décodés |
+| Régions initiales FIC opaques malgré l’absence de mot de passe déclarée | Constat direct + information utilisateur | Compression, transformation et structure interne restent à déterminer |
+
+Depuis la version 0.3.0, le lecteur accepte les FIC/NDX 28 sans `AllowUntestedVersions`. Le MMO reste validé seulement en 31. Aucun composant officiel n’est chargé ni exécuté.
+
+## En-tête commun du couple
+
+Tous les entiers de cette page sont lus en petit-boutiste. Les intervalles sont à fin exclue.
+
+| Offset fichier | Taille | Type | FIC | NDX | Commentaire |
+| --- | --- | --- | --- | --- | --- |
+| 0 | 4 | `octets[4]` | `50 43 53 00` | Identique | Signature PCS |
+| 4 | 4 | `u32` | 20 | 20 | Révision/taille du préambule |
+| 8 | 4 | `u32` | `0x00070001` | `0x00070002` | Famille physique |
+| 12 | 2 | `u16` brut | 0 | 0 | Diffère de la valeur 2 des fichiers 31 précédents |
+| 14 | 2 | `u16` | 28 | 28 | Version WINDEV |
+| 16 | 2 | `u16` brut | 0 | 0 | Rôle non établi |
+| 18 | 2 | `u16` brut | `0x040C` | Identique | Paramètre brut |
+| 20 | 33 | ASCII Z | GUID A | GUID A | 32 chiffres hexadécimaux puis NUL |
+| 53 | 33 | ASCII Z | GUID T | GUID T | Identité de table |
+| 86 | 2 | `u16` brut | `0x8000` | Identique | Aucun détecteur universel de chiffrement déduit |
+| 88 | 1 | `u8` brut | 0 | 0 | `RawModeAt88` |
+| 89 | 1 | `u8` brut | 0 | 0 | `RawModeAt89` |
+
+Les GUID A et T ne sont pas publiés : seule leur égalité entre compagnons est nécessaire à l’explication.
+
+## FIC : carte complète
+
+| Intervalle absolu | Taille | Type de lecture | Commentaire |
+| --- | --- | --- | --- |
+| `[0, 90)` | 90 | En-tête commun | Voir ci-dessus |
+| `[90, 584)` | 494 | Octets opaques | Pas de schéma ni codec validé |
+| `[584, 1592)` | 1 008 | Octets nuls | Cette région ne fait pas 1 024 octets ; ne pas calquer le profil RAD |
+| `[1592, 1652)` | 60 | Mots bruts | Tableau suivant ; sémantiques non validées |
+| `[1652, 1776)` | 124 | Octets opaques | La longueur égale le pas des emplacements ; ce rapprochement ne prouve pas un enregistrement chiffré ou un modèle |
+| `[1776, 1900)` | 124 | Emplacement physique 0 | Début de la répétition vérifiée |
+| `[1900, 2024)` | 124 | Emplacement physique 1 | Identifiant brut 3 |
+| `[2024, 2148)` | 124 | Emplacement physique 2 | Identifiant brut 4 |
+| `[2148, 2272)` | 124 | Emplacement physique 3 | Identifiant brut 5 |
+| `[2272, 2396)` | 124 | Emplacement physique 4 | Identifiant brut tout à 1 |
+| 2 396 | 0 | Fin exclusive | `1776 + 5 × 124` |
+
+### Mots de gestion observés
+
+Les découpages `u64` ci-dessous sont des lectures documentaires. Sans recoupement indépendant, ces valeurs ne sont pas exposées comme des compteurs certifiés dans l’API.
+
+| Offset fichier | Taille | Type de lecture | Valeur | Commentaire |
+| --- | --- | --- | --- | --- |
+| 1 592 | 8 | `u64` brut | 1 | Sens inconnu |
+| 1 600 | 8 | `u64` brut | `0x7FFFFFFFFFFFFFFF` | Sentinelle possible, non qualifiée |
+| 1 608 | 4 | `u32` brut | 11 | Sens inconnu |
+| 1 612 | 8 | `u64` brut | 1 | Sens inconnu |
+| 1 620 | 8 | `u64` brut | 4 | Ne suffit pas à prouver quatre lignes actives |
+| 1 628 | 8 | `u64` brut | 0 | Sens inconnu |
+| 1 636 | 8 | `u64` brut | 5 | Coïncide avec le nombre de répétitions ; pas un compteur universel établi |
+| 1 644 | 8 | `u64` brut | 2 | Sens inconnu |
+
+### Disposition d’un emplacement
+
+Pour `i` entre 0 et 4, `S = 1776 + 124 × i`. Les champs suivants couvrent exactement les 124 octets. Le WDD confirme maintenant les noms `NOM`, `PRENOM`, `AGE1`, `FLAGADMIN` et leurs tailles. Les neuf octets de gestion restent bruts.
+
+| Offset relatif à `S` | Offset absolu du premier | Taille | Interprétation de lecture | Valeur/commentaire |
+| --- | --- | --- | --- | --- |
+| `+0` | 1 776 | 1 | `u8` brut | `0x10` dans le premier, `0x80` dans les quatre suivants ; état logique non attribué |
+| `+1` | 1 777 | 2 | `u16` brut | 1 puis 2 dans les quatre suivants |
+| `+3` | 1 779 | 4 | `u32` brut | `0x6A835C67` puis `0x6A835D9A` ; pas de conversion en date validée |
+| `+7` | 1 783 | 1 | `u8` brut | 0 |
+| `+8` | 1 784 | 1 | `u8` brut | `0xFF` |
+| `+9` | 1 785 | 8 | `i64` explicite | 1, 3, 4, 5, -1 selon l’emplacement |
+| `+17` | 1 793 | 51 | `NOM`, texte 50 + NUL | Exemple fictif `Lina` ; ASCII observé, CP1252 choisi explicitement par le lecteur |
+| `+68` | 1 844 | 51 | `PRENOM`, texte 50 + NUL | Exemple fictif `Morel` |
+| `+119` | 1 895 | 4 | `AGE1`, `i32` | 18 dans les cinq emplacements |
+| `+123` | 1 899 | 1 | `FLAGADMIN`, booléen sur un octet | 0, faux dans les cinq emplacements |
+
+Le champ à `+9` contient exactement `FF FF FF FF FF FF FF FF` dans le dernier emplacement. Une lecture `i64` donne -1 ; une lecture `u64` donne 18 446 744 073 709 551 615. La représentation binaire est certaine, son rôle de sentinelle ou d’identifiant logique ne l’est pas. Le nom IDPERSONNE et son type identifiant automatique sur huit octets sont confirmés par le WDD. Le lecteur conserve une interprétation `Int64` de ce profil, qui rend visible la valeur brute -1 sans l’assimiler à une personne active.
+
+Les deux chaînes ont chacune une zone fixe de 51 octets. La description WDD confirme désormais une taille déclarée de 50 et une taille de stockage de 51. Les octets ASCII ne suffisent pas à distinguer CP1252 des autres encodages compatibles avec ASCII.
+
+### États et nombre de personnes
+
+La documentation officielle distingue les enregistrements [actifs, rayés et supprimés](https://doc.pcsoft.fr/fr-FR/?3044006=), et précise que [l’ajout peut réutiliser les emplacements supprimés](https://doc.pcsoft.fr/?3044147=). Elle ne fournit pas les valeurs binaires des états de ce profil. L’absence d’identifiant 2, la présence de -1 et les octets `0x10`/`0x80` ne suffisent donc pas à attribuer un état fiable à chaque emplacement.
+
+Le lecteur restitue **cinq emplacements physiques**, sans les filtrer, sans les compter comme cinq personnes actives et sans présenter `SlotIndex` comme le numéro d’enregistrement HFSQL.
+
+## NDX : descripteurs et régions
+
+| Offset fichier | Taille | Type | Valeur | Commentaire |
+| --- | --- | --- | --- | --- |
+| 90 | 2 | `u16` brut | 1 | Paramètre brut |
+| 92 | 2 | `u16` brut | 4 | Paramètre brut |
+| 94 | 4 | `u32` brut | 17 819 | `0x459B` |
+| 98 | 4 | `u32` brut | 1 280 | Pas une taille de page universelle démontrée |
+| 102 | 4 | `u32` brut | 512 | Paramètre brut |
+| 106 | 1 | `u8` brut | 0 | Paramètre brut |
+| 107 | 2 | `u16` | 3 | Compte du répertoire terminal |
+| 109 | 2 | `u16` brut | 27 099 | `0x69DB` |
+| 111 | 8 | `u64` | 12 896 | Pointeur absolu du répertoire |
+| 119 | 16 | `octets[16]` | Nuls | Jusqu’à l’offset 135 |
+| 12 896 | 8 | `u64` | 5 034 | Descripteur 0 |
+| 12 904 | 8 | `u64` | 9 229 | Descripteur 1 |
+| 12 912 | 8 | `u64` | 12 836 | Descripteur 2 |
+| 12 920 | 0 | Fin exclusive | `12896 + 3 × 8` | Couverture exacte |
+
+Le [descripteur de 60 octets](./ndx.mdx#descripteur-terminal-de-60-octets) possède les valeurs suivantes. Les noms `P16`, `L24`, `P28`, `P36` reprennent les offsets relatifs bruts, sans sémantique B-tree supposée.
+
+| Descripteur `D` | Mot `+0` (`u16`) | Mot `+10` (`u32`) | Mot `+14` (`u16`) | `P16` (`u64`) | `L24` (`u32`) | `P28` (`u64`) | `P36` (`u64`) |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| 5 034 | `0x1442` | 55 | 8 | 1 484 | 852 | 135 | 2 336 |
+| 9 229 | `0x4A48` | 60 | 4 | 6 323 | 448 | 5 094 | 6 771 |
+| 12 836 | `0x7857` | 65 | 1 | 10 423 | 145 | 9 289 | 10 568 |
+
+Dans les trois cas, `P16 + L24 = P36` ; les trois pointeurs tombent à l’intérieur du fichier. Ce contrôle établit une relation physique, pas le rôle exact des régions.
+
+### Découpage physique recoupé par les pointeurs
+
+Les libellés A, B et C désignent seulement des régions observées. Aucun format de page n’est prétendu intégralement décodé.
+
+| Ensemble | Région A : `[P28, P16)` | Taille A | Région B : `[P16, P36)` | Taille B | Région C : `[P36, D)` | Taille C | Descripteur |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| 0 | `[135, 1484)` | 1 349 | `[1484, 2336)` | 852 | `[2336, 5034)` | 2 698 | `[5034, 5094)` |
+| 1 | `[5094, 6323)` | 1 229 | `[6323, 6771)` | 448 | `[6771, 9229)` | 2 458 | `[9229, 9289)` |
+| 2 | `[9289, 10423)` | 1 134 | `[10423, 10568)` | 145 | `[10568, 12836)` | 2 268 | `[12836, 12896)` |
+
+Les régions contiennent aussi des morceaux de SVG, des textes UTF-16 et des suites ressemblant à des adresses mémoire. Leur présence ne les identifie pas comme des clés de la table. L’hypothèse de zones non initialisées ou de données résiduelles reste une **inférence** ; la taille utile et les structures d’allocation ne sont pas établies. Une recherche de chaînes seule ne produit pas un lecteur NDX fiable. Aucun SVG ou texte résiduel n’est extrait comme donnée métier par l’API.
+
+## Schéma confirmé et lecture .NET
+
+![Un emplacement PERSONNE de 124 octets](../assets/personne.svg)
+
+Le WDD décrit cinq rubriques. Leur stockage cumulé vaut `8 + 51 + 51 + 4 + 1 = 115` octets ; avec les neuf octets de gestion, on retrouve exactement 124. Le WDA fournit indépendamment la même longueur. Les positions 1 776 et le compte 5 viennent toujours de l’inspection du FIC : ils ne sont pas retrouvés automatiquement.
+
+La bibliothèque 0.4.0 propose `CreateFixedRecordLayout(analyse, 1776, 5)`. Elle vérifie les GUID, les types, les largeurs et la cohérence du pas, puis fournit des champs nommés. Le guide [schéma et données .NET](../../dotnet/schema-et-donnees.mdx) contient l’exemple complet. Les dispositions manuelles de la version précédente restent acceptées.
+
+Le WDD contient aussi PERSONNE_MESSAGE, avec trois rubriques : IDPERSONNE_MESSAGE, IDPERSONNE, TEXTE. TEXTE est un mémo texte : ses huit octets de stockage ne sont pas un texte de huit caractères. Aucun fichier physique de cette seconde table n’a été fourni. La liaison entre les deux tables est détaillée dans le [format WDD](../windev/wdd.mdx#première-liaison-non-vide).
+
+## Validation et questions ouvertes
+
+La suite vérifie les en-têtes 28, l’identité du couple, le répertoire terminal, les trois descripteurs, les relations de pointeurs, les cinq découpages, les valeurs attendues et la sentinelle tout à 1. Les erreurs de pas, compte, largeur de champ, terminaison de chaîne et descripteur altéré sont rejetées. Le corpus précédent demeure couvert.
+
+Les questions encore ouvertes sont la transformation des métadonnées FIC, la découverte automatique du début et du nombre d’emplacements, le décodage des états, les formats variables et mémos, ainsi que les clés et le B-tree NDX. Le WDD a résolu les noms et types des cinq rubriques, pas ces questions physiques. Ce témoin apporte une lecture utile de données en clair et de nouvelles structures d’index, sans constituer une spécification complète de HFSQL.

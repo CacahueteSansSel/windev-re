@@ -1,0 +1,52 @@
+---
+title: "MMO : mémos"
+sidebar_label: "MMO : mémos"
+sidebar_position: 3
+description: "MMO : mémos — structures, positions en octets et limites du lecteur autonome."
+---
+
+Les mémos déportent des contenus variables hors des emplacements fixes du FIC. Le lecteur reconnaît les champs d’en-tête observés ; il ne suit pas encore les chaînes d’allocation des contenus.
+
+Les positions sont exprimées en **octets**. Les inconnues sont indiquées comme telles ; voir les [conventions](../conventions.mdx).
+
+## Identification et structure
+
+Le type est `0x00070003`. Le RADRub.mmo fourni mesure **210 octets**, soit exactement le profil d’en-tête ci-dessous.
+
+| Position fichier | Taille | Type | Valeur / commentaire |
+| --- | --- | --- | --- |
+| `[0, 90)` | 90 | En-tête physique commun | Identité de l’analyse et de la table |
+| 90 / `0x5A` | 2 | `u16` brut | 1 |
+| 92 / `0x5C` | 2 | `u16` brut | 2 |
+| 94 / `0x5E` | 4 | `u32` brut | 2 dans RAD ; 11 dans le jeu de tâches |
+| 98 / `0x62` | 112 | 14 slots `u64` bruts | Sémantique non entièrement établie |
+| 210 / `0xD2` | Variable | Octets supplémentaires éventuels | Aucun dans les deux MMO RAD |
+
+La position d’un slot `j` est `98 + 8 × j`, pour `0 <= j < 14`.
+
+| Profil | Taille | Slots 98–209 | Octets après 210 |
+| --- | --- | --- | --- |
+| RADRub.mmo | 210 | 14 fois `0xFFFFFFFFFFFFFFFF` | 0 |
+| RADProp.mmo | 210 | 14 fois `0xFFFFFFFFFFFFFFFF` | 0 |
+| MMO des tâches | 850 | Valeurs mixtes, dont une position 338 | 640 |
+
+Les valeurs toutes à un sont des sentinelles observées. Leur présence ne suffit pas à leur attribuer un sens de « page libre » ou de « mémo supprimé ».
+
+## Limites du spécimen fourni
+
+Le MMO RADRub permet de valider le préfixe, les identités, les mots supplémentaires, les slots et la fin du fichier. Sans octets après 210, il ne démontre pas le format des mémos non vides.
+
+Le MMO des tâches fournit un contre-exemple contenant du texte UTF-16LE. Retrouver du texte ne suffit pas à déterminer l’allocation, les fragments, les chaînages et le lien des mémos avec les enregistrements FIC. Ces mécanismes ne sont pas présentés comme décodés.
+
+RADRub.mmo partage le GUID de table de RADRub.FIC et non celui de RADFic.FIC. Une table peut ne pas avoir de compagnon MMO dans le jeu étudié.
+
+## API
+
+```csharp
+var memo = MmoHfsqlMemoFile.Open(@"D:\Projet\SuperNoteExtra\RADRub.mmo");
+Console.WriteLine(memo.HasBytesAfterHeader);
+foreach (ulong slot in memo.RawHeaderSlots)
+    Console.WriteLine($"{slot:X16}");
+```
+
+`HasBytesAfterHeader` indique seulement une longueur supérieure à 210, pas un compte de mémos. Aucun texte supposé déchiffré n’est retourné par cette API.

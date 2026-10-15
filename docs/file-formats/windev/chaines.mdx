@@ -1,0 +1,112 @@
+---
+title: "Chaînes et identifiants"
+sidebar_label: "Chaînes et identifiants"
+sidebar_position: 12
+description: "Chaînes et identifiants — structures, positions en octets et limites du lecteur autonome."
+---
+
+Les textes n’utilisent pas tous la même enveloppe. Les propriétés d’interface contiennent souvent des chaînes encadrées ; le schéma WDD utilise surtout des chaînes terminées par NUL.
+
+Les positions sont exprimées en **octets**. Les inconnues sont indiquées comme telles ; voir les [conventions](../conventions.mdx).
+
+## Deux représentations de texte
+
+Les données contiennent des chaînes encadrées par des marqueurs et des chaînes simplement terminées par NUL. Ces deux représentations ont des règles de longueur différentes.
+
+## Chaîne encadrée
+
+Soit `T` le début de la chaîne et `C` sa longueur totale :
+
+| Offset relatif à `T` | Taille | Type | Contenu | Contrôle |
+| --- | --- | --- | --- | --- |
+| `+0` | 4 | `octets[4]` | `FF CE 88 F1` | Marqueur initial exact |
+| `+4` | 4 | `u32` | Longueur totale `C` | Au moins 13 octets |
+| `+8` | `C - 13` | Texte encodé | Octets du texte | Aucun NUL intérieur pour cette variante |
+| `+(C - 5)` | 1 | `u8` | `00` | Terminaison du texte |
+| `+(C - 4)` | 4 | `octets[4]` | `FE ED 98 E1` | Marqueur final exact |
+
+```text
+C = 4 + 4 + nombre_octets_texte + 1 + 4
+C = nombre_octets_texte + 13
+position_suivante = T + C
+```
+
+Les nombres `0xF188CEFF` et `0xE198EDFE` sont les vues `u32` à octet faible en premier des marqueurs. Ils ne sont pas des codes de caractères.
+
+## Exemple ASCII : SuperMailExtra
+
+Le nom du logiciel fictif `SuperMailExtra` comporte quatorze octets ASCII :
+
+```text
+FF CE 88 F1 1B 00 00 00 53 75 70 65 72 4D 61 69 6C 45 78 74 72 61 00 FE ED 98 E1
+```
+
+La longueur stockée vaut `0x1B = 27`, soit `14 + 13`. Le nom `SuperNoteExtra` a la même taille encadrée.
+
+## Exemple UTF-8 : ProcéduresGlobales
+
+```text
+FF CE 88 F1 20 00 00 00
+50 72 6F 63 C3 A9 64 75 72 65 73 47 6C 6F 62 61 6C 65 73
+00 FE ED 98 E1
+```
+
+| Élément | Valeur |
+| --- | --- |
+| Nombre de caractères | 18 |
+| Nombre d'octets UTF-8 | 19 |
+| Encodage de `é` | `C3 A9` |
+| Longueur complète | 32 octets, soit `0x20` |
+
+Compter les caractères au lieu des octets décale donc la lecture du marqueur final.
+
+## Chaîne encadrée vide et sentinelle vide
+
+Une chaîne encadrée vide pourrait être représentée avec `C = 13`, un NUL et les deux marqueurs. Cette possibilité est acceptée par le lecteur de chaînes.
+
+Certains contextes, notamment une ligne source vide, utilisent une autre représentation : **un seul octet `00`**. Le choix entre sentinelle et chaîne encadrée doit être fait à partir de la structure englobante ; ce n'est pas une règle universelle applicable à tout octet nul.
+
+## CString
+
+| Offset | Taille | Type | Commentaire |
+| --- | --- | --- | --- |
+| Début | Variable | Texte | Lu jusqu'au premier NUL |
+| Après le texte | 1 | `u8` | Octet `00` |
+
+```text
+Z(s) = nombre_octets_texte + 1
+chaîne vide = 00
+```
+
+Les noms, libellés, GUID textuels et masques des rubriques WDD utilisent cette représentation. Il n'y a pas de longueur u32 immédiatement devant chaque CString.
+
+## Encodages
+
+| Région | Encodage constaté / lecture retenue |
+| --- | --- |
+| Build PCS, dix octets | Vue ASCII |
+| Noms et lignes encadrés | UTF-8 dans les exemples étudiés |
+| Certaines CString du schéma | Windows-1252, notamment certains libellés accentués |
+| Toute région inconnue | Ne pas imposer un encodage texte |
+
+Le lecteur essaie UTF-8 strict, puis convertit les octets selon Windows-1252 lorsque le texte n'est pas un UTF-8 valide. Cette stratégie est celle de l'implémentation, pas la preuve que chaque champ contient un indicateur d'encodage implicite.
+
+Dans Windows-1252, les octets `80` à `9F` ne sont pas tous des caractères identiques à leur code Unicode. Par exemple, `80` représente `€`, `91` une apostrophe typographique ouvrante et `96` un tiret. Une conversion naïve « un octet = un caractère Unicode de même valeur » serait incorrecte pour ces positions.
+
+## GUID et identifiants
+
+Un GUID textuel WDD observé comporte 32 caractères hexadécimaux sans tiret, puis NUL : `Z = 33`. Il ne faut pas le lire comme un GUID Windows binaire de 16 octets.
+
+Les groupes de huit octets situés après certains noms de fenêtres ou de procédures restent des identifiants bruts non entièrement interprétés. Ils ne sont pas automatiquement des GUID ni des dates.
+
+## Contrôles recommandés
+
+| Contrôle | Échec détecté |
+| --- | --- |
+| Longueur encadrée au moins égale à 13 | Longueur impossible |
+| Fin de chaîne dans le buffer | Troncature ou dépassement |
+| Marqueurs et NUL exacts | Mauvais alignement ou faux positif |
+| Longueur CString bornée | Absence de terminaison ou allocation excessive |
+| Longueur en octets, pas en caractères | Décalage après un accent |
+
+Une extraction de chaînes imprimables seule ne permet pas de distinguer un nom de contrôle, une ligne de code, un chemin ou un commentaire. Leur sens dépend du conteneur ou de l'enregistrement environnant.

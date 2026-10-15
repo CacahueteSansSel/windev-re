@@ -1,0 +1,31 @@
+{
+  "DataOffset": 1763,
+  "RecordByteLength": 70,
+  "RecordCount": 8,
+  "Fields": [
+    {
+      "Name": "IDJOUR_FERIE",
+      "Offset": 9,
+      "ByteLength": 8,
+      "Type": "Int64"
+    },
+    {
+      "Name": "JOUR",
+      "Offset": 17,
+      "ByteLength": 1,
+      "Type": "UInt8"
+    },
+    {
+      "Name": "MOIS",
+      "Offset": 18,
+      "ByteLength": 1,
+      "Type": "UInt8"
+    },
+    {
+      "Name": "LIBELLE",
+      "Offset": 19,
+      "ByteLength": 51,
+      "Type": "Cp1252Z"
+    }
+  ]
+}

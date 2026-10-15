@@ -1,0 +1,51 @@
+---
+title: "Images et bibliothèques WDL"
+sidebar_position: 5
+---
+
+## Exporter la prévisualisation d’une fenêtre
+
+```csharp
+using WindevReader;
+
+var fenetre = WdwWindevWindow.Open("FEN_Notes.wdw");
+if (fenetre.Preview is { } image)
+{
+    image.SaveBmp("previsualisation.bmp");
+    Console.WriteLine($"{image.Width} × {image.Height}");
+    byte[] pixels = image.GetRgba32();
+}
+```
+
+`BmpData` contient le BMP décompressé complet. `SaveBmp` conserve ces octets ; `GetRgba32` produit un tableau RGBA orienté de haut en bas, avec alpha 255. Les dimensions de certains gabarits peuvent différer de `Bounds`. Cette API restitue l’image stockée dans le WDW ; elle ne redessine pas la fenêtre.
+
+## Inventorier un patch
+
+```csharp
+var patch = WdlWindevLibrary.Open("SuperNoteExtra.wdl.1.0.77.0.6");
+foreach (var entree in patch.Entries)
+    Console.WriteLine($"{entree.Index}: {entree.LogicalName}, " +
+        $"ressource={entree.IsResource}, segments={entree.Chunks.Count}");
+```
+
+Le lecteur reconnaît le patch fourni de révision 3102. Le suffixe numérique ne change pas son type PCS.
+
+## Extraire une ressource
+
+```csharp
+var ressource = patch.Entries.Single(e => e.OriginalPath == "ARCHIVE.PNG");
+byte[] contenu = patch.ReadResource(ressource);
+File.WriteAllBytes("archive-extraite.png", contenu);
+```
+
+`ReadResource` traite les ressources directes ou LZW reconnues. Les chemins internes à l’archive restent des métadonnées ; l’appelant choisit le fichier de sortie. `ReadStoredChunk(entree, segment)` renvoie un segment tel qu’il est stocké dans l’archive.
+
+## Consulter une fenêtre compilée
+
+```csharp
+var entreeFenetre = patch.Entries.Single(e => e.LogicalName == "FEN_Journal");
+var proprietes = patch.ReadWindowProperties(entreeFenetre);
+Console.WriteLine(proprietes.DecodedByteLength);
+```
+
+Ce résultat est un buffer de propriétés reconnu, pas un WDW source reconstruit. Le bytecode compilé n’est pas décompilé en WLangage.

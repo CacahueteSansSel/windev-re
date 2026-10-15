@@ -1,0 +1,100 @@
+{
+  "Version": "0.5.0",
+  "ResearchDate": "2026-10-15",
+  "MatchingOriginalWdd31": true,
+  "Fics": [
+    {
+      "File": "jour_ferie.fic",
+      "ByteLength": 2323,
+      "DataOffset": 1763,
+      "RecordByteLength": 70,
+      "PhysicalSlotCount": 8,
+      "PhysicalFields": [
+        "IDJOUR_FERIE",
+        "JOUR",
+        "MOIS",
+        "LIBELLE"
+      ]
+    },
+    {
+      "File": "semaine_cours.fic",
+      "ByteLength": 1662,
+      "DataOffset": 1627,
+      "RecordByteLength": 35,
+      "PhysicalSlotCount": 1,
+      "PhysicalFields": [
+        "IDSEMAINE_COURS",
+        "DATEDEB",
+        "DATEFIN"
+      ]
+    }
+  ],
+  "Ndxs": [
+    {
+      "File": "jour_ferie.ndx",
+      "ByteLength": 10003,
+      "DirectoryOffset": 9971,
+      "DescriptorOffsets": [
+        135,
+        2893,
+        5221,
+        7549
+      ],
+      "FlatPageOffsets": [
+        195,
+        2953,
+        5281,
+        7609
+      ],
+      "KeyByteLengths": [
+        8,
+        1,
+        1,
+        2
+      ],
+      "RealEntriesPerPage": 8
+    },
+    {
+      "File": "semaine_cours.ndx",
+      "ByteLength": 8553,
+      "DirectoryOffset": 8529,
+      "DescriptorOffsets": [
+        135,
+        2893,
+        5711
+      ],
+      "FlatPageOffsets": [
+        195,
+        2953,
+        5771
+      ],
+      "KeyByteLengths": [
+        8,
+        9,
+        9
+      ],
+      "RealEntriesPerPage": 1
+    }
+  ],
+  "FlatPageHeaderByteLength": 29,
+  "FlatPageTag": 7,
+  "FlatRealEntries": 35,
+  "FlatTerminalSentinels": 7,
+  "CompoundField": "MOISJOUR",
+  "CompoundMarkerSuffixRelativeOffset": 31,
+  "CompoundMarkerSchemaOffset": 9059,
+  "CompoundMarkerValue": 1,
+  "CompoundKeyOrder": [
+    "MOIS",
+    "JOUR"
+  ],
+  "CompoundFieldConsumesFicBytes": false,
+  "OrdinaryBinaryHashMarkerValue": 0,
+  "IndependentPythonCliComparisonPassed": true,
+  "RecordStateSemantics": "Unknown",
+  "DistinctReferenceSemantics": "Unknown: IDs and physical ordinals coincide",
+  "GeneralBtreeTraversalImplemented": false,
+  "Assertions": 2894,
+  "DocusaurusBuildPassed": true,
+  "DocumentationExamplesCompile": true
+}

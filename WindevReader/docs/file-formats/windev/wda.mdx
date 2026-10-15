@@ -1,0 +1,133 @@
+---
+title: "WDA : analyse éditable"
+sidebar_label: "WDA : analyse éditable"
+sidebar_position: 5
+description: "WDA : analyse éditable — structures, positions en octets et limites du lecteur autonome."
+---
+
+Le WDA conserve la définition éditable de l’analyse et sa représentation graphique. L’API expose les sections et buffers décodés ; le WDD offre l’accès typé aux tables et rubriques.
+
+Les positions sont exprimées en **octets**. Les inconnues sont indiquées comme telles ; voir les [conventions](../conventions.mdx).
+
+Pour utiliser le lecteur, consulter la [documentation .NET](../../dotnet/index.mdx).
+
+## Identification et différence avec WDD
+
+| Propriété | WDA | WDD |
+| --- | --- | --- |
+| Usage | Analyse éditable | Description du schéma utilisée par l'application |
+| Type PCS | `0x00080002` | `0x00070004` |
+| Sections du corpus | 4 | 2 |
+| Lecture autonome actuelle | Buffers décodés et chaînes | Tables et rubriques typées |
+
+Le rôle du `.wda` comme fichier de l'analyse éditable est confirmé par [PC SOFT, modèle logique de données](https://doc.windev.com/en-us/?2011011=&name=logical_data_model_ldm). Le `.wdd` demandé est bien présent dans le projet fourni ; les deux extensions ne sont pas interchangeables.
+
+## Carte complète du WDA courant
+
+Le profil de référence associé à `SuperNoteExtra.ana/SuperNoteExtra.wda` représente un fichier de 20 130 octets. Les offsets suivants sont absolus dans le fichier.
+
+| Section | Tag (`u8`) | Début dans le fichier | Longueur (`u32`) | Blocs décodés | Commentaire |
+| --- | --- | --- | --- | --- | --- |
+| 0 | `0x00` | `0x0089` (137) | 6826 | +4 → 26160 octets | Description logique de l’analyse ; buffer LZW |
+| 1 | `0x00` | `0x1B33` (6963) | 13065 | Aucun bloc LZW identifié | Données de représentation graphique ; identification partielle par noms de classes |
+| 2 | `0x00` | `0x4E3C` (20028) | 12 | Aucun bloc LZW identifié | Petit bloc auxiliaire brut |
+| 3 | `0x00` | `0x4E48` (20040) | 90 | Aucun bloc LZW identifié | Bloc opaque dont le début partage un motif avec certains réglages de projet |
+
+## Section 0 : description logique décompressée
+
+| Offset section | Taille | Type | Valeur / commentaire |
+| --- | --- | --- | --- |
+| `+0` | 4 | `u32` brut | 2 ; rôle exact non établi |
+| `+4` | 1 | `u8` | Méthode LZW 04 |
+| `+5` | 4 | `u32` | `L = 6 811` |
+| `+9` | 4 | `u32` | `U = 26 160` |
+| `+13` | 2 | `octets[2]` | `00 00` |
+| `+15` | 6 811 | Flux LZW | Données logiques |
+
+La section commence à 137, l'enveloppe à 141 et le flux à 152. La taille de section vaut `4 + 11 + 6811 = 6826`.
+
+Le buffer décodé contient les noms et descriptions de l'analyse, des tables et des rubriques. Son organisation n'est pas identique à celle du schéma WDD.
+
+### Début observé du buffer
+
+| Offset décodé | Taille | Type de lecture | Valeur | Commentaire |
+| --- | --- | --- | --- | --- |
+| 0 | 4 | `u32` brut | 12 | Sens exact non établi |
+| 4 | 4 | `u32` brut | 2 | Sens exact non établi |
+| 8 | 4 | `u32` brut | 1 | Sens exact non établi |
+| 12 | 4 | `u32` | 26 148 | Égal à `26 160 - 12` dans le spécimen ; rôle non généralisé |
+| Après 16 | Variable | `octets[n]` et enregistrements | Descriptions internes | Décodage sémantique partiel |
+
+### Occurrences de chaînes zéro-terminées
+
+Cet extrait fictif utilise les positions d’un buffer décodé. La CString `SuperNoteExtra.wda` mesure 19 octets et se termine à 210 ; la date illustrative commence à 213. Les autres positions sont séparées par des régions non décrites :
+
+| Offset décodé | Taille avec NUL | Valeur | Commentaire |
+| --- | --- | --- | --- |
+| `0x00BF` (191) | 19 | SuperNoteExtra.wda | Occurrence de CString ; ne définit pas un offset universel |
+| `0x00D5` (213) | 9 | 20260115 | Occurrence de CString ; ne définit pas un offset universel |
+| `0x010F` (271) | 33 | 54077D9E89F753879ECE3503D29F691E | Occurrence de CString ; ne définit pas un offset universel |
+| `0x01A4` (420) | 15 | ENTREE_JOURNAL | Occurrence de CString ; ne définit pas un offset universel |
+| `0x01B4` (436) | 15 | entree_journal | Occurrence de CString ; ne définit pas un offset universel |
+| `0x03B4` (948) | 17 | IDENTREE_JOURNAL | Occurrence de CString ; ne définit pas un offset universel |
+| `0x060A` (1546) | 6 | HEURE | Occurrence de CString ; ne définit pas un offset universel |
+| `0x081A` (2074) | 12 | DESCRIPTION | Occurrence de CString ; ne définit pas un offset universel |
+
+La lecture de ces CString illustre l’accès aux descriptions sans runtime. Elles ne suffisent pas, seules, à reconstruire un arbre de tables et rubriques : les frontières des objets et les champs numériques doivent être validés séparément.
+
+Le lecteur typé des tables utilise le WDD. Il ne se sert pas d'une recherche de chaînes du WDA pour simuler une lecture du WDD.
+
+## Section 1 : représentation graphique
+
+Cette section mesure 13 065 octets dans le spécimen. Des noms comme `clGPlanDocHeader` et `clGEntite` sont visibles.
+
+| Observation | Interprétation |
+| --- | --- |
+| Noms de classes de plan et d'entité | Suggèrent la représentation du diagramme ; rôle général inféré |
+| Valeurs numériques et noms sérialisés | Organisation complète non interprétée |
+| Aucune enveloppe LZW 04 acceptée par le lecteur dans ce bloc courant | Le bloc n'est pas assimilé à du LZW sur la seule base de son contenu |
+
+Le schéma physique et la disposition visuelle de l'analyse sont deux informations différentes. Une coordonnée d'entité graphique n'est pas une propriété du stockage d'une rubrique.
+
+## Sections 2 et 3
+
+| Section | Longueur | Type documentaire | Commentaire |
+| --- | --- | --- | --- |
+| 2 | 12 | `octets[12]` | Petit bloc auxiliaire ; sens inconnu |
+| 3 | 90 | `octets[90]` | Région opaque ; commence par `3D 01 12 34 56 78 9A ...` (suffixe fictif) |
+
+Le motif initial de la section 3 ressemble à celui de la section 1 des projets. Cette ressemblance ne prouve ni un même type d'objet ni un même codec. Aucune interprétation supplémentaire n'est imposée.
+
+## Historiques
+
+Le corpus contient 27 WDA, dont les sauvegardes `ANA00001` à `ANA00024`, la sauvegarde courante et d'autres copies de travail. Les longueurs des sections varient avec les versions du schéma ; le découpage doit toujours être calculé depuis le répertoire PCS.
+
+Les historiques sont utiles pour comparer les changements de structures, mais ils ne certifient pas la compatibilité du format avec des versions majeures de produit absentes du corpus.
+
+## Limites
+
+La décompression et les frontières des quatre sections sont établies. La totalité de la sérialisation logique du WDA, sa représentation graphique et son petit bloc opaque final ne sont pas entièrement interprétés. La spécification typée la plus avancée est celle du [WDD](./wdd.mdx).
+
+
+## Recoupement avec le WDA de PERSONNE, version 28
+
+Le WDA mesure 10 464 octets. Il s’ouvre sans nouvelle transformation : la section logique contient l’enveloppe LZW déjà reconnue. Les positions de sortie sont indépendantes des offsets du WDD.
+
+| Section | Début dans le fichier `F` | Longueur | Lecture reconnue |
+| --- | --- | --- | --- |
+| 0 | 137 | 2 536 | Préfixe 4 octets ; enveloppe LZW à 141 ; flux à 152 ; sortie 7 188 octets |
+| 1 | 2 673 | 7 696 | Représentation graphique conservée brute |
+| 2 | 10 369 | 12 | Octets auxiliaires |
+| 3 | 10 381 | 83 | Octets auxiliaires |
+| Fin | 10 464 | 0 | Couverture exacte |
+
+Dans le buffer logique décompressé `L`, le `u32` à **475** vaut 124. Le GUID de table ASCII Z se trouve à **571**, sur 33 octets, et correspond au GUID de PERSONNE dans le WDD et le FIC. Ce sont deux recoupements indépendants de la longueur et de l’identité physique.
+
+| Texte technique | Positions observées dans `L` | Commentaire |
+| --- | --- | --- |
+| NOM | 1 431 ; 1 799 ; 1 815 | Plusieurs copies ; ne pas assimiler chaque occurrence à une description |
+| PRENOM | 1 932 ; 2 298 ; 2 317 | Chaîne terminée par NUL dans les zones observées |
+| AGE1 | 2 437 ; 2 799 | Présent aussi dans le WDD |
+| FLAGADMIN | 2 933 ; 2 996 ; 3 306 ; 3 328 | Présent aussi dans le WDD |
+
+Ces CStrings ne sont pas des chaînes encadrées PCS. `DecodedBlocks[i].Strings` recense seulement les chaînes encadrées reconnues ; une liste vide n’implique pas l’absence de texte dans `Data`. Le lecteur WDA reste une API de sections et de buffers, sans modèle typé de son graphe éditable.
