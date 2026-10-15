@@ -1,0 +1,124 @@
+---
+title: "WDG : procédures globales"
+sidebar_label: "WDG : procédures globales"
+sidebar_position: 3
+description: "WDG : procédures globales — structures, positions en octets et limites du lecteur autonome."
+---
+
+Le WDG regroupe des procédures réutilisables et des déclarations globales. Les noms et les lignes de source sont distincts des métadonnées de l’éditeur.
+
+Les positions sont exprimées en **octets**. Les inconnues sont indiquées comme telles ; voir les [conventions](../conventions.mdx).
+
+Pour utiliser le lecteur, consulter la [documentation .NET](../../dotnet/index.mdx).
+
+## Identification
+
+| Propriété | Valeur |
+| --- | --- |
+| Extension | `.wdg` |
+| Type PCS | `0x00000007` |
+| Sections | 9 |
+| Début des sections dans les spécimens | 202, soit `0x00CA` |
+| Versions étudiées | 28 et 31 |
+
+Une collection WDG contient des déclarations globales et des groupes de procédures. Elle ne doit pas être interprétée comme un unique texte source compressé.
+
+## Carte de référence : SuperNoteExtra, version 31
+
+Taille : 10 044 octets.
+
+| Section | Tag (`u8`) | Début dans le fichier | Longueur (`u32`) | Blocs décodés | Commentaire |
+| --- | --- | --- | --- | --- | --- |
+| 0 | `0x00` | `0x00CA` (202) | 151 | Aucun bloc LZW identifié | Identité de la collection et chemin du projet |
+| 1 | `0x01` | `0x0161` (353) | 0 | Aucun bloc LZW identifié | Section présente mais vide dans le corpus |
+| 2 | `0x02` | `0x0161` (353) | 9577 | +4 → 37286 octets | Déclarations, groupes de procédures et événements source |
+| 3 | `0x00` | `0x26CA` (9930) | 24 | Aucun bloc LZW identifié | Bloc auxiliaire brut de 24 octets |
+| 4 | `0x13` | `0x26E2` (9954) | 61 | Aucun bloc LZW identifié | Métadonnées auxiliaires |
+| 5 | `0x00` | `0x271F` (10015) | 0 | Aucun bloc LZW identifié | Vide |
+| 6 | `0x00` | `0x271F` (10015) | 0 | Aucun bloc LZW identifié | Vide |
+| 7 | `0x0A` | `0x271F` (10015) | 29 | Aucun bloc LZW identifié | Bloc terminal brut de 29 octets |
+| 8 | `0x00` | `0x273C` (10044) | 0 | Aucun bloc LZW identifié | Vide |
+
+## Carte de référence : SuperMailExtra, version 28
+
+Taille : 5 536 octets.
+
+| Section | Tag (`u8`) | Début dans le fichier | Longueur (`u32`) | Blocs décodés | Commentaire |
+| --- | --- | --- | --- | --- | --- |
+| 0 | `0x00` | `0x00CA` (202) | 147 | Aucun bloc LZW identifié | Identité de la collection et chemin du projet |
+| 1 | `0x01` | `0x015D` (349) | 0 | Aucun bloc LZW identifié | Section présente mais vide dans le corpus |
+| 2 | `0x02` | `0x015D` (349) | 5073 | +4 → 16123 octets | Déclarations, groupes de procédures et événements source |
+| 3 | `0x00` | `0x152E` (5422) | 24 | Aucun bloc LZW identifié | Bloc auxiliaire brut de 24 octets |
+| 4 | `0x13` | `0x1546` (5446) | 61 | Aucun bloc LZW identifié | Métadonnées auxiliaires |
+| 5 | `0x00` | `0x1583` (5507) | 0 | Aucun bloc LZW identifié | Vide |
+| 6 | `0x00` | `0x1583` (5507) | 0 | Aucun bloc LZW identifié | Vide |
+| 7 | `0x0A` | `0x1583` (5507) | 29 | Aucun bloc LZW identifié | Bloc terminal brut de 29 octets |
+| 8 | `0x00` | `0x15A0` (5536) | 0 | Aucun bloc LZW identifié | Vide |
+
+## Section 0 : nom de collection
+
+| Offset relatif | Taille | Type | Valeur / commentaire |
+| --- | --- | --- | --- |
+| `+0` | 4 | `u32` brut | 7 dans les spécimens |
+| `+4` | 32 | Chaîne encadrée | `ProcéduresGlobales` |
+| Après la chaîne | Variable | Métadonnées brutes | Identifiants et autres paramètres |
+| Plus loin | Variable | Chaîne encadrée | Chemin vers le projet `.wdp` |
+
+Le nom encadré occupe 32 octets, à cause de l'encodage UTF-8 de `é`. Pour SuperNoteExtra, il commence à l'offset fichier 206.
+
+## Section 2 : préfixe et décompression
+
+| Élément | SuperNoteExtra 31 | SuperMailExtra 28 |
+| --- | --- | --- |
+| Début de section dans le fichier | 353 | 349 |
+| Préfixe de quatre octets | `00 00 00 00` | `0F 00 00 00` |
+| Enveloppe LZW, début fichier | 357 | 353 |
+| Flux LZW, début fichier | 368 | 364 |
+| `L` | 9 562 | 5 058 |
+| `U` | 37 286 | 16 123 |
+| Taille complète de section | 9 577 | 5 073 |
+
+La valeur du préfixe n'est pas prise comme une taille. Le lecteur consomme exactement quatre octets auxiliaires, puis lit l'enveloppe.
+
+## Déclarations globales
+
+Les événements initiaux sont rattachés au nom de la collection, tant qu'aucun nom de procédure suivi d'un groupe 0D n'a été trouvé. Ils peuvent contenir une structure, des variables et des lignes vides.
+
+Dans SuperNoteExtra, les déclarations comprennent notamment `St_ResultatChaineFlags est une structure`. Les événements ont la structure décrite dans le [chapitre WLangage](./wlangage.mdx).
+
+## Groupes des procédures
+
+Une procédure est identifiée par un nom encadré dans le buffer décompressé. Les événements suivants lui sont associés. La procédure peut avoir plusieurs événements ; l'API les conserve séparément avec leurs identifiants numériques.
+
+### Exemples de procédures de SuperNoteExtra
+
+Les offsets désignent le début des événements dans la sortie LZW de la section 2, pas une position dans le fichier stocké.
+
+| Procédure | Événements source reconnus | Lignes | Offsets dans le buffer décodé |
+| --- | --- | --- | --- |
+| RechargeJoursFeries | 1 | 29 | `0x047C` (1148) |
+| ProchainJourOuvré | 1 | 25 | `0x124E` (4686) |
+| PrécédentJourOuvré | 1 | 25 | `0x1DC2` (7618) |
+| JourEnSemaineDeCours | 1 | 21 | `0x2867` (10343) |
+| EstJourOuvre | 1 | 19 | `0x32E7` (13031) |
+| CreeBackupDonnees | 1 | 39 | `0x3CED` (15597) |
+| AjoutePJEntreeJournal | 1 | 54 | `0x4EF0` (20208) |
+| LitChaineFlags | 1 | 60 | `0x6795` (26517) |
+| OuvrePJ | 1 | 33 | `0x7F2D` (32557) |
+
+### Exemples de procédures de SuperMailExtra
+
+| Nom | Commentaire |
+| --- | --- |
+| `CréeFichierDescAnalyse` | Source identifié avec la variante d'événement 15 |
+| `RenvoiRegleModifSuppr` | Source identifié avec la variante d'événement 15 |
+
+Le profil illustré par SuperMailExtra comprend du source faisant appel à la description HFSQL. Ces appels sont seulement des octets source extraits : la bibliothèque de lecture ne les exécute pas et n'utilise pas le runtime WINDEV.
+
+## Sections secondaires
+
+Les sections 3, 4 et 7 possèdent des frontières connues et des octets lisibles, mais leur schéma de propriétés n'est pas entièrement interprété. Les sections de longueur nulle doivent rester dans le répertoire logique ; les supprimer changerait les indices de sections.
+
+## Limites
+
+Les noms, déclarations et lignes source sont lisibles. Le bytecode, les informations détaillées de compilation, les identifiants internes et toutes les propriétés de l'éditeur ne sont pas décodés. Les événements sans ligne n'apparaissent pas comme des blocs source.

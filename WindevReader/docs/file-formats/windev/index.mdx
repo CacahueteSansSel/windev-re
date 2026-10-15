@@ -1,0 +1,22 @@
+---
+title: "WINDEV"
+sidebar_label: "WINDEV"
+sidebar_position: 0
+description: "WINDEV — structures, positions en octets et limites du lecteur autonome."
+---
+
+Les formats WINDEV décrivent les éléments d’un projet. Plusieurs partagent un conteneur PCS à sections ; cela ne signifie pas que leurs propriétés internes soient interchangeables.
+
+| Format | Rôle | Lecture exposée |
+| --- | --- | --- |
+| [WDP](./wdp.mdx) | Projet | Références de configuration et code source reconnu |
+| [WDW](./wdw.mdx) | Fenêtre | Propriétés, éléments repérés, source et prévisualisation BMP |
+| [WDG](./wdg.mdx) | Procédures globales | Déclarations et procédures source |
+| [WDD](./wdd.mdx) | Schéma compilé | Tables, rubriques et premiers profils de liaisons |
+| [WDA](./wda.mdx) | Analyse éditable | Sections, buffers logiques décompressés et octets graphiques |
+| [WDE](./wde.mdx) | État | Propriétés, blocs repérés et événements source |
+| [WDL](./wdl.mdx) | Bibliothèque ou patch | Répertoire compilé, segments et ressources |
+
+Le WDD et le WDA sont rangés ici car ils décrivent l’analyse du projet ; les valeurs physiques des tables relèvent de [HFSQL](../hfsql/index.mdx).
+
+Pour écrire un lecteur, suivre [PCS](./pcs.mdx), puis [sections et blocs](./sections-et-blocs.mdx), [chaînes](./chaines.mdx) et [LZW](./lzw.mdx). La [transformation WDD](./transformation-wdd.mdx) intervient avant la décompression du schéma étudié.

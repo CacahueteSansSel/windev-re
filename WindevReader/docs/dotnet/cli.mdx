@@ -1,0 +1,69 @@
+---
+title: "Commandes CLI"
+sidebar_position: 6
+---
+
+L’outil se lance avec `dotnet artifacts/cli/WindevReader.Cli.dll`. Dans les exemples suivants, `WindevReader.Cli.dll` désigne ce fichier ; conserver les DLL et fichiers runtime du même dossier ensemble.
+
+| Commande | Résultat |
+| --- | --- |
+| `inspect FICHIER` | Résumé JSON de la famille et des structures exposées |
+| `json FICHIER [SORTIE]` | Modèle JSON complet, sans les mémoires binaires exclues du modèle |
+| `code FICHIER [SORTIE]` | Source WLangage des documents source reconnus |
+| `preview WDW SORTIE.bmp` | BMP de prévisualisation |
+| `extract-resource WDL INDICE SORTIE` | Ressource d’une entrée WDL |
+| `layout FIC WDD DEBUT COMPTE [SORTIE]` | Disposition fixe nommée depuis un WDD 28 ou 31 compatible |
+| `index-entries NDX INDICE [SORTIE]` | Clés et références du profil plat NDX 31 reconnu |
+| `records FIC DISPOSITION.json [SORTIE]` | Valeurs des emplacements physiques de la disposition explicite |
+| `corpus DOSSIER [SORTIE]` | Rapport récursif d’ouverture des familles reconnues |
+
+Sans argument de sortie facultatif, le résultat textuel est écrit sur la sortie standard. Le code retour est 0 en cas de succès, 1 pour une erreur traitée et 2 lorsque les arguments initiaux sont insuffisants. Les arguments DEBUT, COMPTE et INDICE sont des entiers décimaux ; les indices commencent à zéro.
+
+## Schéma puis valeurs
+
+Utiliser le WDD fourni qui correspond au couple PERSONNE. Le nom SuperNoteExtra ci-dessous est un nom fictif de présentation.
+
+```sh
+dotnet WindevReader.Cli.dll inspect SuperNoteExtra.wdd
+dotnet WindevReader.Cli.dll layout PERSONNE.fic SuperNoteExtra.wdd 1776 5 disposition.json
+dotnet WindevReader.Cli.dll records PERSONNE.fic disposition.json emplacements.json
+```
+
+Le fichier de disposition contient `DataOffset`, `RecordByteLength`, `RecordCount`, `Fields`. Chaque champ déclare `Name`, `Offset`, `ByteLength`, `Type`. Les offsets de champs sont relatifs à l’emplacement.
+
+```json
+{
+  "DataOffset": 1776,
+  "RecordByteLength": 124,
+  "RecordCount": 5,
+  "Fields": [
+    { "Name": "IDPERSONNE", "Offset": 9, "ByteLength": 8, "Type": "Int64" },
+    { "Name": "FLAGADMIN", "Offset": 123, "ByteLength": 1, "Type": "Boolean8" }
+  ]
+}
+```
+
+Cette disposition minimale ne lit que deux rubriques. `layout` produit les cinq rubriques du profil confirmé. Le nombre d’emplacements exportés ne constitue pas un nombre de lignes actives.
+
+## Autres exemples
+
+```sh
+dotnet WindevReader.Cli.dll code ProceduresGlobales.wdg procedures.wl
+dotnet WindevReader.Cli.dll preview FEN_Notes.wdw previsualisation.bmp
+dotnet WindevReader.Cli.dll inspect SuperNoteExtra.wdl.1.0.77.0.6
+dotnet WindevReader.Cli.dll extract-resource SuperNoteExtra.wdl.1.0.77.0.6 1 archive.png
+```
+
+L’indice 1 est un exemple du patch étudié ; consulter son inventaire avant de sélectionner une entrée. `corpus` exclut les WDU textuels voisins des patchs et n’écrit pas de fichiers extraits.
+
+
+## Fichiers 31
+
+```sh
+dotnet WindevReader.Cli.dll layout jour_ferie.fic SuperNoteExtra.wdd 1763 8 jours-layout.json
+dotnet WindevReader.Cli.dll records jour_ferie.fic jours-layout.json jours.json
+dotnet WindevReader.Cli.dll layout semaine_cours.fic SuperNoteExtra.wdd 1627 1 semaines-layout.json
+dotnet WindevReader.Cli.dll index-entries jour_ferie.ndx 3 mois-jour-index.json
+```
+
+Le WDD doit être celui des tables 31. La clé composée de l’indice 3 est vérifiée dans le témoin JOUR_FERIE ; cet indice ne nomme pas la même rubrique dans tous les NDX.

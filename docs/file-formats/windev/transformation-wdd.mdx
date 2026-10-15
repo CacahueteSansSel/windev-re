@@ -1,0 +1,176 @@
+---
+title: "Transformation du WDD"
+sidebar_label: "Transformation du WDD"
+sidebar_position: 15
+description: "Transformation du WDD — structures, positions en octets et limites du lecteur autonome."
+---
+
+Avant de décompresser le schéma WDD étudié, il faut inverser une transformation d’octets. Sa constante interne ne constitue pas un mot de passe des fichiers de données.
+
+Les positions sont exprimées en **octets**. Les inconnues sont indiquées comme telles ; voir les [conventions](../conventions.mdx).
+
+## Où intervient la transformation
+
+La transformation décrite ici s'applique à la section 1 des WDD étudiés, et seulement à cette variante. Elle révèle l'enveloppe LZW qui contient le schéma.
+
+| Région de section | Taille | Type | Traitement |
+| --- | --- | --- | --- |
+| `[0, 2)` | 2 | `u16` | Mot en clair `0x0060` |
+| `[2, 4)` | 2 | `u16` | Mot en clair `0x061D` |
+| `[4, longueur_section)` | Variable | `octets[n]` | Transformation inverse avec une clé de 16 octets |
+
+Pour le WDD courant, la longueur de section vaut 6 053. Le domaine effectivement transformé contient donc `n = 6 049` octets ; il est de longueur impaire.
+
+> Cette procédure est une réimplémentation d'une transformation héritée identifiée par inspection statique du lecteur fourni. Il ne s'agit pas d'un appel à une DLL WINDEV, ni d'un chiffrement AES ou RC4 standard. D'autres modes de WDD, notamment des variantes protégées absentes du corpus, ne sont pas spécifiés par cette page.
+
+## Constantes de dérivation
+
+| Nom documentaire | Taille | Valeur hexadécimale | Commentaire |
+| --- | --- | --- | --- |
+| Séquence interne `P` | 10 octets | `0F 50 5A 6E 38 17 13 08 0D 15` | Paramètre interne observé ; pas un mot de passe choisi ici par l'utilisateur |
+| État initial `K` | 16 octets | `88 05 09 02 45 00 12 33 01 04 03 09 1C 22 65 66` | État modifié durant le mélange |
+| Clé auxiliaire `A` | 16 octets | `09 1C 0A 00 0D 07 FD 00 65 20 20 03 0D 01 55 0A` | Utilisée pour transformer la séquence temporaire |
+| Clé finale observée | 16 octets | `73 0C 8F 88 D8 42 C6 63 90 22 D7 9F 0F 08 1E 83` | Résultat de la dérivation complète |
+
+Toutes les variables d'octet sont ramenées modulo 256. L'opération `XOR` travaille sur les bits ; elle ne doit pas être remplacée par une addition.
+
+## Étape 1 : accumulation de la séquence
+
+```text
+T = copie de P
+T[0] = T[0] modulo 29
+pour i de 1 à longueur(T) - 1 :
+    T[i] = T[i] XOR T[i - 1]
+```
+
+La boucle utilise la valeur **déjà modifiée** de `T[i - 1]`.
+
+| Étape | Octets |
+| --- | --- |
+| Avant accumulation | `0F 50 5A 6E 38 17 13 08 0D 15` |
+| Après réduction et accumulation XOR | `0F 5F 05 6B 53 44 57 5F 52 47` |
+
+Le premier octet vaut 15 et n'est donc pas modifié par le modulo 29 dans ce cas particulier.
+
+## Étape 2 : transformation directe de la séquence temporaire
+
+Soit `B` un buffer d'au moins deux octets, `n` sa longueur et `A` la clé auxiliaire. Définir `octet(x) = x modulo 256` :
+
+```text
+B[0] = octet((B[0] + B[n - 1]) XOR A[15])
+k = 0
+pour i de 1 à n - 1 :
+    j = n - 1 - i
+    si i = j :
+        B[i] = octet((B[i] + B[i - 1]) XOR A[15 - k])
+        valeur = octet(B[j] + 17)
+    sinon :
+        B[i] = octet((B[i] + B[i - 1] + B[j]) XOR A[15 - k])
+        valeur = octet(B[i] + B[j])
+    B[j] = valeur XOR A[k]
+    k = (k + 1) modulo 16
+```
+
+Cette transformation se fait **en place**. Les valeurs lues peuvent avoir été modifiées par une itération précédente. Il ne faut pas calculer toutes les positions à partir d'une copie immuable du buffer d'entrée.
+
+Appliquée à la séquence temporaire de dix octets :
+
+| Étape | Octets |
+| --- | --- |
+| Entrée | `0F 5F 05 6B 53 44 57 5F 52 47` |
+| Sortie | `6E 13 AD 73 98 00 73 12 0C AF` |
+
+## Étape 3 : mélange dans l'état de clé
+
+```text
+N = maximum(16, longueur(T))
+pour i de 0 à N - 1 :
+    K[i modulo 16] = octet(
+        (T[i modulo longueur(T)] + K[(i + 1) modulo 16])
+        XOR (N × i)
+    )
+```
+
+L'état `K` est modifié au fur et à mesure. Lors de la dernière itération, la position suivante est `K[0]`, qui a déjà été mise à jour.
+
+### Trace des seize itérations
+
+| Itération `i` | Octet de `T` | Octet suivant de `K` lu | Produit `N × i` | Nouvel octet de clé |
+| --- | --- | --- | --- | --- |
+| 0 | `6E` | `05` | 0 | `73` |
+| 1 | `13` | `09` | 16 | `0C` |
+| 2 | `AD` | `02` | 32 | `8F` |
+| 3 | `73` | `45` | 48 | `88` |
+| 4 | `98` | `00` | 64 | `D8` |
+| 5 | `00` | `12` | 80 | `42` |
+| 6 | `73` | `33` | 96 | `C6` |
+| 7 | `12` | `01` | 112 | `63` |
+| 8 | `0C` | `04` | 128 | `90` |
+| 9 | `AF` | `03` | 144 | `22` |
+| 10 | `6E` | `09` | 160 | `D7` |
+| 11 | `13` | `1C` | 176 | `9F` |
+| 12 | `AD` | `22` | 192 | `0F` |
+| 13 | `73` | `65` | 208 | `08` |
+| 14 | `98` | `66` | 224 | `1E` |
+| 15 | `00` | `73` | 240 | `83` |
+
+Le résultat final est `73 0C 8F 88 D8 42 C6 63 90 22 D7 9F 0F 08 1E 83`.
+
+## Transformation inverse de la région stockée
+
+La fonction suivante s'applique au buffer `B = section[4:]`, sans les quatre premiers octets en clair. `K` est la clé finale :
+
+```text
+n = longueur(B)
+k = (n - 2) modulo 16
+pour j de n - 1 à 1, dans l'ordre décroissant :
+    i = n - 1 - j
+    si i = j :
+        valeur = octet((B[j] XOR K[k]) - 17)
+        B[j] = octet((valeur XOR K[15 - k]) - B[j - 1])
+    sinon :
+        B[i] = octet((B[i] XOR K[k]) - B[j])
+        B[j] = octet((B[j] XOR K[15 - k]) - B[j - 1] - B[i])
+    k = (k - 1) modulo 16
+B[0] = octet((B[0] XOR K[15]) - B[n - 1])
+```
+
+La soustraction de `B[i]` dans la branche non centrale utilise sa **nouvelle** valeur. Le modulo 16 pour `k - 1` doit produire un résultat dans 0 à 15, y compris lorsque `k` vaut 0.
+
+## Cas pair, cas impair et position centrale
+
+| Condition | Conséquence |
+| --- | --- |
+| `n` pair | Il n'y a pas d'indice tel que `i = j` |
+| `n` impair | Une itération traite l'octet central avec la constante 17 |
+| WDD courant : `n = 6 049` | Centre à l'indice 3 024 de la région transformée |
+| Centre dans la section | `4 + 3 024 = 3 028` |
+| Centre dans le fichier courant | `111 + 3 028 = 3 139` |
+
+Ces positions donnent seulement l'octet central de la transformation. Elles ne localisent pas un champ du schéma décompressé.
+
+## Résultat attendu après transformation
+
+Les premiers octets de la section détransformée courante sont :
+
+```text
+60 00 1D 06 04 96 17 00 00 C9 3D 00 00 00 00
+```
+
+| Offset section | Taille | Type | Valeur |
+| --- | --- | --- | --- |
+| 0 | 2 | `u16` | 96 |
+| 2 | 2 | `u16` | `0x061D` |
+| 4 | 1 | `u8` | Méthode LZW 04 |
+| 5 | 4 | `u32` | `L = 0x1796 = 6 038` |
+| 9 | 4 | `u32` | `U = 0x3DC9 = 15 817` |
+| 13 | 2 | `octets[2]` | `00 00` |
+| 15 | 6 038 | Flux LZW | Région à décompresser |
+
+Le code de lecture réinsère ensuite les quatre premiers octets devant les 15 817 octets décodés, pour obtenir le schéma `H` de 15 821 octets.
+
+## Validation de la transformation
+
+Une sortie ressemblant à une enveloppe n'est pas une preuve suffisante. Le lecteur vérifie successivement : les deux mots initiaux, l'enveloppe LZW, les codes et longueurs du flux, le somme de contrôle du schéma, les comptes des répertoires, les noms dupliqués et les propriétaires de rubriques.
+
+Les 27 WDD du corpus réussissent ces vérifications. La constante de clé observée n'est pas présentée comme une clé universelle pour toutes les versions et protections de WINDEV.

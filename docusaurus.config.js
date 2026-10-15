@@ -38,8 +38,8 @@ const config = {
   // useful metadata like html lang. For example, if your site is Chinese, you
   // may want to replace "en" with "zh-Hans".
   i18n: {
-    defaultLocale: 'en',
-    locales: ['en'],
+    defaultLocale: 'fr',
+    locales: ['fr'],
   },
 
   presets: [
@@ -85,9 +85,15 @@ const config = {
         items: [
           {
             type: 'docSidebar',
-            sidebarId: 'tutorialSidebar',
+            sidebarId: 'formatsSidebar',
             position: 'left',
-            label: 'Documentation',
+            label: 'Formats de fichiers',
+          },
+          {
+            type: 'docSidebar',
+            sidebarId: 'dotnetSidebar',
+            position: 'left',
+            label: 'Documentation .NET',
           },
         ],
       },

@@ -25,16 +25,29 @@ public sealed record WindevUiElement(string Name, string InferredKind, int Buffe
 public sealed record WindevDataField(uint Id, string Name, string Caption, string Guid, string InputMask,
     ushort RawTypeCode, uint RawFlags, ushort Size, ushort StorageSize, int Offset)
 {
+    /// <summary>Raw byte at +31 after the four field CStrings; value 1 recouped with MOISJOUR 31.</summary>
+    public byte RawCompositeMarker { get; init; }
+    /// <summary>Observed type-28 composite profile; ordinary type-28 binary fields retain marker 0.</summary>
+    public bool IsCompositeKey => RawTypeCode == 28 && RawCompositeMarker == 1;
     /// <summary>Friendly type for codes observed in the supplied schema; unknown codes remain explicit.</summary>
     public string Type => RawTypeCode switch
     {
-        2 => "Text", 11 => "Time", 14 => "Date", 24 => "AutomaticIdentifier64",
-        25 => "Int64", 26 => "UInt32", 27 => "UInt64", 28 => "Binary",
+        2 => "Text", 5 => "Int32", 11 => "Time", 14 => "Date", 24 => "AutomaticIdentifier64",
+        25 => "Int64", 26 => "UInt32", 27 => "UInt64", 28 when IsCompositeKey => "CompositeKey", 28 => "Binary",
         29 => "TextMemo", 34 => "DateTime", 36 => "UInt8", 37 => "Boolean", _ => "Unknown"
     };
 }
 public sealed record WindevDataTable(uint Id, string Name, string PhysicalName, string Directory,
-    string Caption, string Extension, string Guid, int Offset, IReadOnlyList<WindevDataField> Fields);
+    string Caption, string Extension, string Guid, int Offset, IReadOnlyList<WindevDataField> Fields)
+{
+    /// <summary>Raw u32 at +12 after the table's six strings. Physical slot length verified on PERSONNE 28 only.</summary>
+    public uint RawRecordByteLength { get; init; }
+}
+/// <summary>WINDEV 28 relation names and identifiers; cardinalities and constraint flags remain raw.</summary>
+public sealed record WindevDataRelation(ulong Id, string SourceTable, ulong SourceTableId,
+    string TargetTable, ulong TargetTableId, string SourceField, ulong SourceFieldId,
+    string TargetField, ulong TargetFieldId, string Name, IReadOnlyList<ushort> RawFlags,
+    uint RawTrailer, int Offset);
 public sealed record WindevSchemaDirectoryEntry(string Name, long Offset, uint Count);
 
 public sealed class WindevOpenOptions
@@ -44,11 +57,14 @@ public sealed class WindevOpenOptions
     public int MaxTotalDecodedBytes { get; init; } = 256 * 1024 * 1024;
     public int MaxDecodedBlocks { get; init; } = 4096;
     public int MaxStringBytes { get; init; } = 4 * 1024 * 1024;
+    public int MaxArchiveEntries { get; init; } = 10_000;
+    public int MaxChunksPerEntry { get; init; } = 1_024;
+    public int MaxIndexEntries { get; init; } = 100_000;
     public bool AllowUntestedVersions { get; init; }
     internal void Validate()
     {
         if (MaxFileBytes < 85 || MaxDecodedBlockBytes < 1 || MaxTotalDecodedBytes < 1 ||
-            MaxDecodedBlocks < 1 || MaxStringBytes < 1)
+            MaxDecodedBlocks < 1 || MaxStringBytes < 1 || MaxArchiveEntries < 1 || MaxChunksPerEntry < 1 || MaxIndexEntries < 1)
             throw new ArgumentOutOfRangeException(nameof(WindevOpenOptions), "All reader limits must be positive.");
     }
 }

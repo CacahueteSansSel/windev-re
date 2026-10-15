@@ -1,0 +1,80 @@
+---
+title: "En-tête commun HFSQL"
+sidebar_label: "En-tête commun HFSQL"
+sidebar_position: 4
+description: "En-tête commun HFSQL — structures, positions en octets et limites du lecteur autonome."
+---
+
+Les FIC, NDX et MMO partagent 90 octets d’en-tête. Les deux GUID permettent d’associer une table à ses fichiers compagnons et de vérifier qu’un WDD décrit bien cette table.
+
+Les positions sont exprimées en **octets**. Les inconnues sont indiquées comme telles ; voir les [conventions](../conventions.mdx).
+
+## Familles physiques
+
+Les fichiers partagent la signature PCS, puis changent de structure après les 20 premiers octets. Le compte à 81 et le répertoire à 85 des documents WDW/WDP ne s’appliquent pas.
+
+| Extension | Type `u32` à l’offset 8 | Usage | Classe .NET |
+| --- | --- | --- | --- |
+| FIC | `0x00070001` | Données et structures physiques | `FicHfsqlDataFile` |
+| NDX | `0x00070002` | Index | `NdxHfsqlIndexFile` |
+| MMO | `0x00070003` | Mémos | `MmoHfsqlMemoFile` |
+| WDD, pour comparaison | `0x00070004` | Description du schéma | `WddWindevAnalysis` |
+
+## En-tête physique de 90 octets
+
+| Offset fichier | Taille | Type | Contenu / commentaire |
+| --- | --- | --- | --- |
+| 0 / `0x00` | 4 | `octets[4]` | Signature `50 43 53 00` |
+| 4 / `0x04` | 4 | `u32` | Taille/révision PCS : 20 |
+| 8 / `0x08` | 4 | `u32` | Type physique |
+| 12 / `0x0C` | 2 | `u16` brut | Révision produit : 2 dans les fichiers 31 ; 0 dans PERSONNE 28 |
+| 14 / `0x0E` | 2 | `u16` | WINDEV 31 ou 28 dans le nouveau couple PERSONNE |
+| 16 / `0x10` | 2 | `u16` brut | 0 dans les spécimens |
+| 18 / `0x12` | 2 | `u16` brut | `0x040C` |
+| 20 / `0x14` | 33 | `CString` ASCII | GUID de l’analyse propriétaire |
+| 53 / `0x35` | 33 | `CString` ASCII | GUID de la table/fichier logique |
+| 86 / `0x56` | 2 | `u16` brut | Flags non entièrement interprétés |
+| 88 / `0x58` | 1 | `u8` brut | Mode : 1 dans RAD, 0 dans le jeu de tâches |
+| 89 / `0x59` | 1 | `u8` brut | Autre mode : 0 dans FIC/NDX RAD, 1 dans MMO RAD |
+| À partir de 90 | Variable | Corps propre à la famille | Pas un répertoire documentaire PCS |
+
+Les GUID textuels ont 32 chiffres hexadécimaux suivis de NUL. Les terminaisons sont aux offsets 52 et 85. Les lire comme des GUID binaires de 16 octets est incorrect.
+
+Les champs ont été recoupés par inspection statique du moteur HFSQL fourni. Le sens des bits et des modes n’étant pas entièrement établi, l’API conserve des noms neutres : `RawFlagsAt86`, `RawModeAt88`, `RawModeAt89`. La lisibilité de l’en-tête ne certifie pas le statut du mot de passe.
+
+## Association par GUID
+
+| Comparaison | GUID d’analyse | GUID de table | Résultat vérifié |
+| --- | --- | --- | --- |
+| RADFic.FIC / RADFic.ndx | Identiques | Identiques | Compagnons |
+| RADRub.FIC / RADRub.mmo | Identiques | Identiques | Compagnons |
+| RADFic.FIC / RADRub.mmo | Identiques | Différents | Tables différentes |
+| Fichiers RAD / WDD applicatif | Différents | Pas de correspondance applicative | Le WDD applicatif ne décrit pas ces tables |
+
+Le MMO fourni, **RADRub.mmo**, appartient donc à RADRub.FIC, et pas à RADFic.FIC. `HasSameIdentityAs` compare les deux GUID. `MatchesAnalysis` compare le GUID d’analyse et `FindTableDefinition` exige aussi le GUID de table.
+
+## Inventaire inspecté
+
+| Famille | Chemins | Contenus distincts |
+| --- | --- | --- |
+| FIC | 160 | 4 |
+| NDX | 160 | 4 |
+| MMO | 107 | 3 |
+| Total initial | 427 | 11 |
+| Supplément PERSONNE | 2 : un FIC et un NDX | 2 |
+| Total après PERSONNE | 429 | 13 |
+| Supplément jours / semaines 31 | 4 | 4 |
+| Total élargi | 433 | 17 |
+
+Les 53 jeux de huit fichiers RAD représentent 424 chemins ; le jeu de tâches ajoute trois fichiers. Les sauvegardes historiques ne sont donc pas des centaines de variantes indépendantes.
+
+Le GUID RAD est absent du WDD applicatif décodé et du buffer logique WDA examiné. Les noms, le contexte et cette différence suggèrent des métadonnées RAD de l’éditeur, liées à une analyse interne distincte. C’est une **inférence**, pas une reconstruction du schéma de ces tables.
+
+## Portée de la lecture
+
+Les en-têtes, le répertoire terminal NDX et ses descripteurs de 60 octets sont accessibles. Depuis la version 0.3.0, les emplacements FIC en clair peuvent être lus avec une disposition explicite fournie par l’appelant. La découverte automatique du schéma et des états reste indisponible : `CanReadRecords` vaut `false` pour cette capacité automatique et `PasswordStatus` vaut `Unknown`. Voir le [cas PERSONNE](./cas-personne.mdx).
+
+Voir les chapitres [FIC](./fic.mdx), [NDX](./ndx.mdx), [MMO](./mmo.mdx) et [protection](./protection.mdx).
+
+
+Le nouveau WDD 28 correspondant à PERSONNE a désormais été associé aux deux fichiers physiques. Ce recoupement ne change pas le constat sur les tables RAD, dont l’analyse propriétaire n’a pas été identifiée dans le corpus initial.

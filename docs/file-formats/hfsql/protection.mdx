@@ -1,0 +1,74 @@
+---
+title: "Protection et association au schéma"
+sidebar_label: "Protection et association au schéma"
+sidebar_position: 5
+description: "Protection et association au schéma — structures, positions en octets et limites du lecteur autonome."
+---
+
+Lire un schéma, associer des fichiers par leurs GUID et décoder des valeurs sont trois étapes distinctes. Une région opaque ne suffit pas à identifier un chiffrement ou une protection par mot de passe.
+
+Les positions sont exprimées en **octets**. Les inconnues sont indiquées comme telles ; voir les [conventions](../conventions.mdx).
+
+## Niveaux distincts
+
+| Niveau | Objet | Résultat de cette étude |
+| --- | --- | --- |
+| Transformation interne du WDD | Schéma lisible avant LZW | Décodeur autonome pour la variante `0x061D` |
+| Protection de l’analyse | Accès à une analyse dans l’éditeur ou en exécution | Pas de secret RAD extrait et validé |
+| Protection des données physiques | Ouverture/chiffrement FIC, NDX, MMO | Paramètres bruts préservés ; déchiffrement et contrôle du mot de passe non implémentés |
+
+La constante interne du WDD ne constitue pas automatiquement le mot de passe des FIC. La lecture du WDD ne déverrouille pas les fichiers physiques.
+
+PC SOFT distingue les paramètres de protection des données, index et mémos dans la [description de fichier](https://doc.pcsoft.fr/fr-FR/?1514065=). Son [article sur le chiffrement HFSQL](https://blogs.pcsoft.fr/fr/chiffrement-donnees-hfsql-aes-privilegier-securite-maximale-egalement-performances-optimales/281474976710761/read.awp) confirme l’existence de plusieurs modes, dont AES dans les versions récentes. Ces descriptions fonctionnelles ne permettent pas d’identifier le codec d’une région particulière du corpus.
+
+## Le WDD applicatif ne décrit pas les fichiers RAD
+
+| Contrôle | Résultat vérifié |
+| --- | --- |
+| GUID d’analyse commun aux fichiers RAD | Stable entre compagnons et copies historiques |
+| GUID d’analyse du WDD applicatif | Différent du GUID RAD |
+| Recherche du GUID RAD dans le WDD décompressé | Aucune occurrence |
+| Recherche dans le buffer WDA logique examiné | Aucune occurrence |
+| Tables WDD exposées | Six tables métier ; absence des trois tables RAD |
+
+Les noms et le contexte suggèrent des métadonnées internes à l’éditeur/RAD, adossées à une analyse distincte. Il s’agit d’une **inférence** : leur schéma complet et leur protection ne sont pas reconstitués.
+
+## Métadonnée auxiliaire WDD
+
+La CString entre le répertoire d’origine et le GUID de l’analyse est vide dans le spécimen courant. Sa présence ne prouve pas qu’elle contienne le mot de passe des tables. Un commentaire du lecteur qui suggérait une métadonnée de mot de passe a été corrigé pour conserver cette incertitude.
+
+Un mot de passe peut être fourni séparément à une application. Il n’est pas établi que le secret des tables RAD soit stocké dans le WDD ou WDA applicatif fourni.
+
+## Essais et limites
+
+| Piste | Résultat / portée |
+| --- | --- |
+| En-têtes physiques | 427 chemins ouverts, 11 contenus distincts |
+| Correspondances GUID | Associations des compagnons et discordance avec l’analyse applicative validées |
+| Répertoire terminal NDX | Quatre contenus distincts validés |
+| Transformation WDD appliquée telle quelle à des régions FIC | Pas de structure déchiffrée validée |
+| Paramètre fixe WDL appliqué à des régions FIC | Pas de structure déchiffrée validée |
+| Inspection statique du moteur | Recoupement des familles et champs ; aucune exécution de DLL |
+| Mot de passe RAD extrait puis utilisé avec succès | Aucun résultat validé |
+
+Une région à forte entropie n’est pas automatiquement de l’AES ou du RC5. Elle peut être compressée, transformée, chiffrée ou simplement binaire.
+
+## Contrat de la bibliothèque
+
+| API | Comportement |
+| --- | --- |
+| `PasswordStatus` | `Unknown` |
+| `CanReadRecords` | `false` : découverte automatique indisponible ; lecture explicite des emplacements en clair possible via `ReadFixedRecords(layout)`, avec noms/types issus d’un WDD compatible via `CreateFixedRecordLayout` |
+| `MatchesAnalysis(analysis)` | Compare les GUID d’analyse |
+| `FindTableDefinition(analysis)` | Exige les correspondances de l’analyse et de la table |
+| `UninterpretedBody` | Préserve les octets depuis 90 |
+| `Diagnostics` | Décrit les limites réelles |
+
+Aucune routine ne prétend valider un mot de passe sans le vérifier. Les fichiers fournis restent ouverts en lecture seule et ne sont pas modifiés.
+
+
+## Témoin sans mot de passe : PERSONNE
+
+L’utilisateur a déclaré le couple PERSONNE sans mot de passe. Son en-tête porte WINDEV 28 et les octets `00 80 00 00` à partir de 86 ; les valeurs répétées en fin du FIC sont lisibles sans déchiffrement. Cependant, la région `[90, 584)` reste opaque. Ce témoin réfute l’idée que toute région opaque d’un FIC prouve une protection par mot de passe. Le codec de ses métadonnées n’est pas identifié.
+
+Le mode nul à 88 et le bit `0x8000` à 86 ne suffisent pas à établir un détecteur universel de mot de passe. `PasswordStatus` reste `Unknown` : l’API distingue ce qu’elle peut détecter de l’information fournie par l’utilisateur. Aucun nouveau mot de passe n’a été recherché ou extrait. Voir le [cas détaillé](./cas-personne.mdx).

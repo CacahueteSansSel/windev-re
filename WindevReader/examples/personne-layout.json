@@ -1,0 +1,37 @@
+{
+  "DataOffset": 1776,
+  "RecordByteLength": 124,
+  "RecordCount": 5,
+  "Fields": [
+    {
+      "Name": "EtatBrut",
+      "Offset": 0,
+      "ByteLength": 1,
+      "Type": "UInt8"
+    },
+    {
+      "Name": "Identifiant",
+      "Offset": 9,
+      "ByteLength": 8,
+      "Type": "Int64"
+    },
+    {
+      "Name": "TexteA",
+      "Offset": 17,
+      "ByteLength": 51,
+      "Type": "Cp1252Z"
+    },
+    {
+      "Name": "TexteB",
+      "Offset": 68,
+      "ByteLength": 51,
+      "Type": "Cp1252Z"
+    },
+    {
+      "Name": "Nombre",
+      "Offset": 119,
+      "ByteLength": 4,
+      "Type": "Int32"
+    }
+  ]
+}

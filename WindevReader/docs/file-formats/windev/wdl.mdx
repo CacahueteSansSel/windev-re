@@ -1,0 +1,172 @@
+---
+title: "WDL : bibliothèque et patch"
+sidebar_label: "WDL : bibliothèque et patch"
+sidebar_position: 7
+description: "WDL : bibliothèque et patch — structures, positions en octets et limites du lecteur autonome."
+---
+
+Un WDL regroupe des éléments compilés et des ressources. Le répertoire permet de retrouver chaque segment ; un patch peut porter une extension numérique sans changer de famille binaire.
+
+Les positions sont exprimées en **octets**. Les inconnues sont indiquées comme telles ; voir les [conventions](../conventions.mdx).
+
+Pour utiliser le lecteur, consulter la [documentation .NET](../../dotnet/index.mdx).
+
+## Identification et portée
+
+Le patch illustratif est nommé `SuperNoteExtra.wdl.1.0.77.0.6`. L’extension finale `.6` n’identifie pas son format : le lecteur utilise le type PCS `0x000D0001`. Un seul patch binaire de cette famille, révision 3102 et WINDEV 31, a été fourni ; les bibliothèques complètes et les autres générations ne sont pas certifiées.
+
+PC SOFT décrit un patch comme une bibliothèque annexe contenant les éléments remplaçant ceux de la bibliothèque initiale : [livre des fonctionnalités, section 11.2](https://fr.pcsoft-windev-webdev.com/Fonctionnalites_WinDev.pdf). Cette source explique son rôle ; les structures binaires ci-dessous ont été déterminées par inspection. La bibliothèque .NET n’applique pas le patch à un exécutable.
+
+## En-tête et découpage physique
+
+Le préfixe PCS de 20 octets est suivi d’un en-tête propre à cette famille. Il n’y a pas de répertoire documentaire à l’offset 81.
+
+| Position fichier | Taille | Type | Champ / valeur du profil |
+| --- | --- | --- | --- |
+| 0 | 4 | `octets[4]` | Signature `50 43 53 00` |
+| 4 | 4 | `u32` | Taille/révision PCS : 20 |
+| 8 | 4 | `u32` | Type : `0x000D0001` |
+| 12 | 2 | `u16` brut | Révision produit : 2 |
+| 14 | 2 | `u16` | Version WINDEV : 31 |
+| 16 | 2 | `u16` brut | 0 |
+| 18 | 2 | `u16` brut | `0x040C` |
+| 20 | 4 | `u32` | Révision d’archive : 3 102 / `0x0C1E` |
+| 24 | 4 | `u32` brut | Flags : 51 201 / `0x0000C801` |
+| 28 | 4 | `u32` | Taille stockée des propriétés : 266 |
+| 32 | 266 | Bloc transformé | Propriétés, 411 octets après décodage |
+| 298 | 8 | `u64` | Longueur de la région de contenus : 502 085 |
+| 306 | 4 | `u32` | Taille stockée du répertoire : 5 060 |
+| 310 | 5 060 | Bloc transformé | Répertoire, 22 800 octets après décodage |
+| 5 370 | 4 | `u32` | Taille du supplément d’en-tête : 0 |
+| 5 374 | 502 085 | Octets des entrées | Base des positions relatives de segments |
+| 507 459 | 0 | Fin exclusive | Taille du fichier complet |
+
+Pour des longueurs stockées `P`, `D` et `E` :
+
+```text
+après_propriétés = 32 + P
+position_longueur_contenus = après_propriétés
+position_répertoire = après_propriétés + 12
+position_taille_supplément = position_répertoire + D
+base_contenus = position_taille_supplément + 4 + E
+exiger base_contenus + longueur_contenus = longueur_fichier
+```
+
+## Transformation et compression des métadonnées
+
+Les propriétés et le répertoire sont transformés séparément. La transformation hérite de l’[algorithme décrit pour le WDD](./transformation-wdd.mdx), avec un paramètre de format distinct. Le résultat contient une enveloppe LZW 04 de onze octets, puis le flux.
+
+| Paramètre | Valeur | Commentaire |
+| --- | --- | --- |
+| Texte fixe ASCII/Windows-1252 | `&K_G@HjO:#pl\i)r` | 16 octets, constante du mécanisme observé |
+| Clé dérivée, 16 octets | `6D B6 39 E0 6C BE 26 92 FC 64 A6 2C 75 C3 CD 8B` | Dérivation héritée |
+| Enveloppe claire des propriétés | `04 FF 00 00 00 9B 01 00 00 00 00` | `L = 255`, `U = 411` |
+| Enveloppe claire du répertoire | `04 B9 13 00 00 10 59 00 00 00 00` | `L = 5 049`, `U = 22 800` |
+
+Ce texte fixe est un paramètre de format, pas un mot de passe utilisateur extrait du projet. Il est conservé pour permettre une implémentation indépendante. La transformation inverse s’applique au bloc stocké complet, enveloppe de compression comprise.
+
+```text
+clair = transformation_inverse(bloc_stocké, clé_archive)
+contenu = LZW(clair[11 .. 11 + L])
+exiger longueur(bloc_stocké) = L + 11
+exiger longueur(contenu) = U
+```
+
+L’inspection statique a notamment suivi les routines relatives `0x1064D0` et `0x110D80` de la VM fournie. Ces adresses sont des repères propres à cette version. Le lecteur .NET ne charge ni n’appelle la DLL.
+
+## Propriétés décodées
+
+Le buffer contient des chaînes encadrées, notamment le nom du projet, la version applicative, le build et des identifiants. La totalité des champs n’est pas interprétée.
+
+Extrait textuel fictif autonome, aux tailles recalculées pour les noms affichés :
+
+| Offset dans l’extrait | Taille | Type | Valeur |
+| --- | --- | --- | --- |
+| 0 | 1 | Sentinelle `u8` | 00, première chaîne vide |
+| 1 | 27 | Chaîne encadrée | `SuperNoteExtra` |
+| 28 | 1 | Sentinelle `u8` | 00 |
+| 29 | 21 | Chaîne encadrée | `1.0.77.0` |
+| 50 | 27 | Chaîne encadrée | `SuperNoteExtra` |
+
+## Répertoire des entrées
+
+Le buffer décodé commence par un `u32` valant **138**, puis 138 entrées précédées de leur longueur totale. Pour une entrée commençant à `R` :
+
+| Position / curseur | Taille | Type | Contenu |
+| --- | --- | --- | --- |
+| `R + 0` | 4 | `u32` | Longueur totale de l’entrée, mot de longueur compris |
+| `R + 4` | Variable | Chaîne encadrée ou 00 | Nom logique |
+| Juste après | Variable | Chaîne encadrée ou 00 | Chemin ou nom de ressource |
+| Curseur `Q` | 4 | `u32` | Type brut d’objet |
+| `Q + 4` | 4 | `u32` | Flags bruts |
+| `Q + 8` | 4 | `u32` | Compte de segments principaux `N` |
+| `Q + 12` | `16 × N` | Segments | Structure ci-dessous |
+| Juste après | 8 | `u64` brut | Identifiant/métadonnée, sens incomplet |
+| Juste après | 4 | `u32` | Compte de segments auxiliaires `M` |
+| Juste après | `16 × M` | Segments | Même structure |
+| Curseur `T` | Variable | Métadonnées finales | Région bornée par la longueur de l’entrée |
+
+Un segment comprend :
+
+| Déplacement relatif | Taille | Type | Champ |
+| --- | --- | --- | --- |
+| 0 | 4 | `u32` brut | Type de segment |
+| 4 | 8 | `u64` | Position relative à `base_contenus` |
+| 12 | 4 | `u32` | Taille stockée |
+
+```text
+position_fichier_segment = base_contenus + position_relative
+fin_entrée = R + longueur_entrée
+```
+
+Le parcours des 138 entrées atteint exactement la fin des 22 800 octets du répertoire. Il repose sur les longueurs et pointeurs, et non sur une recherche de signatures d’images.
+
+## Métadonnées finales des entrées
+
+Dans ce spécimen, chaque entrée possède 45 octets finaux à `T`.
+
+| Offset depuis `T` | Taille | Type | Commentaire |
+| --- | --- | --- | --- |
+| 0 | 8 | `u64` | Position relative d’une région complémentaire |
+| 8 | 4 | `u32` | Taille de cette région |
+| 12 | 8 | `u64` | Position relative d’une seconde région complémentaire |
+| 20 | 4 | `u32` | Taille de cette région |
+| 24 | 4 | `u32` brut | Sens non établi ; 856 dans la première fenêtre |
+| 28 | 4 | `u32` brut | Sens non établi |
+| 32 | 8 | `u64` brut | Sens non établi |
+| 40 | 1 dans ce profil | Chaîne vide | Sentinelle 00 |
+| 41 | 4 dans ce profil | `u32` | Sous-enregistrement de taille 4, sans corps ici |
+
+Une région vide peut avoir un pointeur sentinelle. La bibliothèque vérifie les bornes des régions non vides et expose le reste dans `RawTrailingMetadata`, sans inventer sa sémantique.
+
+## Types, ressources et vérifications
+
+| Type brut | Entrées | Description |
+| --- | --- | --- |
+| 0 | 134 | Ressources |
+| 2 | 2 | Fenêtres compilées |
+| `0x000B0002` | 2 | Fichiers de gabarit WDY, sémantique interne non décodée |
+| Total | 138 | Un patch binaire étudié |
+
+| Ressources | Nombre | Représentation / validation |
+| --- | --- | --- |
+| PNG | 128 | Stockage direct ; chunks, CRC, IEND et couverture exacte contrôlés |
+| ICO | 2 | LZW ; 45 042 octets stockés vers 370 070 octets, six images par ICO |
+| SVG | 4 | XML/SVG directement adressé ; deux avec déclaration XML, deux sans |
+
+Les flags observés des ressources sont 2 pour les données directes, et 130 / `0x82` pour celles avec le bit LZW `0x80`. `ReadResource` est limité aux représentations vérifiées : un segment principal de type 0 et ces flags. Certaines ressources sont dupliquées sous plusieurs noms. Un PNG extrait a aussi été comparé aux octets du fichier image indépendant présent dans le projet.
+
+## Propriétés des fenêtres compilées
+
+Les deux segments de propriétés commencent par 16 octets auxiliaires, puis une enveloppe LZW. Le préfixe observé est `02 00 00 00 07 00 06 00 6B 1C 00 00 01 00 00 00` ; son sens exhaustif reste inconnu.
+
+| Fenêtre | Position relative du segment | Taille | Offset LZW dans le segment | `L` | `U` |
+| --- | --- | --- | --- | --- | --- |
+| FEN_Journal | 38 | 27 259 | 16 | 27 232 | 151 540 |
+| FEN_Rapport | 130 403 | 23 465 | 16 | 23 438 | 137 149 |
+
+`ReadWindowProperties(entry)` retourne le buffer décodé, avec ses chaînes et sa racine 610. La largeur de FEN_Journal y vaut 1 177, en accord avec la source. Les buffers compilés ont des tailles différentes de celles du WDW de l’éditeur : ils ne sont pas présentés comme une récupération du fichier WDW original ni comme une décompilation du bytecode.
+
+## Fichiers WDU voisins
+
+Les WDU examinés sont des listes textuelles de dépendances séparées par CRLF. Ils ont servi à recouper les noms ; ils ne sont pas assimilés au conteneur binaire WDL. Aucun chemin contenu dans l’archive n’est utilisé automatiquement pour créer des fichiers sur le disque.

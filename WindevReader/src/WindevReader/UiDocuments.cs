@@ -37,11 +37,20 @@ public sealed class WdwWindevWindow : WindevDocument
     public IReadOnlyList<WindevUiElement> Elements { get; }
     public string? Caption { get; }
     public WindevBounds? Bounds { get; }
+    /// <summary>Complete BMP recovered from the LZW envelope of section 4, when recognized.</summary>
+    public WindevWindowPreview? Preview { get; }
     private WdwWindevWindow(string file, PcsContainer container, WindevOpenOptions options) : base(file, WindevDocumentKind.Window, container, options)
     {
         PropertyBuffers = Sections.ElementAtOrDefault(1)?.DecodedBlocks ?? Array.Empty<WindevDecodedBlock>();
         if (PropertyBuffers.Count == 0) throw new WindevFormatException("Window property section could not be decoded");
         Elements = UiReader.Elements(PropertyBuffers, Name, CodeBlocks);
+        var imageSection = Sections.ElementAtOrDefault(4);
+        var image = imageSection?.RawTag == 8 ? imageSection.DecodedBlocks.FirstOrDefault(b => b.Offset == 0) : null;
+        if (image is not null && image.Data.Span.StartsWith("BM"u8))
+        {
+            try { Preview = WindevWindowPreview.Parse(image.Data); }
+            catch (UnsupportedWindevFormatException error) { Warn("UnsupportedPreviewBitmap", error.Message, 4); }
+        }
         var root = PropertyBuffers.FirstOrDefault();
         if (root is not null)
         {

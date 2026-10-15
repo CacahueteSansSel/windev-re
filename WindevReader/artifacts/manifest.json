@@ -16,8 +16,8 @@
   },
   {
     "path": "README.md",
-    "bytes": 6783,
-    "sha256": "c2d3a0e3bfd6077a589178d726241a5cae624c13c0084b7f8f3003ec08a8841e"
+    "bytes": 7446,
+    "sha256": "c9369f2388fe656ad0ac060922c3fa4bd7f874ebf458b5f27b146b8a61318507"
   },
   {
     "path": "WindevReader.sln",
@@ -30,14 +30,39 @@
     "sha256": "cb1a40f79df9fad98d448147ac2377e32f1eaaf9bf3ad1fa682f406a6af51361"
   },
   {
+    "path": "artifacts/WindevReader.0.2.0.nupkg",
+    "bytes": 47211,
+    "sha256": "5fd85342e20e6081e20708e3d18df2ace184d0fb36b6d2ac10895946926ae49c"
+  },
+  {
+    "path": "artifacts/WindevReader.0.3.0.nupkg",
+    "bytes": 54103,
+    "sha256": "387b4de0bb6650c878e1b537f758a4220a5271ffe1cfc7eed5f83f3a054fa7e6"
+  },
+  {
+    "path": "artifacts/WindevReader.0.4.0.nupkg",
+    "bytes": 54715,
+    "sha256": "4940e434d48576c7e82c2021884443cda59e2e57fb205c729ed2d0c09e944acc"
+  },
+  {
+    "path": "artifacts/WindevReader.0.5.0.nupkg",
+    "bytes": 57901,
+    "sha256": "3bb0696bce4cd7ab3ef0d9d007e2f65e400a12511a0c38d2e9c5ab1773bfb007"
+  },
+  {
+    "path": "artifacts/analysis-validation.json",
+    "bytes": 892,
+    "sha256": "8ebb00d1397870e94997d213c50e96d1f1e1a56459259c6f76701e4021f86633"
+  },
+  {
     "path": "artifacts/cli/WindevReader.Cli.deps.json",
     "bytes": 789,
-    "sha256": "ff47f4050dcb3fdd822c032ce3cefe74f490927ffe5c8fbcfed0d5215d72c8f5"
+    "sha256": "94d7f5c84e4055eed87b4bafb274769a098789fe8ba059845ae118cbd20fdff4"
   },
   {
     "path": "artifacts/cli/WindevReader.Cli.dll",
-    "bytes": 20480,
-    "sha256": "94ceb87be0d6588397d438e75257fa5e45bd4a7de1e5bb0b574713ebb1e6128f"
+    "bytes": 30208,
+    "sha256": "dd04bc87a874235ec76bd0e7187d0fb5ab23e5ea689e59936bea5e3ab9912a1f"
   },
   {
     "path": "artifacts/cli/WindevReader.Cli.runtimeconfig.json",
@@ -46,23 +71,43 @@
   },
   {
     "path": "artifacts/cli/WindevReader.dll",
-    "bytes": 68096,
-    "sha256": "e5f134d55f4b4bcf5687b530e75476acaa196673d97ffcbd0b13837a492b6948"
+    "bytes": 125952,
+    "sha256": "8cd0a0175942bd1d94cde76ddbf38bebc932c4ffdcf7162376e3af0e898324e9"
+  },
+  {
+    "path": "artifacts/cli/WindevReader.xml",
+    "bytes": 11073,
+    "sha256": "4ce8e3b0de0b4029ade7b6699945ade3b12a05c189cd7382f910c003df3b7d2c"
   },
   {
     "path": "artifacts/corpus-validation.json",
-    "bytes": 71084,
-    "sha256": "952436dc40a3c8262cc6d445173728723da705d7a555d7bff1ef6756c1115752"
+    "bytes": 911984,
+    "sha256": "5b1f3f1c3269a26dddc0fa594f01b585e4401fd915dd8049510844b978813e4e"
+  },
+  {
+    "path": "artifacts/extension-validation.json",
+    "bytes": 1401,
+    "sha256": "89dc8bf5fc224f0b49bbfd6d53f02ed3cca28c56074919196f65ab822595daa4"
+  },
+  {
+    "path": "artifacts/hfsql31-validation.json",
+    "bytes": 2080,
+    "sha256": "6ed62ba3d7422ff327f34c760a9c2dc45dc89b6e60a485a94840eec0b01a7889"
+  },
+  {
+    "path": "artifacts/lib/net8.0/WindevReader.deps.json",
+    "bytes": 406,
+    "sha256": "96df0dfb369af9e319f4316b0edb946bc7dd96609937e83f027c83e956bf9866"
   },
   {
     "path": "artifacts/lib/net8.0/WindevReader.dll",
-    "bytes": 68096,
-    "sha256": "e5f134d55f4b4bcf5687b530e75476acaa196673d97ffcbd0b13837a492b6948"
+    "bytes": 125952,
+    "sha256": "8cd0a0175942bd1d94cde76ddbf38bebc932c4ffdcf7162376e3af0e898324e9"
   },
   {
     "path": "artifacts/lib/net8.0/WindevReader.xml",
-    "bytes": 1415,
-    "sha256": "23b42564c15ca25c70507c0679f6d40cb7e869f3a40b97dc1cae2e3bb266b242"
+    "bytes": 11073,
+    "sha256": "4ce8e3b0de0b4029ade7b6699945ade3b12a05c189cd7382f910c003df3b7d2c"
   },
   {
     "path": "artifacts/origamide-schema.json",
@@ -70,19 +115,24 @@
     "sha256": "1929dc0074ebe2ea752f19fb13eec99008987d9867599d62c414cf787a6f480f"
   },
   {
+    "path": "artifacts/personne-validation.json",
+    "bytes": 1194,
+    "sha256": "f36f569f5744cc483be36cdc6da0b8578717ef7ca2509776b695746d96a89159"
+  },
+  {
     "path": "artifacts/test-results.json",
-    "bytes": 803,
-    "sha256": "387bcffff7788523b196eaa28984f9c7b8c2e3db51dff59adb0439015d3d9e70"
+    "bytes": 2092,
+    "sha256": "338846a11cd462efb45d9581de94d8d798329de80e810fc25cfb8190af9083af"
   },
   {
     "path": "artifacts/tests/WindevReader.Tests.deps.json",
     "bytes": 795,
-    "sha256": "322bec4c82e0ecde8ff63ec6f4e7bcc963be8c5689474c58208f725aa19c59bb"
+    "sha256": "c00f309b0323e1eed14d7ca549181414e65883348cc3c5a4c72d3d8c0c0062a8"
   },
   {
     "path": "artifacts/tests/WindevReader.Tests.dll",
-    "bytes": 25600,
-    "sha256": "8ec2d4713c79b1770db2fa38131da0619d493c23172302835c96d25217760663"
+    "bytes": 62976,
+    "sha256": "d1a94954d30dbec6803a244b722e673ca8f57f2e785ec03d1994d1e9a1371bb6"
   },
   {
     "path": "artifacts/tests/WindevReader.Tests.runtimeconfig.json",
@@ -91,18 +141,283 @@
   },
   {
     "path": "artifacts/tests/WindevReader.dll",
-    "bytes": 68096,
-    "sha256": "e5f134d55f4b4bcf5687b530e75476acaa196673d97ffcbd0b13837a492b6948"
+    "bytes": 125952,
+    "sha256": "8cd0a0175942bd1d94cde76ddbf38bebc932c4ffdcf7162376e3af0e898324e9"
+  },
+  {
+    "path": "artifacts/tests/WindevReader.xml",
+    "bytes": 11073,
+    "sha256": "4ce8e3b0de0b4029ade7b6699945ade3b12a05c189cd7382f910c003df3b7d2c"
   },
   {
     "path": "docs/FORMAT.md",
-    "bytes": 7951,
-    "sha256": "3721ea71b0d06a3664dcb747ff7346e96ce65d937585ea8334af28f5b9fcc864"
+    "bytes": 509,
+    "sha256": "60abe1913b3f4e85d10f2536fb882e3e4e0413f4d748a93a2e4c0b4a8a33c844"
   },
   {
     "path": "docs/RESEARCH.md",
-    "bytes": 4988,
-    "sha256": "770308dec73a266bf2f3197b5f0706b2d6d9c96f321607c04fbddbff0564776d"
+    "bytes": 1726,
+    "sha256": "0fc22e80db3e6108e1e8b9bc7f27ab876c8277a5176710b7f3b18b342fe0004e"
+  },
+  {
+    "path": "docs/dotnet/_category_.json",
+    "bytes": 107,
+    "sha256": "a191948c243237ef46ceef18980e32356f501defb6a1179fdc1b906ea92335c6"
+  },
+  {
+    "path": "docs/dotnet/cli.mdx",
+    "bytes": 3545,
+    "sha256": "4e1381291e78b80d7bd292dc2b13f8bd0897bdf0ec9dd8773a46b0f835150b05"
+  },
+  {
+    "path": "docs/dotnet/documents-windev.mdx",
+    "bytes": 2177,
+    "sha256": "6b6c6ee01b82c210f5abe6b8127071436fa357b772c100ed509a484846c1b567"
+  },
+  {
+    "path": "docs/dotnet/erreurs-et-limites.mdx",
+    "bytes": 3739,
+    "sha256": "ce2949a0c6034152d441b5495777427b216b30c2cec1eab32d5553883e5c69ff"
+  },
+  {
+    "path": "docs/dotnet/extraction.mdx",
+    "bytes": 1962,
+    "sha256": "af5e18704e1768e6ded0cfc5c296961f3e383a0c7d9f9e56538a4ff8849e9736"
+  },
+  {
+    "path": "docs/dotnet/index.mdx",
+    "bytes": 1349,
+    "sha256": "44b58bf612a26b66dd6e3eae556a1d7eb0ff64224a3d79eaa2067903d53c3674"
+  },
+  {
+    "path": "docs/dotnet/installation.mdx",
+    "bytes": 1669,
+    "sha256": "b1a716be4c437b502c2b8b5682c2d9b711bce8dafdba5b812e9b83175930d6c6"
+  },
+  {
+    "path": "docs/dotnet/premiers-pas.mdx",
+    "bytes": 2053,
+    "sha256": "494f437997798726be8d143cb87fd55d9ab275f09428da50c35f872d4f3cac00"
+  },
+  {
+    "path": "docs/dotnet/reference-api.mdx",
+    "bytes": 5095,
+    "sha256": "2cfdec10d0a8a58f1f067f484886b314d9a6cf6c0a59d0151dfa71018427e89c"
+  },
+  {
+    "path": "docs/dotnet/schema-et-donnees.mdx",
+    "bytes": 6581,
+    "sha256": "5b0e6608e36ecfbd347940b427b4f1818a58abdde28b136e495789a77cad2b9e"
+  },
+  {
+    "path": "docs/file-formats/_category_.json",
+    "bytes": 108,
+    "sha256": "d2776a7413a6751aed90c786a3957428e2986748d9960ced4b787c27cdda6d7a"
+  },
+  {
+    "path": "docs/file-formats/assets/coordonnees.svg",
+    "bytes": 2364,
+    "sha256": "dd7f945c0698d3edbefc70a050ffce6b3491109fb2a3d043494bbde32cb4e69f"
+  },
+  {
+    "path": "docs/file-formats/assets/familles.svg",
+    "bytes": 2203,
+    "sha256": "44485c38f42613fe2442eb3dbdc62f6e9baf1623b6b11db3814ceac3845fac7b"
+  },
+  {
+    "path": "docs/file-formats/assets/personne.svg",
+    "bytes": 2841,
+    "sha256": "c83413bd2fa5d12d4dededc8a8f73e60e1b23349af863e50759b1ec9edd7d890"
+  },
+  {
+    "path": "docs/file-formats/assets/schema-wdd.svg",
+    "bytes": 2371,
+    "sha256": "6d08f92618708ffd68a249e7a5ca2671e6c7131beeda5a461269de8701964324"
+  },
+  {
+    "path": "docs/file-formats/conventions.mdx",
+    "bytes": 3276,
+    "sha256": "66f02d5d22145d53de4b904e03ccdc3699079fea260229531d942b11887a3f77"
+  },
+  {
+    "path": "docs/file-formats/hfsql/_category_.json",
+    "bytes": 94,
+    "sha256": "bb62ec93fc8c8f3d2a36b6c5166abd8af2635c9dd9571639c53835fda1795e0f"
+  },
+  {
+    "path": "docs/file-formats/hfsql/cas-hfsql31.mdx",
+    "bytes": 10841,
+    "sha256": "a3b830ef71d17fbe38caef110a0144da8bdf3422bcf52763669e911e30973ec2"
+  },
+  {
+    "path": "docs/file-formats/hfsql/cas-personne.mdx",
+    "bytes": 12696,
+    "sha256": "4a2b6112499063137d73b36f219a56aa7fb80b21b92b2383273c29f0441bfaef"
+  },
+  {
+    "path": "docs/file-formats/hfsql/en-tete.mdx",
+    "bytes": 4940,
+    "sha256": "38b22eccc47d85f40a22a88dc7c12f9a4b0b1aec07f715bca950d5c919f9c468"
+  },
+  {
+    "path": "docs/file-formats/hfsql/fic.mdx",
+    "bytes": 4825,
+    "sha256": "655cec75779600789fe7756cd5ad799e688001fe3ea05561003c94309ef229d8"
+  },
+  {
+    "path": "docs/file-formats/hfsql/index.mdx",
+    "bytes": 1327,
+    "sha256": "0fee65eaf8eabc4b89c540a31d812022c1b9ec961321644c2f816fe7855852d7"
+  },
+  {
+    "path": "docs/file-formats/hfsql/mmo.mdx",
+    "bytes": 2714,
+    "sha256": "78d4f71263d29b733550e46520af0a0606da7cca23563a97fee739a76ae6b369"
+  },
+  {
+    "path": "docs/file-formats/hfsql/ndx.mdx",
+    "bytes": 6391,
+    "sha256": "587e40066e9b54b24a46eb12b0923893f2a4d54a4f4a65f4a031a03feb84d509"
+  },
+  {
+    "path": "docs/file-formats/hfsql/protection.mdx",
+    "bytes": 5404,
+    "sha256": "afd8e6c2c3b5f7b921f782dd3648977a9f48d395808eb64ac2551718909dfb08"
+  },
+  {
+    "path": "docs/file-formats/index.mdx",
+    "bytes": 1149,
+    "sha256": "dcbdbb521a75e1731c86a927cacc5a4e2bf19c1d844f192ca26891d2989f2072"
+  },
+  {
+    "path": "docs/file-formats/tags.yml",
+    "bytes": 118,
+    "sha256": "3abda32ab1cb23d7c6ff967f73de2a72318170ed0c7d2c89c97e3e2a12c6f715"
+  },
+  {
+    "path": "docs/file-formats/validation.mdx",
+    "bytes": 5244,
+    "sha256": "276ca629a0277b3ca5f9bd1f692cbbcc621782c6f9318bdd15dd66fe4723f5a4"
+  },
+  {
+    "path": "docs/file-formats/windev/_category_.json",
+    "bytes": 95,
+    "sha256": "7f67666304951f6f2d36efd6c3b58c74b08ea17c023e4a139508d22d9c96299a"
+  },
+  {
+    "path": "docs/file-formats/windev/chaines.mdx",
+    "bytes": 5118,
+    "sha256": "a478a452fd5aff2f105030094e3a8271d7d4a54faccc04098af95517eb74939b"
+  },
+  {
+    "path": "docs/file-formats/windev/exemples-schema.mdx",
+    "bytes": 13205,
+    "sha256": "6db0cec0ee888b4d1d6992f25996466b2351b24ca84d91b29d924fb741a69a52"
+  },
+  {
+    "path": "docs/file-formats/windev/index.mdx",
+    "bytes": 1459,
+    "sha256": "c248ce618f614c34fd1a6e69afe17ff458664ff304880d29cfb32bc2ebe93702"
+  },
+  {
+    "path": "docs/file-formats/windev/lzw.mdx",
+    "bytes": 6726,
+    "sha256": "9c9390f099b99f805071ed378b87fcdb71a8353f1ab35603656c2a98e0371f0e"
+  },
+  {
+    "path": "docs/file-formats/windev/pcs.mdx",
+    "bytes": 7222,
+    "sha256": "1b96d45e4f8000a77de4a0211dbb5b87429419baaa4eac287cfab39eae7829bc"
+  },
+  {
+    "path": "docs/file-formats/windev/previsualisation-bmp.mdx",
+    "bytes": 5801,
+    "sha256": "c457e926e9fd7eeb966829bc2337449b64bb7cd0d535da9e59dd3e00ee9cf4f1"
+  },
+  {
+    "path": "docs/file-formats/windev/sections-et-blocs.mdx",
+    "bytes": 5728,
+    "sha256": "58555beca4385615b74451e2e90365bbdb6f4eb96403834ca78262bdbe7d7350"
+  },
+  {
+    "path": "docs/file-formats/windev/transformation-wdd.mdx",
+    "bytes": 7398,
+    "sha256": "ce5c083acde0a409ec07c01ccf2267506c314132abfb9b16417ed95dcd591f22"
+  },
+  {
+    "path": "docs/file-formats/windev/wda.mdx",
+    "bytes": 8509,
+    "sha256": "b02086a0d2d091ab1d54480ab835841c40098474512a44152b78be57729a15e3"
+  },
+  {
+    "path": "docs/file-formats/windev/wdd.mdx",
+    "bytes": 19806,
+    "sha256": "31154611c9460c4fdcbb353f4eaf6889c2b3aa80cc0278c2b9c2a330a66993aa"
+  },
+  {
+    "path": "docs/file-formats/windev/wde.mdx",
+    "bytes": 8910,
+    "sha256": "2da1beeacb2a253e774e32d6747270585c7627b716d40d369f2c2073d12e0d0b"
+  },
+  {
+    "path": "docs/file-formats/windev/wdg.mdx",
+    "bytes": 6756,
+    "sha256": "a6e715072c13a17bf005403550756912f0f85c6331b59f673e5a7fe2542890fb"
+  },
+  {
+    "path": "docs/file-formats/windev/wdl.mdx",
+    "bytes": 9661,
+    "sha256": "b4b53622fafe1cb61fc69db67cfd52d2d0525e2dedd85867a189d19b91c6d15d"
+  },
+  {
+    "path": "docs/file-formats/windev/wdp.mdx",
+    "bytes": 14314,
+    "sha256": "c7eeb77a391fcabf1eb2df498247020e505a9dc5ecbbd3e0384e2e657ce84aae"
+  },
+  {
+    "path": "docs/file-formats/windev/wdw.mdx",
+    "bytes": 10045,
+    "sha256": "db7b952adc1545e42f71f6e2106b3c17f79db40d32c07b850e97e4c5bf91bd02"
+  },
+  {
+    "path": "docs/file-formats/windev/wlangage.mdx",
+    "bytes": 6657,
+    "sha256": "90172a6e947b884007bd8fb134353f87877d7bd46eeefc1712bdc571da12a083"
+  },
+  {
+    "path": "examples/jour-ferie-schema-layout.json",
+    "bytes": 501,
+    "sha256": "b3caf39a325a59b9d0d5e8ad8164275c33729ed7dabc31af8a4f2247e41d597c"
+  },
+  {
+    "path": "examples/personne-layout.json",
+    "bytes": 612,
+    "sha256": "43d5d5490db1f474e7d071ce3dbf0be5a5ecd52f1cd633afbe2acf13044e0e6d"
+  },
+  {
+    "path": "examples/personne-schema-layout.json",
+    "bytes": 611,
+    "sha256": "e0921e2ca333df78360da8f9c29d5e0763e048d18387cdc2eca657c0e2cb1a7a"
+  },
+  {
+    "path": "examples/semaine-cours-schema-layout.json",
+    "bytes": 406,
+    "sha256": "b1b710e3100c38bc7b509683855c51db5568f214ea4e15ab7c644ef892737e4b"
+  },
+  {
+    "path": "src/WindevReader/HfsqlFiles.cs",
+    "bytes": 12822,
+    "sha256": "4242d17638fe1b997894237a63b4efb15b4bd1003fe8751a6a29812e1112d886"
+  },
+  {
+    "path": "src/WindevReader/HfsqlFixedRecords.cs",
+    "bytes": 6737,
+    "sha256": "e1e302a6ba5e23088f51beca17c90b489e0b3c1574e7f30b32fdcdce6b495bc7"
+  },
+  {
+    "path": "src/WindevReader/HfsqlFlatIndex.cs",
+    "bytes": 3717,
+    "sha256": "fedfaae132cc051e263bf419e33b90ecbce642bfce40d49e264938128acb564a"
   },
   {
     "path": "src/WindevReader/Internal/Binary.cs",
@@ -121,8 +436,8 @@
   },
   {
     "path": "src/WindevReader/Internal/PcsLegacyCipher.cs",
-    "bytes": 2703,
-    "sha256": "1a1377a8be99608362b29cfc99dd829031b33a902eebde7c108460274b3c6eeb"
+    "bytes": 3066,
+    "sha256": "ac7ddfa9f0561270a1d981aba8906311d85d657f666785fbe34abc3941dedd5f"
   },
   {
     "path": "src/WindevReader/Internal/PcsLzw.cs",
@@ -131,33 +446,68 @@
   },
   {
     "path": "src/WindevReader/Internal/SchemaReader.cs",
-    "bytes": 5442,
-    "sha256": "34c4e5096892eb7ae37a83b2931b292e6a5fce1070767b4d6b1d89172d08164a"
+    "bytes": 7869,
+    "sha256": "31c76c553ed82153ca0f16d692e2d6174800aeb2ec2a804a772656871ae73242"
   },
   {
     "path": "src/WindevReader/Models.cs",
-    "bytes": 5052,
-    "sha256": "e241910b8c2a2e2d3f2743adf4325279aa924a5f52a53501e53ea35428c74dc5"
+    "bytes": 6294,
+    "sha256": "d2c3fb17e14017d41dcfb88ef3a14f6819e3efef3970f944018d7be24a32c32e"
   },
   {
     "path": "src/WindevReader/UiDocuments.cs",
-    "bytes": 5406,
-    "sha256": "1f4a678922a71078fa07d5fcc5b37db7b0ae518ae316954ed115dc7aee1ebe15"
+    "bytes": 6008,
+    "sha256": "b92e892d3f1adf8f4fac97e28b8a9e21d6481c7ce3d6a1042b4403757346a4b8"
+  },
+  {
+    "path": "src/WindevReader/WdlWindevLibrary.cs",
+    "bytes": 13475,
+    "sha256": "0d507936517bbcdafb40a5bba5c8bed4a1530fc6b7e1c00a744d04d4d8d2eacc"
   },
   {
     "path": "src/WindevReader/WindevDocument.cs",
-    "bytes": 7772,
-    "sha256": "dd34a55c70c05fea417733cbf983195e4c20ac61909f420009c22a5303b3b692"
+    "bytes": 8077,
+    "sha256": "ca4becdf32c80c15ab5b8935a8883d356b619cc57d4979f0e7cf8ca0dcc02d25"
+  },
+  {
+    "path": "src/WindevReader/WindevFile.cs",
+    "bytes": 3139,
+    "sha256": "f738576c12e99802c795fef596fc727dca5e82f66e20adfb6fbd33ddff94784d"
   },
   {
     "path": "src/WindevReader/WindevReader.csproj",
-    "bytes": 525,
-    "sha256": "c8d1cab81747262a6918101617733d37b478786fab81a4186e2e258ce4ad8649"
+    "bytes": 567,
+    "sha256": "cc0a35fbb3876cbedf0bfd63d6d8560f4fa4c6bd69f9fc32cfce611b470a47f5"
+  },
+  {
+    "path": "src/WindevReader/WindowPreview.cs",
+    "bytes": 3147,
+    "sha256": "0d8871cc4de83a8ddd9646b36f6bdc1fa6ff922a45a30847a6ae29d0049d220d"
+  },
+  {
+    "path": "tests/WindevReader.Tests/ErpTests.cs",
+    "bytes": 4759,
+    "sha256": "79eb298550109d6a0c8cada50cc02eac381dd02796dcbff62a0b5398484e0382"
+  },
+  {
+    "path": "tests/WindevReader.Tests/ExtensionTests.cs",
+    "bytes": 13773,
+    "sha256": "caa46898359b1299a74150b8a603a703c7a985ac0900790ef9dc151b1664cf28"
+  },
+  {
+    "path": "tests/WindevReader.Tests/Hfsql31Tests.cs",
+    "bytes": 6235,
+    "sha256": "e4346d38ae993311bf9e5ded7fedcef54205fede21fc729505ae2c054923f5ff"
+  },
+  {
+    "path": "tests/WindevReader.Tests/PersonneTests.cs",
+    "bytes": 6842,
+    "sha256": "feb58b126d9d0da91787ed001f6705e696a3a217f6f13cf95148c924dce27ea9"
   },
   {
     "path": "tests/WindevReader.Tests/Program.cs",
-    "bytes": 8840,
-    "sha256": "49bc10147b6cc367e5a27a2c3be475bc4b500a6a6a873f794f6ca341989a47a2"
+    "bytes": 9121,
+    "sha256": "942e501eee8b843739b69b84f3e12a802b5e78fa3e5aea91522ceb7e9dcd318b"
   },
   {
     "path": "tests/WindevReader.Tests/WindevReader.Tests.csproj",
@@ -166,8 +516,8 @@
   },
   {
     "path": "tools/WindevReader.Cli/Program.cs",
-    "bytes": 2781,
-    "sha256": "6676b87bab289f0bc725f7fa6d2dedc77d9844c44cf459c1e6a29ea4557226f6"
+    "bytes": 6377,
+    "sha256": "da1edf19d0b793eb3b7a7927d9e983ed1c81da6b9d15f0a53f02467b2bc9cb46"
   },
   {
     "path": "tools/WindevReader.Cli/WindevReader.Cli.csproj",

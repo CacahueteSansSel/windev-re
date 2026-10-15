@@ -1,0 +1,105 @@
+---
+title: "NDX : index et descripteurs"
+sidebar_label: "NDX : index et descripteurs"
+sidebar_position: 2
+description: "NDX : index et descripteurs — structures, positions en octets et limites du lecteur autonome."
+---
+
+Le NDX accélère les parcours et les recherches. L’étude reconnaît son répertoire terminal et ses descripteurs de 60 octets ; elle ne reconstitue pas encore les clés ni le parcours du B-tree.
+
+Les positions sont exprimées en **octets**. Les inconnues sont indiquées comme telles ; voir les [conventions](../conventions.mdx).
+
+## Structure déterminée
+
+Le type est `0x00070002`. Après l’en-tête commun, un compte et un pointeur annoncent un **répertoire terminal de positions sur 64 bits**. Le découpage a été vérifié sur les 160 NDX initiaux, représentant quatre contenus distincts, puis sur PERSONNE.ndx en WINDEV 28.
+
+Les positions sont exposées comme débuts de régions/descriptions d’index. Le profil plat 31 du [cas jours et semaines](./cas-hfsql31.mdx) permet désormais de lire des clés en clair. Les comparateurs généraux, liens de pages et parcours B-tree restent inconnus.
+
+## Champs repérés
+
+| Offset fichier | Taille | Type | Champ / valeur du profil RADFic |
+| --- | --- | --- | --- |
+| `[0, 90)` | 90 | En-tête physique commun | Type et deux GUID |
+| 90 | 2 | `u16` brut | 1 |
+| 92 | 2 | `u16` brut | 4 |
+| 94 | 4 | `u32` brut | Valeur variable, sens non établi |
+| 98 | 4 | `u32` brut | 512 dans les profils RAD |
+| 102 | 4 | `u32` brut | 512 dans les profils RAD |
+| 106 | 1 | `u8` brut | 0 |
+| 107 / `0x6B` | 2 | `u16` | Compte d’entrées terminales `N` |
+| 109 / `0x6D` | 2 | `u16` brut | 11 832 dans RADFic/RADRub ; varie ailleurs |
+| 111 / `0x6F` | 8 | `u64` | Position absolue du répertoire terminal `I` |
+| `[119, 135)` dans ce profil | 16 | `octets[16]` | Paramètres non interprétés |
+| 135 dans ce profil | Variable | Région d’index | Première position annoncée |
+| `I` | `8 × N` | Tableau de `u64` | Positions absolues des régions/descriptions |
+
+```text
+exiger I >= 119
+exiger I + N × 8 = longueur_fichier
+position[j] = lire_u64(F, I + j × 8)
+exiger 119 <= position[j] < I
+exiger les positions strictement croissantes
+```
+
+La valeur à 111 n’est pas une « taille du fichier moins 32 » universelle : 32 correspond seulement à quatre entrées de huit octets.
+
+## Répertoires vérifiés
+
+| Profil | Taille fichier | `N` | `I` | Positions terminales |
+| --- | --- | --- | --- | --- |
+| RADFic.ndx | 8 007 | 4 | 7 975 | 135 ; 1 861 ; 3 899 ; 5 937 |
+| RADRub.ndx | 8 535 | 4 | 8 503 | 135 ; 1 861 ; 3 899 ; 5 937 |
+| RADProp.ndx | 5 649 | 3 | 5 625 | 135 ; 1 861 ; 3 587 |
+| Index des tâches | 2 181 | 1 | 2 173 | 135 |
+| PERSONNE (WINDEV 28) | 12 920 | 3 | 12 896 | 5 034 ; 9 229 ; 12 836 |
+
+## Exemple : répertoire terminal de RADFic
+
+| Offset fichier | Taille | Type | Valeur |
+| --- | --- | --- | --- |
+| 7 975 | 8 | `u64` | 135 / `0x0087` |
+| 7 983 | 8 | `u64` | 1 861 / `0x0745` |
+| 7 991 | 8 | `u64` | 3 899 / `0x0F3B` |
+| 7 999 | 8 | `u64` | 5 937 / `0x1731` |
+| 8 007 | 0 | Fin exclusive | Fin du fichier |
+
+Les régions entre ces positions mesurent respectivement 1 726, 2 038, 2 038 et 2 038 octets, en s’arrêtant à `I`. Elles ne sont pas nécessairement des pages physiques uniques ; aucun format universel de page n’est déduit de ces différences.
+
+## API
+
+```csharp
+var index = NdxHfsqlIndexFile.Open(@"D:\Projet\SuperNoteExtra\RADFic.ndx");
+Console.WriteLine(index.DeclaredIndexCount);
+Console.WriteLine(index.DirectoryOffset);
+foreach (int position in index.IndexDescriptorOffsets)
+    Console.WriteLine(position);
+ReadOnlyMemory<byte> region = index.ReadIndexRegion(0);
+```
+
+La bibliothèque valide les bornes et préserve les octets sans les traduire en clés ou en enregistrements FIC.
+
+## Descripteur terminal de 60 octets
+
+Les pointeurs du répertoire désignent des descripteurs de 60 octets dans tous les contenus NDX étudiés. Les types ci-dessous décrivent le découpage retenu ; ils ne prouvent pas les types employés dans le code source du moteur. Les entiers sont en petit-boutiste.
+
+| Offset relatif au descripteur `D` | Taille | Type de lecture | API / commentaire |
+| --- | --- | --- | --- |
+| `+0` | 2 | `u16` brut | `RawWordAt0` ; rôle inconnu, pas de checksum validé |
+| `+2` | 4 | `u32` | Longueur 60 ; valeur vérifiée à l’ouverture |
+| `+6` | 4 | `u32` brut | `RawWordAt6`, vaut `0x01000000` dans les profils |
+| `+10` | 4 | `u32` brut | `RawWordAt10` ; pas un compte de lignes établi |
+| `+14` | 2 | `u16` brut | `RawWordAt14` ; pas un type de rubrique établi |
+| `+16` | 8 | `u64` brut | `RawPointerAt16` ; `0xFFFFFFFFFFFFFFFF` dans les profils RAD |
+| `+24` | 4 | `u32` brut | `RawLengthAt24` ; longueur observée d’une région dans PERSONNE |
+| `+28` | 8 | `u64` brut | `RawPointerAt28` ; position d’une autre structure, y compris avant `D` |
+| `+36` | 8 | `u64` brut | `RawPointerAt36` ; autre position physique |
+| `+44` | 16 | `u32[4]` bruts | `RawTailWords` ; tous nuls dans PERSONNE |
+
+`IndexDescriptors` expose ces champs. Les valeurs sentinelles des pointeurs bruts restent des `ulong` ; elles ne sont pas converties en adresses exploitables. Le lecteur ne suit pas ces pointeurs et ne leur attribue pas encore de rôle de racine B-tree, de liste libre ou de feuille.
+
+Dans PERSONNE, le premier descripteur est situé à 5 034, tandis que `RawPointerAt28` vaut 135. **Le premier descripteur n’est donc pas nécessairement le début de l’index logique.** `ReadIndexRegion(i)` conserve son contrat historique : il renvoie les octets entre deux descripteurs consécutifs, ou jusqu’au répertoire terminal. Ce n’est pas une reconstruction des pages de l’index. Voir la [carte complète du cas PERSONNE](./cas-personne.mdx#ndx--descripteurs-et-régions).
+
+
+## Lire le profil plat 31
+
+`ReadFlatIndex(i)` expose un en-tête de 29 octets au tag 7, puis des clés de largeur fixe et deux références brutes par entrée. Le compte inclut une sentinelle tout à 1, retirée de la liste `Entries`. Les tableaux ont été recoupés avec tous les emplacements des deux nouveaux FIC, soit sept tableaux et 35 clés. Ce décodage ciblé ne s’applique ni aux NDX RAD opaques ni au profil PERSONNE 28. Les [tables d’offsets et limites](./cas-hfsql31.mdx#ndx--répertoires-et-tableaux-de-clés-en-clair) détaillent ce profil.

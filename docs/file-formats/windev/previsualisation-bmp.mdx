@@ -1,0 +1,106 @@
+---
+title: "Prévisualisation BMP du WDW"
+sidebar_label: "Prévisualisation BMP du WDW"
+sidebar_position: 16
+description: "Prévisualisation BMP du WDW — structures, positions en octets et limites du lecteur autonome."
+---
+
+La prévisualisation est un BMP standard complet, stocké dans un bloc compressé du WDW. Il faut distinguer les octets du WDW, ceux du BMP décompressé et les pixels convertis en RGBA.
+
+Les positions sont exprimées en **octets**. Les inconnues sont indiquées comme telles ; voir les [conventions](../conventions.mdx).
+
+## Identification vérifiée
+
+Les **28 WDW examinés**, dont six gabarits, contiennent en section 4, tag `0x08`, un **fichier BMP complet compressé par la variante LZW WINDEV**. La sortie débute par `42 4D`, soit `BM`. Le contenu vérifié est un BMP standard, avec des pixels BGRX sur 32 bits, sans canal alpha déclaré.
+
+Le format de la prévisualisation n’est donc ni une variante PNG/JPEG, ni un tableau RGB dépourvu d’en-tête. La compression extérieure explique l’absence de signature BMP visible au début de la section stockée.
+
+## Enveloppe stockée et repères
+
+On note `S4` le début de section dans le fichier et `B` la sortie LZW.
+
+| Offset section | Taille | Type | Contenu |
+| --- | --- | --- | --- |
+| 0 | 1 | `u8` | Méthode `04` |
+| 1 | 4 | `u32` | Longueur LZW `L` |
+| 5 | 4 | `u32` | Taille BMP complète `U` |
+| 9 | 2 | `octets[2]` | `00 00` |
+| 11 | `L` | Codes LZW de 9 à 16 bits | BMP compressé |
+
+```text
+longueur_section_4 = 11 + L
+B = LZW(F[S4 + 11 .. S4 + 11 + L])
+longueur(B) = U
+```
+
+Une recherche de signatures dans les seuls octets stockés ne permet pas d’identifier cette image.
+
+## BITMAPFILEHEADER : 14 octets
+
+Les positions suivantes sont relatives à `B`, et non au fichier WDW.
+
+| Offset dans `B` | Taille | Type | Champ standard | Valeur / contrôle |
+| --- | --- | --- | --- | --- |
+| 0 / `0x00` | 2 | `octets[2]` | `bfType` | `42 4D` |
+| 2 / `0x02` | 4 | `u32` | `bfSize` | Taille du BMP complet, égale à `U` |
+| 6 / `0x06` | 2 | `u16` | `bfReserved1` | 0 dans les profils |
+| 8 / `0x08` | 2 | `u16` | `bfReserved2` | 0 dans les profils |
+| 10 / `0x0A` | 4 | `u32` | `bfOffBits` | 66 / `0x42` |
+
+## BITMAPINFOHEADER : 40 octets, puis trois masques
+
+| Offset dans `B` | Taille | Type | Champ | Valeur / commentaire |
+| --- | --- | --- | --- | --- |
+| 14 / `0x0E` | 4 | `u32` | `biSize` | 40, sans les masques |
+| 18 / `0x12` | 4 | `i32` | `biWidth` | Largeur positive en pixels |
+| 22 / `0x16` | 4 | `i32` | `biHeight` | Hauteur positive dans les spécimens ; signe conservé |
+| 26 / `0x1A` | 2 | `u16` | `biPlanes` | 1 |
+| 28 / `0x1C` | 2 | `u16` | `biBitCount` | 32 |
+| 30 / `0x1E` | 4 | `u32` | `biCompression` | 3, `BI_BITFIELDS` |
+| 34 / `0x22` | 4 | `u32` | `biSizeImage` | Nombre d’octets de pixels |
+| 38 / `0x26` | 4 | `i32` | `biXPelsPerMeter` | 0 dans les profils |
+| 42 / `0x2A` | 4 | `i32` | `biYPelsPerMeter` | 0 dans les profils |
+| 46 / `0x2E` | 4 | `u32` | `biClrUsed` | 0 |
+| 50 / `0x32` | 4 | `u32` | `biClrImportant` | 0 |
+| 54 / `0x36` | 4 | `u32` | Masque rouge | `0x00FF0000` |
+| 58 / `0x3A` | 4 | `u32` | Masque vert | `0x0000FF00` |
+| 62 / `0x3E` | 4 | `u32` | Masque bleu | `0x000000FF` |
+| 66 / `0x42` | Variable | Pixels BGRX | Première ligne stockée | Quatre octets par pixel |
+
+`BI_BITFIELDS` signifie ici des pixels non compressés **au niveau BMP**, avec masques explicites. Le LZW appartient à l’enveloppe WINDEV extérieure.
+
+Les champs standard sont définis par Microsoft : [BITMAPFILEHEADER](https://learn.microsoft.com/en-us/windows/win32/api/wingdi/ns-wingdi-bitmapfileheader) et [BITMAPINFOHEADER](https://learn.microsoft.com/en-us/windows/win32/api/wingdi/ns-wingdi-bitmapinfoheader). La localisation WDW et les profils sont issus de l’inspection binaire.
+
+## Orientation et conversion RGBA
+
+Pour une hauteur positive, les lignes du BMP vont du bas vers le haut. Le pas vaut `largeur × 4` ; il est déjà multiple de quatre.
+
+```text
+pas = largeur × 4
+ligne_stockée = hauteur - 1 - y
+offset_pixel = 66 + ligne_stockée × pas + x × 4
+bleu = B[offset_pixel + 0]
+vert = B[offset_pixel + 1]
+rouge = B[offset_pixel + 2]
+X = B[offset_pixel + 3]
+```
+
+X est réservé : aucun masque alpha n’est déclaré. `GetRgba32()` produit des lignes du haut vers le bas et fixe l’alpha à 255. Utiliser X comme alpha ferait disparaître des pixels dont X vaut zéro.
+
+Le signe négatif de hauteur est prévu par le lecteur pour les BMP du haut vers le bas ; cette branche n’a pas été rencontrée dans les 28 fichiers.
+
+## Profils vérifiés
+
+| Fenêtre | Offset fichier de section 4 | Taille section | `L` | BMP complet `U` | Largeur × hauteur |
+| --- | --- | --- | --- | --- | --- |
+| FEN_Journal | 82 837 | 84 326 | 84 315 | 3 540 482 | 1 177 × 752 |
+| FEN_Rapport1 | 3 311 | 2 016 | 2 005 | 178 482 | 354 × 126 |
+| FEN_Confirme | 5 817 | 9 608 | 9 597 | 497 082 | 531 × 234 |
+
+Pour FEN_Rapport1 : `66 + 354 × 126 × 4 = 178 482`. L’image se réexporte directement comme BMP, sans conversion intermédiaire.
+
+Les 22 fenêtres applicatives ont les mêmes dimensions dans le BMP et dans leur racine 610. Cinq des six gabarits ont des dimensions différentes : par exemple 247 × 171 contre 99 × 68, ou 818 × 622 contre 794 × 598. Une réduction ou un recadrage est plausible ; le mécanisme exact reste inconnu. Le lecteur respecte toujours les dimensions **du BMP**, indépendamment de `Bounds`.
+
+## API et portée
+
+`WdwWindevWindow.Preview` expose les dimensions, masques, orientation, `BmpData`, `SaveBmp(filename)` et `GetRgba32()`. Les variantes BMP non prises en charge donnent un diagnostic ; un BMP reconnu mais incohérent est rejeté. Les images des contrôles individuels restent distinctes de cette prévisualisation globale.

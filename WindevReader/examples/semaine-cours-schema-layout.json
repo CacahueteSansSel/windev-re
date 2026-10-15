@@ -1,0 +1,25 @@
+{
+  "DataOffset": 1627,
+  "RecordByteLength": 35,
+  "RecordCount": 1,
+  "Fields": [
+    {
+      "Name": "IDSEMAINE_COURS",
+      "Offset": 9,
+      "ByteLength": 8,
+      "Type": "Int64"
+    },
+    {
+      "Name": "DATEDEB",
+      "Offset": 17,
+      "ByteLength": 9,
+      "Type": "Date8Z"
+    },
+    {
+      "Name": "DATEFIN",
+      "Offset": 26,
+      "ByteLength": 9,
+      "Type": "Date8Z"
+    }
+  ]
+}

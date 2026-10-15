@@ -8,17 +8,17 @@
     ".NETCoreApp,Version=v8.0": {
       "WindevReader.Cli/1.0.0": {
         "dependencies": {
-          "WindevReader": "0.1.0"
+          "WindevReader": "0.2.0"
         },
         "runtime": {
           "WindevReader.Cli.dll": {}
         }
       },
-      "WindevReader/0.1.0": {
+      "WindevReader/0.2.0": {
         "runtime": {
           "WindevReader.dll": {
-            "assemblyVersion": "0.1.0.0",
-            "fileVersion": "0.1.0.0"
+            "assemblyVersion": "0.4.0.0",
+            "fileVersion": "0.4.0.0"
           }
         }
       }
@@ -30,7 +30,7 @@
       "serviceable": false,
       "sha512": ""
     },
-    "WindevReader/0.1.0": {
+    "WindevReader/0.2.0": {
       "type": "project",
       "serviceable": false,
       "sha512": ""

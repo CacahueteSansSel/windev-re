@@ -1,0 +1,77 @@
+---
+title: "Erreurs et compatibilité"
+sidebar_position: 8
+---
+
+## Traiter un refus
+
+```csharp
+using WindevReader;
+
+try
+{
+    var fichier = WindevFile.Open("SuperNoteExtra.wdd");
+    foreach (var diagnostic in fichier.Diagnostics)
+        Console.WriteLine($"{diagnostic.Code}: {diagnostic.Message}");
+}
+catch (UnsupportedWindevFormatException e)
+{
+    Console.Error.WriteLine($"Profil non pris en charge : {e.Message}");
+}
+catch (WindevFormatException e)
+{
+    Console.Error.WriteLine($"Structure invalide : {e.Message}");
+}
+catch (IOException e)
+{
+    Console.Error.WriteLine($"Erreur de lecture : {e.Message}");
+}
+```
+
+`UnsupportedWindevFormatException` dérive de `WindevFormatException`, qui dérive de `IOException`. L’ordre des captures compte. `WindevFormatException.Offset` peut préciser la position de l’erreur ; cette position appartient au buffer vérifié, qui peut être un schéma décompressé plutôt que le fichier.
+
+Les dispositions explicites sont validées à la construction de la vue. Les erreurs de contenu, dont une chaîne sans NUL ou un booléen hors 0/1, apparaissent à la lecture de l’emplacement concerné.
+
+## Fixer les budgets
+
+```csharp
+var options = new WindevOpenOptions {
+    MaxFileBytes = 32 * 1024 * 1024,
+    MaxDecodedBlockBytes = 16 * 1024 * 1024,
+    MaxTotalDecodedBytes = 64 * 1024 * 1024
+};
+var fichierAvecOptions = WindevFile.Open("SuperNoteExtra.wdd", options);
+```
+
+| Option | Défaut | Portée |
+| --- | --- | --- |
+| `MaxFileBytes` | 128 Mio | Fichier stocké |
+| `MaxDecodedBlockBytes` | 64 Mio | Un buffer décompressé |
+| `MaxTotalDecodedBytes` | 256 Mio | Buffers cumulés à l’ouverture d’un document ; métadonnées WDL cumulées |
+| `MaxDecodedBlocks` | 4 096 | Nombre de blocs reconnus ; deux nécessaires aux métadonnées WDL |
+| `MaxStringBytes` | 4 Mio | Chaînes des structures reconnues |
+| `MaxArchiveEntries` | 10 000 | Entrées WDL |
+| `MaxChunksPerEntry` | 1 024 | Par liste de segments WDL |
+| `MaxIndexEntries` | 100 000 | Entrées réelles par tableau plat NDX lu explicitement |
+| `AllowUntestedVersions` | `false` | Autorise un essai sur une autre version sans garantir sa structure |
+
+Les extractions WDL ultérieures ont leurs propres vérifications de taille ; `MaxTotalDecodedBytes` n’est pas un compteur permanent de toutes les extractions déjà faites. Les dispositions FIC utilisent des vues paresseuses et des bornes calculées contre le fichier ; l’appelant reste responsable du volume qu’il choisit de matérialiser ou sérialiser.
+
+## Compatibilité effectivement vérifiée
+
+| Famille | Profils validés |
+| --- | --- |
+| WDP et WDG | 28 et 31, propriétés reconnues du corpus |
+| WDW et WDE | 31 |
+| WDD et WDA | 28 et 31 ; liaison non vide étudiée en 28 |
+| WDL | Un patch 31, révision d’archive 3102 |
+| FIC et NDX | En-têtes 28 et 31 ; valeurs fixes recoupées sur PERSONNE 28 et deux tables 31 ; sept tableaux de clés 31 |
+| MMO | En-têtes 31 |
+
+Accepter une version de conteneur ne certifie pas toutes ses variantes internes. `AllowUntestedVersions` ne désactive ni les contrôles de format ni les budgets.
+
+## Limites fonctionnelles
+
+Le lecteur ne réécrit pas les fichiers, n’exécute pas le WLangage, ne reconstruit pas les fenêtres source depuis le bytecode et ne rend pas les états. Le décodage HFSQL reste partiel : début et compte des emplacements explicites, états logiques inconnus, parcours général du B-tree NDX et allocation des mémos non pris en charge ; les clés du profil plat 31 sont accessibles. L’absence de mot de passe n’est pas détectée automatiquement.
+
+La [validation binaire](../file-formats/validation.mdx) précise les témoins, les recoupements et les questions ouvertes.

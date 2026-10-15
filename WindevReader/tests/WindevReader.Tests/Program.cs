@@ -85,6 +85,10 @@ try
     }
     finally { Directory.Delete(tempDirectory, true); }
     checks.Add("Malformed magic, truncation, directory counts, damaged payloads, type mismatch, untested versions and decompression limits rejected.");
+    ExtensionTests.Run(root, Check, Reject, checks);
+    if (args.Length > 2) PersonneTests.Run(args[2], Check, Reject, checks);
+    if (args.Length > 3) ErpTests.Run(args[3], Check, Reject, checks);
+    if (args.Length > 4) Hfsql31Tests.Run(args[4], root, Check, Reject, checks);
     var supported = new HashSet<string>([".wdp", ".wdw", ".wdg", ".wdd", ".wda", ".wde"], StringComparer.OrdinalIgnoreCase);
     var files = Directory.EnumerateFiles(root, "*", SearchOption.AllDirectories).Where(f => supported.Contains(Path.GetExtension(f))).ToArray();
     int blocks = 0, lines = 0;

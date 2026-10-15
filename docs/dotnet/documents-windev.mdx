@@ -1,0 +1,57 @@
+---
+title: "Projets, fenêtres et procédures"
+sidebar_position: 3
+---
+
+## Références d’un projet
+
+```csharp
+using WindevReader;
+
+var projet = WdpWindevProject.Open("SuperNoteExtra.wdp");
+foreach (var reference in projet.References)
+    Console.WriteLine($"{reference.ConfigurationName}: {reference.Name}");
+```
+
+`References` recense le répertoire de configuration reconnu. Il ne résout pas les chemins et n’ouvre pas les éléments référencés. Certains caches partiels ne contiennent pas ce répertoire ; un diagnostic les signale.
+
+## Propriétés d’une fenêtre
+
+```csharp
+var fenetre = WdwWindevWindow.Open("FEN_Notes.wdw");
+Console.WriteLine(fenetre.Caption);
+if (fenetre.Bounds is { } cadre)
+    Console.WriteLine($"{cadre.Width} × {cadre.Height}");
+
+foreach (var element in fenetre.Elements)
+    Console.WriteLine($"{element.Name} : {element.InferredKind}");
+```
+
+Les catégories d’éléments sont inférées à partir des préfixes de noms : elles ne constituent pas une reconstruction complète des classes de contrôles. Certaines propriétés, dont `Bounds`, peuvent être absentes d’un profil non reconnu.
+
+## Procédures et événements source
+
+```csharp
+var collection = WdgWindevGlobalProcedures.Open("ProceduresGlobales.wdg");
+foreach (var procedure in collection.Procedures)
+{
+    Console.WriteLine(procedure.Name);
+    Console.WriteLine(procedure.Source);
+}
+
+foreach (var bloc in fenetre.CodeBlocks)
+    Console.WriteLine($"{bloc.OwnerName}, événement {bloc.EventId} :\n{bloc.Source}");
+```
+
+`GlobalDeclarations` conserve les blocs de déclarations globales. `CodeBlocks` et `Lines` donnent accès aux identifiants numériques d’événement, langues et métadonnées de lignes reconnues. La propriété `Source` assemble les lignes ; elle ne traduit pas tous les identifiants d’événements en noms.
+
+## États
+
+```csharp
+var etat = WdeWindevReport.Open("ETAT_Notes.wde");
+Console.WriteLine(etat.NoDataMessage);
+foreach (var element in etat.Elements)
+    Console.WriteLine(element.Name);
+```
+
+Le lecteur inventorie les propriétés et les éléments reconnus ; il ne calcule pas une pagination et ne produit pas de rendu de l’état.

@@ -1,0 +1,219 @@
+---
+title: "WDP : projet"
+sidebar_label: "WDP : projet"
+sidebar_position: 1
+description: "WDP : projet — structures, positions en octets et limites du lecteur autonome."
+---
+
+Le WDP décrit le projet et ses références : fenêtres, collections de procédures et analyse. Son ouverture permet d’inventorier ces références ; certains réglages restent opaques.
+
+Les positions sont exprimées en **octets**. Les inconnues sont indiquées comme telles ; voir les [conventions](../conventions.mdx).
+
+Pour utiliser le lecteur, consulter la [documentation .NET](../../dotnet/index.mdx).
+
+## Identification
+
+| Propriété | Valeur |
+| --- | --- |
+| Extension | `.wdp` |
+| Type du conteneur (`u32` à `F[8]`) | `0x00001001` |
+| Sections d'un projet complet étudié | 20 |
+| Sections d'un cache de projet étudié | 2 |
+| Versions de produit observées | 28 et 31 |
+
+L'en-tête commun est décrit dans le [chapitre PCS](./pcs.mdx). Il ne suffit pas de vérifier l'extension : les caches situés dans `.cpl` ont aussi l'extension `.wdp`.
+
+## Carte de référence : SuperNoteExtra.wdp
+
+Le profil de référence représente un fichier de 19 591 octets. Les offsets du tableau sont absolus dans le fichier ; les positions `+n` des enveloppes sont relatives à leur section.
+
+| Section | Tag (`u8`) | Début dans le fichier | Longueur (`u32`) | Blocs décodés | Commentaire |
+| --- | --- | --- | --- | --- | --- |
+| 0 | `0x00` | `0x0159` (345) | 91 | Aucun bloc LZW identifié | Identité du projet et chemins associés |
+| 1 | `0x01` | `0x01B4` (436) | 3658 | Aucun bloc LZW identifié | Réglages du projet ; encodage non décodé |
+| 2 | `0x02` | `0x0FFE` (4094) | 1678 | +4 → 8223 octets | Enregistrements de code WLangage |
+| 3 | `0x00` | `0x168C` (5772) | 0 | Aucun bloc LZW identifié | Vide dans ces projets |
+| 4 | `0x00` | `0x168C` (5772) | 68 | +0 → 64 octets | Petit buffer auxiliaire LZW ; sens inconnu |
+| 5 | `0x00` | `0x16D0` (5840) | 0 | Aucun bloc LZW identifié | Vide |
+| 6 | `0x06` | `0x16D0` (5840) | 604 | Aucun bloc LZW identifié | Chaînes de chemins et de génération ; interprétation partielle |
+| 7 | `0x00` | `0x192C` (6444) | 76 | Aucun bloc LZW identifié | Données auxiliaires opaques |
+| 8 | `0x13` | `0x1978` (6520) | 53 | Aucun bloc LZW identifié | Métadonnées auxiliaires |
+| 9 | `0x00` | `0x19AD` (6573) | 9 | Aucun bloc LZW identifié | Petit bloc brut, non interprété |
+| 10 | `0x00` | `0x19B6` (6582) | 0 | Aucun bloc LZW identifié | Vide |
+| 11 | `0x00` | `0x19B6` (6582) | 697 | +0 → 2187 octets | Buffer auxiliaire LZW ; plusieurs chaînes lisibles |
+| 12 | `0x00` | `0x1C6F` (7279) | 0 | Aucun bloc LZW identifié | Vide |
+| 13 | `0x00` | `0x1C6F` (7279) | 10046 | Aucun bloc LZW identifié | Configuration et références du projet |
+| 14 | `0x0A` | `0x43AD` (17325) | 38 | +12 → 36 octets | Métadonnées terminales, LZW à +12 |
+| 15 | `0x00` | `0x43D3` (17363) | 0 | Aucun bloc LZW identifié | Vide |
+| 16 | `0x11` | `0x43D3` (17363) | 37 | Aucun bloc LZW identifié | Petit bloc de métadonnées |
+| 17 | `0x00` | `0x43F8` (17400) | 21 | Aucun bloc LZW identifié | Petit bloc brut |
+| 18 | `0x00` | `0x440D` (17421) | 53 | +0 → 76 octets | Buffer auxiliaire LZW |
+| 19 | `0x00` | `0x4442` (17474) | 2117 | Aucun bloc LZW identifié | Bloc auxiliaire ; ressources possibles, non entièrement interprétées |
+
+## Carte comparative de référence : SuperMailExtra.wdp
+
+Le profil associé à SuperMailExtra représente un fichier de 10 609 octets. Le découpage comporte également vingt sections, mais certaines représentations changent : notamment la section 13 est compressée.
+
+| Section | Tag (`u8`) | Début dans le fichier | Longueur (`u32`) | Blocs décodés | Commentaire |
+| --- | --- | --- | --- | --- | --- |
+| 0 | `0x00` | `0x0159` (345) | 90 | Aucun bloc LZW identifié | Identité du projet et chemins associés |
+| 1 | `0x01` | `0x01B3` (435) | 1573 | Aucun bloc LZW identifié | Réglages du projet ; encodage non décodé |
+| 2 | `0x02` | `0x07D8` (2008) | 1718 | +4 → 7643 octets | Enregistrements de code WLangage |
+| 3 | `0x00` | `0x0E8E` (3726) | 0 | Aucun bloc LZW identifié | Vide dans ces projets |
+| 4 | `0x00` | `0x0E8E` (3726) | 65 | +0 → 64 octets | Petit buffer auxiliaire LZW ; sens inconnu |
+| 5 | `0x00` | `0x0ECF` (3791) | 0 | Aucun bloc LZW identifié | Vide |
+| 6 | `0x06` | `0x0ECF` (3791) | 437 | Aucun bloc LZW identifié | Chaînes de chemins et de génération ; interprétation partielle |
+| 7 | `0x00` | `0x1084` (4228) | 71 | Aucun bloc LZW identifié | Données auxiliaires opaques |
+| 8 | `0x13` | `0x10CB` (4299) | 53 | Aucun bloc LZW identifié | Métadonnées auxiliaires |
+| 9 | `0x00` | `0x1100` (4352) | 9 | Aucun bloc LZW identifié | Petit bloc brut, non interprété |
+| 10 | `0x00` | `0x1109` (4361) | 0 | Aucun bloc LZW identifié | Vide |
+| 11 | `0x00` | `0x1109` (4361) | 653 | +0 → 2112 octets | Buffer auxiliaire LZW ; plusieurs chaînes lisibles |
+| 12 | `0x00` | `0x1396` (5014) | 0 | Aucun bloc LZW identifié | Vide |
+| 13 | `0x00` | `0x1396` (5014) | 3903 | +12 → 4444 octets | Configuration et références du projet |
+| 14 | `0x0A` | `0x22D5` (8917) | 38 | +12 → 36 octets | Métadonnées terminales, LZW à +12 |
+| 15 | `0x00` | `0x22FB` (8955) | 0 | Aucun bloc LZW identifié | Vide |
+| 16 | `0x11` | `0x22FB` (8955) | 37 | Aucun bloc LZW identifié | Petit bloc de métadonnées |
+| 17 | `0x00` | `0x2320` (8992) | 21 | Aucun bloc LZW identifié | Petit bloc brut |
+| 18 | `0x00` | `0x2335` (9013) | 802 | +0 → 2034 octets | Buffer auxiliaire LZW |
+| 19 | `0x00` | `0x2657` (9815) | 794 | Aucun bloc LZW identifié | Bloc auxiliaire ; ressources possibles, non entièrement interprétées |
+
+## Section 0 : identité
+
+Le premier nom encadré est précédé d'un mot de quatre octets dont la valeur observée vaut 7 :
+
+| Offset dans la section | Taille | Type | Champ / commentaire |
+| --- | --- | --- | --- |
+| `+0` | 4 | `u32` brut | Valeur 7 ; rôle exact non déterminé |
+| `+4` | Variable | Chaîne encadrée | Nom du projet |
+| Après le nom | Variable | `octets[n]` et autres chaînes encadrées | Métadonnées et chemins ; organisation complète inconnue |
+
+Dans les deux profils, la section commence à 345 et le nom à 349. Les deux noms fictifs occupent chacun 27 octets lorsqu’ils sont encadrés ; les métadonnées qui suivent restent de longueur variable.
+
+## Section 1 : réglages opaques
+
+| Projet | Position fichier | Longueur | Premiers octets |
+| --- | --- | --- | --- |
+| SuperNoteExtra | 436 | 3 658 | `3D 01 11 22 33 44 55 66` |
+| SuperMailExtra | 435 | 1 573 | `3D 01 AA BB CC DD EE FF` |
+
+Les six octets suivant `3D 01` sont fictifs dans cette illustration. La signification et le décodage de cette région ne sont pas établis. Le motif initial `3D 01` ne suffit pas à conclure qu'il s'agit d'une méthode de compression, d'un entier de version ou d'un chiffrement particulier. La bibliothèque la conserve telle quelle.
+
+## Section 2 : code du projet
+
+L'enveloppe LZW commence à +4. Le buffer décodé contient les déclarations et événements du projet suivant le [format WLangage](./wlangage.mdx).
+
+| Projet | `L`, octets LZW | `U`, octets décodés | Taille de section |
+| --- | --- | --- | --- |
+| SuperNoteExtra | 1 663 | 8 223 | 1 678 |
+| SuperMailExtra | 1 703 | 7 643 | 1 718 |
+
+La taille de section vaut ici `4 + 11 + L`.
+
+## Section 6 : chaînes de chemins
+
+Cette section contient notamment des chemins de projet, de sortie et un nom d'exécutable encadrés. Les chaînes sont lisibles, mais les champs environnants ne sont pas tous interprétés.
+
+Un chemin est une valeur documentaire enregistrée dans le projet. Il ne doit pas être exécuté ni être utilisé automatiquement pour ouvrir d'autres fichiers lors de la simple lecture du `.wdp`.
+
+## Section 13 : configuration
+
+### Préfixe commun observé
+
+| Offset dans la section | Taille | Type | SuperNoteExtra 31 | SuperMailExtra 28 | Commentaire |
+| --- | --- | --- | --- | --- | --- |
+| `+0` | 4 | `u32` brut | 12 | 12 | Mot auxiliaire |
+| `+4` | 4 | `u32` brut | 117 | 113 | Révision interne possible ; non certifiée |
+| `+8` | 4 | `u32` brut | 112 | 112 | Mot auxiliaire |
+| `+12` | Variable | Enveloppe ou région brute | Débute par `00` | Enveloppe LZW `04` | Organisation dépendant du spécimen |
+
+Pour SuperMailExtra, le LZW à +12 produit 4 444 octets. Pour SuperNoteExtra, les chaînes de configuration sont directement présentes dans la section stockée.
+
+### Organisation de référence : SuperNoteExtra 31
+
+| Offset dans la section | Taille | Type | Valeur | Commentaire |
+| --- | --- | --- | --- | --- |
+| `+12` | 1 | `u8` brut | 0 | Discriminant observé ; généralisation à tous les blocs 00 non validée |
+| `+13` | 4 | `u32` | 10 029 | Correspond au nombre d'octets de la région commençant à +17 |
+| `+17` | 4 | `u32` brut | 1 | Mot auxiliaire |
+| `+21` | 4 | `u32` | 10 025 | Correspond à la région commençant à +21, longueur comprise |
+| `+25` | 4 | `u32` brut | 0 | Mot auxiliaire |
+| `+29` | 40 | Chaîne encadrée | `Exécutable Windows 64 bits` | Libellé de configuration du spécimen |
+| `+69` | 1 | `u8` brut | 0 | Mot auxiliaire d'un octet |
+| `+70` | 4 | `u32` brut | 1 | Sens exact non établi |
+| `+74` | 4 | `u32` brut | 0 | Sens exact non établi |
+| `+78` | 4 | `u32` | 27 | Nombre de références observées |
+| `+82` | Variable | Références | Première entrée | Structure ci-dessous |
+| Après la 27e référence | Variable | Chaînes et autres paramètres | Nom d'exécutable, icône, métadonnées de génération | Organisation partielle |
+
+Dans l’extrait fictif associé à SuperMailExtra, le préfixe comporte les mots `1`, `4440`, `0`, puis une chaîne `SuperMailExtra` à +12, de taille 27 octets. Son rôle exact comme nom de configuration n’est pas validé. La sentinelle à +39 est suivie de deux mots `u32` à +40 et +44 ; le compte de deux références est à +48 et la première entrée commence à +52. La chaîne de cette première référence commence donc à +56.
+
+## Enregistrement d'une référence
+
+Soit `R` le début de l'entrée et `C` la taille de sa chaîne encadrée :
+
+| Offset relatif à `R` | Taille | Type | Champ / commentaire |
+| --- | --- | --- | --- |
+| `+0` | 4 | `u32` | Longueur totale `C + 20` |
+| `+4` | `C` | Chaîne encadrée | Nom ou chemin référencé |
+| `+4 + C` | 4 | `u32` | Code brut du type d'élément |
+| `+8 + C` | 4 | `u32` brut | Valeur observée 1 |
+| `+12 + C` | 4 | `u32` brut | Valeur observée 1 |
+| `+16 + C` | 4 | `u32` brut | Valeur observée 0 |
+
+```text
+fin_de_reference = R + C + 20
+reference_suivante = fin_de_reference
+```
+
+Le code d'élément coïncide avec plusieurs types PCS : 2 pour une fenêtre, 3 pour un état et 7 pour des procédures. Toutefois, le chemin `.wdd` du projet porte **`0x00080002`**, alors que le fichier WDD lui-même porte **`0x00070004`** dans son en-tête. Le code d'une référence ne doit donc pas être systématiquement comparé au type du fichier qu'elle désigne.
+
+### Références de SuperNoteExtra
+
+Cet extrait fictif illustre les références de SuperNoteExtra. Les positions indiquent le début de la **chaîne**, donc `R + 4`, dans sa section 13. Le nom de projet est lui-même l'une des références.
+
+| Nom / chemin | Offset section de la chaîne | Taille `C` | Code élément (`u32`) | Trois mots bruts suivants |
+| --- | --- | --- | --- | --- |
+| SuperNoteExtra | `0x0056` (86) | 27 | `0x00001001` | 1, 1, 0 |
+| FEN_Journal | `0x0085` (133) | 24 | `0x00000002` | 1, 1, 0 |
+| D:\X\SuperNoteExtra\SuperNoteExtra.wdd | `0x00B1` (177) | 51 | `0x00080002` | 1, 1, 0 |
+| FEN_EntreeJournal | `0x00F8` (248) | 30 | `0x00000002` | 1, 1, 0 |
+| ETAT_Test | `0x012A` (298) | 22 | `0x00000003` | 1, 1, 0 |
+| ETAT_JOURNAL | `0x0154` (340) | 25 | `0x00000003` | 1, 1, 0 |
+| FEN_Parametres | `0x0181` (385) | 27 | `0x00000002` | 1, 1, 0 |
+| FEN_JoursFeries | `0x01B0` (432) | 28 | `0x00000002` | 1, 1, 0 |
+| ProcéduresGlobales | `0x01E0` (480) | 32 | `0x00000007` | 1, 1, 0 |
+| FEN_Confirme | `0x0214` (532) | 25 | `0x00000002` | 1, 1, 0 |
+| FEN_DeclareSemaineCours | `0x0241` (577) | 36 | `0x00000002` | 1, 1, 0 |
+| FEN_Rappel | `0x0279` (633) | 23 | `0x00000002` | 1, 1, 0 |
+| FEN_IA | `0x02A4` (676) | 19 | `0x00000002` | 1, 1, 0 |
+| FEN_IA_SLOP | `0x02CB` (715) | 24 | `0x00000002` | 1, 1, 0 |
+| FEN_ImgPreview | `0x02F7` (759) | 27 | `0x00000002` | 1, 1, 0 |
+| FEN_Recherche | `0x0326` (806) | 26 | `0x00000002` | 1, 1, 0 |
+| FEN_Markdown | `0x0354` (852) | 25 | `0x00000002` | 1, 1, 0 |
+| FEN_test | `0x0381` (897) | 21 | `0x00000002` | 1, 1, 0 |
+| FEN_TachesEnCours | `0x03AA` (938) | 30 | `0x00000002` | 1, 1, 0 |
+| FEN_Cloture | `0x03DC` (988) | 24 | `0x00000002` | 1, 1, 0 |
+| FEN_Projets | `0x0408` (1032) | 24 | `0x00000002` | 1, 1, 0 |
+| FEN_RecherchePJ | `0x0434` (1076) | 28 | `0x00000002` | 1, 1, 0 |
+| FEN_CoffreFort | `0x0464` (1124) | 27 | `0x00000002` | 1, 1, 0 |
+| FEN_Rapport | `0x0493` (1171) | 24 | `0x00000002` | 1, 1, 0 |
+| FEN_Rapport1 | `0x04BF` (1215) | 25 | `0x00000002` | 1, 1, 0 |
+| FEN_Maintenance | `0x04EC` (1260) | 28 | `0x00000002` | 1, 1, 0 |
+| FEN_ChoixFicExterne | `0x051C` (1308) | 32 | `0x00000002` | 1, 1, 0 |
+
+## Section 19 et autres régions auxiliaires
+
+Certaines ressources et chaînes sont visibles dans les sections secondaires. Leur rôle global et leur structure complète ne sont pas établis. Aucun format d'image universel ni inventaire exhaustif des ressources n'est déduit du seul indice 19.
+
+## Caches de compilation
+
+| Fichier | Sections | Taille | Contenu disponible |
+| --- | --- | --- | --- |
+| Cache SuperNoteExtra dans `.cpl` | 2 | 3 860 octets | Identité puis copie des réglages opaques |
+| Cache SuperMailExtra dans `.cpl` | 2 | 1 774 octets | Identité puis copie des réglages opaques |
+
+Dans ces caches, `P = 111`. Ils n'ont pas la section 13 d'un projet complet et ne doivent pas être présentés comme un inventaire complet de ses références.
+
+## Limites de l'interprétation
+
+Le corpus comporte un seul bloc principal de configuration détaillé par projet complet. Les configurations multiples ne sont pas validées. Les réglages de la section 1, de nombreux mots auxiliaires et la structure exhaustive des ressources restent inconnus.
