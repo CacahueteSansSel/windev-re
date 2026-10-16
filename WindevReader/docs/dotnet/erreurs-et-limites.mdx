@@ -10,9 +10,12 @@ using WindevReader;
 
 try
 {
-    var fichier = WindevFile.Open("SuperNoteExtra.wdd");
-    foreach (var diagnostic in fichier.Diagnostics)
+    IWindevFile file = WindevFile.Open("SuperNoteExtra.wdd");
+
+    foreach (WindevDiagnostic diagnostic in file.Diagnostics)
+    {
         Console.WriteLine($"{diagnostic.Code}: {diagnostic.Message}");
+    }
 }
 catch (UnsupportedWindevFormatException e)
 {
@@ -35,12 +38,13 @@ Les dispositions explicites sont validées à la construction de la vue. Les err
 ## Fixer les budgets
 
 ```csharp
-var options = new WindevOpenOptions {
+WindevOpenOptions options = new WindevOpenOptions
+{
     MaxFileBytes = 32 * 1024 * 1024,
     MaxDecodedBlockBytes = 16 * 1024 * 1024,
     MaxTotalDecodedBytes = 64 * 1024 * 1024
 };
-var fichierAvecOptions = WindevFile.Open("SuperNoteExtra.wdd", options);
+IWindevFile fileWithOptions = WindevFile.Open("SuperNoteExtra.wdd", options);
 ```
 
 | Option | Défaut | Portée |
@@ -61,17 +65,20 @@ Les extractions WDL ultérieures ont leurs propres vérifications de taille ; `M
 
 | Famille | Profils validés |
 | --- | --- |
-| WDP et WDG | 28 et 31, propriétés reconnues du corpus |
-| WDW et WDE | 31 |
-| WDD et WDA | 28 et 31 ; liaison non vide étudiée en 28 |
+| WDP | 15, 24, 25, 28, 29 et 31, propriétés reconnues |
+| WDG | 28 et 31 ; 15, 24, 25 et 29 non fournis |
+| WDW | 15, 24, 25, 29 et 31 ; racines 607/610 et BMP recoupés |
+| WDE | 31 ; 15, 24, 25 et 29 non fournis |
+| WDD | 15, 24, 25, 28, 29 et 31 ; liaison non vide étudiée en 28 |
+| WDA | 15, 28 et 31 ; 24, 25 et 29 non fournis. Le témoin 15 expose uniquement des sections brutes |
 | WDL | Un patch 31, révision d’archive 3102 |
-| FIC et NDX | En-têtes 28 et 31 ; valeurs fixes recoupées sur PERSONNE 28 et deux tables 31 ; sept tableaux de clés 31 |
-| MMO | En-têtes 31 |
+| FIC et NDX | 15, 24, 25, 28, 29 et 31 ; valeurs fixes sur sept profils ; tableaux plats 15/24/25/29/31 |
+| MMO | En-têtes 15/24/25/29/31 ; blocs simples recoupés sur un mémo 15, un mémo 24, un mémo 25, un mémo 29 et deux mémos 31 |
 
 Accepter une version de conteneur ne certifie pas toutes ses variantes internes. `AllowUntestedVersions` ne désactive ni les contrôles de format ni les budgets.
 
 ## Limites fonctionnelles
 
-Le lecteur ne réécrit pas les fichiers, n’exécute pas le WLangage, ne reconstruit pas les fenêtres source depuis le bytecode et ne rend pas les états. Le décodage HFSQL reste partiel : début et compte des emplacements explicites, états logiques inconnus, parcours général du B-tree NDX et allocation des mémos non pris en charge ; les clés du profil plat 31 sont accessibles. L’absence de mot de passe n’est pas détectée automatiquement.
+Le lecteur ne réécrit pas les fichiers, n’exécute pas le WLangage, ne reconstruit pas les fenêtres source depuis le bytecode et ne rend pas les états. Le décodage HFSQL reste partiel : début et compte des emplacements explicites, états logiques inconnus, parcours général du B-tree NDX et allocation générale des mémos non pris en charge ; les clés des profils plats 15/24/25/29/31 et des blocs simples MMO sont accessibles. L’absence de mot de passe n’est pas détectée automatiquement.
 
 La [validation binaire](../file-formats/validation.mdx) précise les témoins, les recoupements et les questions ouvertes.

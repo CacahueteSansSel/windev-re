@@ -10,10 +10,14 @@ Chaque famille possède une classe avec une méthode statique `Open`. Un mauvais
 ```csharp
 using WindevReader;
 
-var analyse = WddWindevAnalysis.Open("SuperNoteExtra.wdd");
-Console.WriteLine($"{analyse.Name} : {analyse.Tables.Count} tables");
-foreach (var table in analyse.Tables)
+WddWindevAnalysis analysis = WddWindevAnalysis.Open("SuperNoteExtra.wdd");
+
+Console.WriteLine($"{analysis.Name} : {analysis.Tables.Count} tables");
+
+foreach (WindevDataTable table in analysis.Tables)
+{
     Console.WriteLine($"{table.Name} : {table.Fields.Count} rubriques");
+}
 ```
 
 Le chemin peut être relatif au répertoire courant ou absolu. Aucun fichier compagnon n’est ouvert automatiquement.
@@ -21,10 +25,11 @@ Le chemin peut être relatif au répertoire courant ou absolu. Aucun fichier com
 ## Choisir la classe automatiquement
 
 ```csharp
-IWindevFile fichier = WindevFile.Open("document-a-inspecter.bin");
-Console.WriteLine(fichier.Name);
+IWindevFile file = WindevFile.Open("document-a-inspecter.bin");
 
-switch (fichier)
+Console.WriteLine(file.Name);
+
+switch (file)
 {
     case WddWindevAnalysis schema:
         Console.WriteLine($"{schema.Tables.Count} tables");
@@ -40,8 +45,10 @@ switch (fichier)
 ## Consulter les diagnostics
 
 ```csharp
-foreach (var diagnostic in fichier.Diagnostics)
+foreach (WindevDiagnostic diagnostic in file.Diagnostics)
+{
     Console.WriteLine($"{diagnostic.Severity} {diagnostic.Code}: {diagnostic.Message}");
+}
 ```
 
 Une ouverture réussie valide les structures prises en charge. Les diagnostics précisent les propriétés restées opaques ; ils ne signifient pas que toutes les données du format sont interprétées.

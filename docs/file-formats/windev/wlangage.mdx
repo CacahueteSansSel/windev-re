@@ -17,12 +17,12 @@ Les positions ci-dessous se rapportent au buffer **décompressé**, noté `D`. C
 
 ## Groupes et propriétaires
 
-Le propriétaire initial est le nom du document. Une chaîne encadrée de nom suivie du tag `0D` fournit ensuite un nouveau propriétaire pour les événements suivants : procédure, contrôle ou bloc d'état.
+Le propriétaire initial est le nom du document. Une chaîne encadrée de nom suivie du tag `0B` (profil 25) ou `0D` (profils récents) fournit ensuite un nouveau propriétaire pour les événements suivants : procédure, contrôle ou bloc d'état.
 
 | Position relative à un groupe | Taille | Type | Commentaire |
 | --- | --- | --- | --- |
 | Avant `G` | Variable | Chaîne encadrée de nom, lorsque présente | Nom du propriétaire |
-| `G + 0` | 1 | `u8` | Tag observé `0D` |
+| `G + 0` | 1 | `u8` | Tag observé `0B` en 25, `0D` dans les autres profils étudiés |
 | `G + 1` | 4 | `u32` | Longueur du groupe observée ; organisation complète non interprétée |
 | Après `G + 5` | Variable | `octets[n]` | Identifiants, listes et autres données internes |
 | À l'intérieur du groupe | Variable | Enregistrements d'événement | Structures décrites ci-dessous |
@@ -35,7 +35,7 @@ Soit `E` le début de l'événement et `B` sa longueur stockée à +1 :
 
 | Offset relatif à `E` | Taille | Type | Champ | Valeur / commentaire | Statut |
 | --- | --- | --- | --- | --- | --- |
-| `+0` | 1 | `u8` | Variante de l'enregistrement | `15` ou `16` en hexadécimal | Vérifié |
+| `+0` | 1 | `u8` | Variante de l'enregistrement | `14` (profil 25), `15` ou `16` en hexadécimal | Vérifié |
 | `+1` | 4 | `u32` | Longueur du corps `B` | Taille totale de l'événement = `5 + B` | Vérifié |
 | `+5` | 4 | `u32` | Nombre de lignes `N` | Nombre de lignes source à lire | Vérifié |
 | `+9` | 2 | `u16` | Identifiant d'événement brut | Code numérique ; correspondance avec les noms d'événements non validée | Structure vérifiée, sens partiel |
@@ -45,7 +45,7 @@ Soit `E` le début de l'événement et `B` sa longueur stockée à +1 :
 | `+21` | Variable | Lignes source | Début du premier enregistrement de ligne | Vérifié |
 | Après les `N` lignes | Variable | `octets[n]` | Métadonnées jusqu'à `E + 5 + B` | Non entièrement interprétées |
 
-Les tags 15 et 16 ne sont pas la version majeure WINDEV : ce sont des variantes d'enregistrement. Le profil illustré par SuperMailExtra contient des événements 15 ; celui illustré par SuperNoteExtra contient des événements 16. Les deux emploient le début de lignes à +21 dans les structures reconnues.
+Les tags 14, 15 et 16 ne sont pas la version majeure WINDEV : ce sont des variantes d'enregistrement. Le profil illustré par SuperMailExtra contient des événements 15 ; celui illustré par SuperNoteExtra contient des événements 16. Les deux emploient le début de lignes à +21 dans les structures reconnues.
 
 ## Ligne source non vide
 
@@ -106,7 +106,7 @@ La première ligne est `St_ResultatChaineFlags est une structure`. Sa chaîne en
 
 | Contrôle | Commentaire |
 | --- | --- |
-| Tag d'événement 15 ou 16 | Identifie une variante prise en charge |
+| Tag d'événement 14, 15 ou 16 selon le profil | Identifie une variante prise en charge |
 | Taille de corps dans le buffer | Évite un dépassement |
 | Chaque ligne commence par 03 | Distingue source et autres chaînes |
 | Texte vide ou chaîne encadrée valide | Contrôle le encadrement |
@@ -117,3 +117,81 @@ La première ligne est `St_ResultatChaineFlags est une structure`. Sa chaîne en
 Les événements sans aucune ligne ne produisent pas de bloc source dans le lecteur actuel. Les métadonnées compilées, les éventuels enregistrements d'une autre variante et les significations exhaustives des numéros restent non interprétés.
 
 `Source` dans l'API reconstruit un texte avec `CRLF` entre les lignes. Ces caractères de séparation ne sont pas des octets de fin de ligne stockés entre les enregistrements binaires décrits ici.
+
+## Variantes mesurées par version
+
+| Profil fourni | Tag du propriétaire après sa chaîne | Tag de corps source à `E+0` | Première ligne | Observations |
+| --- | --- | --- | --- | --- |
+| WDP / WDW 25 | `u8 = 0x0B` | `u8 = 0x14` | `E+21` | 11 événements de projet et 36 de fenêtre |
+| Sources 28 étudiées | `u8 = 0x0D` | `u8 = 0x15` | `E+21` | Profil historique de procédures/projet |
+| Sources 29 étudiées | `u8 = 0x0D` | `u8 = 0x16` | `E+21` | Événements WDP/WDW |
+| Sources 31 étudiées | `u8 = 0x0D` | `u8 = 0x16` | `E+21` | Corpus initial |
+
+Dans le WDW 25, le propriétaire racine n’est pas précédé d’une chaîne de nom : l’API utilise le nom de fenêtre. Le premier tag de propriétaire est à `D[4]` et le premier événement à `D[33]`, où `D` est le buffer source de section 2. Les propriétaires de contrôles sont reconnus par leur chaîne suivie de `0x0B`. Le corps du premier événement a une longueur `u32` de 379 à `D[34]`, annonce deux lignes à `D[38]` et occupe `[33,417)` ; sa première ligne commence à 54.
+
+Le préfixe de corps de 21 octets, le tag de ligne `03`, les chaînes encadrées et les douze octets après l’auteur restent compatibles avec les structures ci-dessus. La bibliothèque 0.9.0 sélectionne les marqueurs du profil 25 : accepter simplement sa version sans changer le lecteur de source produirait zéro événement, malgré un LZW valide. Les marqueurs des versions intermédiaires non fournies ne sont pas déduits.
+
+## Même profil source observé en version 24
+
+Les WDP et WDW 24 emploient le tag de propriétaire `u8 = 0x0B` et le tag de corps `u8 = 0x14`, comme les témoins 25. Le début des lignes reste à `E+21`, avec tag `03`, texte et auteur encadrés, puis douze octets de métadonnées par ligne.
+
+| Buffer source décompressé | Longueur | Événements | Lignes |
+| --- | --- | --- | --- |
+| WDP 24, section 2, enveloppe à +4 | 3 042 | 10 | 20 |
+| WDW 24, section 2, enveloppe à +4 | 13 353 | 36 | 83 |
+
+Dans le WDW 24, le groupe racine commence à D[4] et le premier événement à D[33]. Son corps annoncé mesure 379 octets (`u32` à D[34]), avec deux lignes (`u32` à D[38]), première ligne à D[54] et fin exclusive à D[417]. Ces positions sont recoupées avec les chaînes source effectivement décodées. Le nombre d’événements n’est pas une constante de version.
+
+## Source de la version 15 : longueurs explicites
+
+Les sources WDP et WDW 15 étudiées restent dans le buffer décompressé de section 2, à partir de l’enveloppe stockée à +4. Leur représentation textuelle change : les lignes et auteurs sont des **octets CP1252 à longueur explicite**, sans NUL final et sans les marqueurs d’encadrement modernes.
+
+### Propriétaire d’un groupe
+
+| Position relative | Taille | Type | Sens vérifié |
+| --- | --- | --- | --- |
+| P | 4 | `u32` LE | Longueur N du nom |
+| P+4 | N | CP1252 | Nom, sans NUL final |
+| P+4+N | 1 | `u8` | Tag de groupe **`0x0A`** |
+| P+5+N | 4 | `u32` LE | Longueur de groupe, contrôlée dans le buffer |
+
+Le groupe racine peut ne pas fournir de nom : le lecteur reprend celui du document. Le nom d’un contrôle doit être un identifiant et être suivi du tag et d’une longueur bornée ; les suites imprimables seules ne suffisent pas à attribuer un propriétaire.
+
+### Corps d’événement
+
+Soit E le début de l’événement :
+
+| Offset relatif | Taille | Type | Valeur / rôle |
+| --- | --- | --- | --- |
+| E+0 | 1 | `u8` | **`0x10`** |
+| E+1 | 4 | `u32` LE | Longueur du corps L, taille totale `5+L` |
+| E+5 | 4 | `u32` LE | Nombre de lignes |
+| E+9 / E+11 | 2 chacun | `u16` LE | Identifiants bruts d’événement et de langue |
+| E+13 / E+17 | 4 chacun | `u32` brut | Métadonnées non attribuées |
+| E+21 | Variable | Lignes | Début des enregistrements de ligne |
+
+### Ligne de source
+
+Soit T le début d’une ligne, N sa longueur textuelle et A la longueur de l’auteur :
+
+| Offset relatif | Taille | Type | Sens |
+| --- | --- | --- | --- |
+| T+0 | 1 | `u8` | Tag **0**, contre 3 dans les profils récents |
+| T+1 | 4 | `u32` LE | N, nombre d’octets du texte |
+| T+5 | N | CP1252 | Texte exact, sans terminateur |
+| T+5+N | 4 | `u32` LE | A, nombre d’octets de l’auteur |
+| T+9+N | A | CP1252 | Auteur, sans terminateur |
+| T+9+N+A | 4 | `u32` brut | Timestamp, époque et fuseau non certifiés |
+
+La longueur est **`13+N+A`**. Une ligne vide avec un auteur de deux octets occupe donc **15 octets**. La version récente garde douze octets après l’auteur ; le profil 15 n’en lit que quatre. Une longueur nulle n’est pas traitée comme une chaîne encadrée moderne.
+
+### Positions recoupées
+
+| Buffer | Taille décodée | Événements reconnus | Lignes reconnues |
+| --- | --- | --- | --- |
+| WDP 15 | 1 703 | 6 | 12 |
+| WDW 15 | 8 371 | 23 | 57 |
+
+Dans le WDW, le premier événement est à D[33], longueur de corps 318 et trois lignes vides aux offsets **54, 69 et 84**. Le corps d’ajout de PERSONNE commence à **6391**, longueur 492 et six lignes. Sa première ligne commence à **6412** ; le `u32` à 6413 vaut 14, et les quatorze octets du texte commencent à **6417**. Les noms, textes et auteurs sont exposés sans exécution de WLangage.
+
+Le lecteur borne chaque champ au corps courant, contrôle les tailles avant de décoder et refuse de consommer l’événement suivant en cas de longueur invalide. Les métadonnées restantes jusqu’à la fin du corps sont conservées dans le buffer. Une occurrence de texte située dans une autre structure, telle qu’un descripteur « PROCEDURE », n’est pas transformée artificiellement en événement source.

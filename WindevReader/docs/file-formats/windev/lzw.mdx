@@ -134,3 +134,7 @@ Ces valeurs proviennent des en-têtes d'enveloppes réels. Les tailles stockées
 Le lecteur limite la taille attendue avant allocation, borne les chaînes développées, refuse les cycles ou indices de dictionnaire invalides et contrôle les tailles à chaque émission. Les budgets mémoire sont des choix d'implémentation décrits dans le [chapitre de validation](../validation.mdx).
 
 La piste LZW a été guidée par un [retour de rétro-ingénierie de l'auteur John N](https://stackoverflow.com/questions/21599884/windev-compress-which-compression-format-is-used), puis vérifiée indépendamment sur les fichiers fournis. Les positions et enveloppes de cette documentation sont celles mesurées dans le corpus.
+
+## Profil 15 recoupé
+
+Les WDP, WDW et WDD 15 fournis utilisent encore l’enveloppe LZW de onze octets, les codes et l’ordre des bits décrits ici. Le WDD conserve la transformation héritée avant décompression. La différence importante se trouve dans les données décompressées : les textes d’interface ne sont pas encadrés et les lignes de source possèdent des longueurs explicites. Il n’a pas été nécessaire d’ajouter un autre algorithme de compression pour ces témoins.

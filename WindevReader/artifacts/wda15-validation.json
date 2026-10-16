@@ -1,0 +1,29 @@
+{
+  "Version": "0.9.1",
+  "ResearchDate": "2026-10-16",
+  "FileByteLength": 374,
+  "WindevVersion": 15,
+  "RawDocumentType": "0x00080002",
+  "PayloadOffset": 137,
+  "SectionOffsets": [
+    137,
+    295,
+    295,
+    307
+  ],
+  "SectionByteLengths": [
+    158,
+    0,
+    12,
+    67
+  ],
+  "DecodedBlocks": 0,
+  "NameUsesFilenameFallback": true,
+  "TypedEditableSchemaSupported": false,
+  "TestsAdded": 13,
+  "TotalAssertions": 3097,
+  "Net8BuildPassed": true,
+  "DocusaurusBuildPassed": true,
+  "PublicApiSignaturesPreserved": 960,
+  "FindingsDocumentedIn": "file-formats/windev/wda.mdx"
+}

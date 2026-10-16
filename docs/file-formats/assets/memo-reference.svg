@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 370" role="img" aria-labelledby="title desc">
+<title id="title">Du FIC au mémo MMO à longueur explicite</title>
+<desc id="desc">La rubrique DESC contient 210 en entier 64 bits petit-boutiste. Dans le MMO, le bloc commence à 210, le contenu à 250 et s’arrête à 270 après 20 octets. Les octets suivants sont exclus.</desc>
+<rect width="1000" height="370" rx="16" fill="#f8fafc"/>
+<style>text{font-family:system-ui,-apple-system,Segoe UI,sans-serif;fill:#15243b}.title{font-size:23px;font-weight:700}.label{font-size:17px;font-weight:650}.small{font-size:15px}</style>
+<defs><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L10 5 L0 10z" fill="#475569"/></marker></defs>
+<text x="28" y="38" class="title">Une référence sur 8 octets ; un contenu de longueur connue</text>
+<rect x="28" y="72" width="286" height="111" rx="10" fill="#dbeafe" stroke="#64748b"/>
+<text x="44" y="103" class="label">FIC : rubrique DESC</text><text x="44" y="132" class="small">Offset fichier 1849, u64 LE = 210</text><text x="44" y="159" class="small">Le texte est dans le MMO</text>
+<path d="M315 128 H365 V215 H395" fill="none" stroke="#475569" stroke-width="2" marker-end="url(#arrow)"/>
+<rect x="398" y="72" width="570" height="111" rx="10" fill="#e0e7ff" stroke="#64748b"/>
+<text x="414" y="103" class="label">MMO : bloc à P = 210</text><text x="414" y="132" class="small">21 octets d’enveloppe + 19 octets de contrôle + données</text><text x="414" y="159" class="small">Longueur de région 39 = 19 + 20</text>
+<rect x="398" y="201" width="279" height="99" rx="10" fill="#dcfce7" stroke="#64748b"/>
+<text x="414" y="232" class="label">Données [250, 270)</text><text x="414" y="261" class="small">20 octets ; encodage explicite</text><text x="414" y="284" class="small">Aucun NUL exigé ni retiré</text>
+<rect x="694" y="201" width="274" height="99" rx="10" fill="#e2e8f0" stroke="#64748b"/>
+<text x="710" y="232" class="label">Suite du fichier [270, 338)</text><text x="710" y="261" class="small">Exclue du contenu déclaré</text><text x="710" y="284" class="small">Zéros et données résiduelles</text>
+<text x="28" y="342" class="small">Schéma non proportionnel. Les offsets sont absolus, chacun dans son propre fichier.</text>
+</svg>

@@ -1,102 +1,107 @@
-# WindevReader 0.5.0
+# WindevReader 0.9.1
 
-Bibliothèque .NET 8 autonome, en lecture seule, pour les formats WINDEV et HFSQL étudiés. Aucun composant officiel WINDEV n’est chargé ou exécuté. Les fichiers privés du corpus ne sont pas distribués.
+Bibliothèque .NET 8 autonome, en lecture seule, pour étudier les documents WINDEV, les patchs WDL et certains profils HFSQL. Aucun composant officiel n’est chargé ou exécuté. Les formats restent partiellement documentés : une ouverture réussie ne signifie pas que toutes leurs propriétés sont connues.
 
-## Installation
+## Installer
 
-Le package local est `artifacts/WindevReader.0.5.0.nupkg` :
+Le package local est `artifacts/WindevReader.0.9.1.nupkg` :
 
 ```sh
-dotnet add package WindevReader --version 0.5.0 --source /chemin/vers/WindevReader/artifacts
+dotnet add package WindevReader --version 0.9.1 --source /chemin/vers/WindevReader/artifacts
 ```
 
-On peut aussi référencer `src/WindevReader/WindevReader.csproj`. La bibliothèque n’a aucune dépendance NuGet externe.
+La solution ne dépend d’aucun package externe. Les limites de taille et de décompression sont configurables avec `WindevOpenOptions`.
 
-## Ouvrir un fichier
+## Ouvrir un document
 
 ```csharp
 using WindevReader;
 
-IWindevFile fichier = WindevFile.Open("SuperNoteExtra.wdd");
-var analyse = WddWindevAnalysis.Open("SuperNoteExtra.wdd");
-foreach (var table in analyse.Tables)
-    Console.WriteLine($"{table.Name} : {table.Fields.Count} rubriques");
+WdpWindevProject project = WdpWindevProject.Open("SuperNoteExtra.wdp");
+WdwWindevWindow window = WdwWindevWindow.Open("FEN_Notes.wdw");
+WddWindevAnalysis analysis = WddWindevAnalysis.Open("SuperNoteExtra.wdd");
+
+foreach (WindevDataTable table in analysis.Tables)
+{
+    Console.WriteLine($"{table.Name}: {table.Fields.Count}");
+}
+
+if (window.Preview is WindevWindowPreview preview)
+{
+    preview.SaveBmp("preview.bmp");
+}
 ```
 
-`WindevFile.Open` choisit selon le type PCS. Chaque famille possède aussi sa méthode statique `Open` : `WdpWindevProject`, `WdwWindevWindow`, `WdgWindevGlobalProcedures`, `WddWindevAnalysis`, `WdaWindevAnalysisSource`, `WdeWindevReport`, `WdlWindevLibrary`, `FicHfsqlDataFile`, `NdxHfsqlIndexFile`, `MmoHfsqlMemoFile`.
+Les noms applicatifs sont fictifs : le logiciel de prise de note SuperNoteExtra et le logiciel de client mail SuperMailExtra. Les chemins sauvegardés dans les documents ne sont pas suivis automatiquement. Le titre, les dimensions, les références de projet, les lignes WLangage et les propriétés brutes restent accessibles selon les profils reconnus.
 
-## Apport du WDD/WDA correspondant à PERSONNE
-
-La version 0.5.0 reconnaît les descriptions de tables et rubriques du WDD 28, expose huit rubriques dans deux tables et la liaison entre PERSONNE et PERSONNE_MESSAGE. Les paramètres de contrainte restent bruts.
-
-Le schéma confirme les cinq rubriques physiques PERSONNE : IDPERSONNE (8), NOM (51 stockés pour 50 déclarés), PRENOM (51), AGE1 (4), FLAGADMIN (1). Le WDD et le WDA confirment le pas de 124 octets. Les neuf octets précédant les valeurs restent des données de gestion non interprétées.
+## Schéma et données HFSQL
 
 ```csharp
-var fic = FicHfsqlDataFile.Open("PERSONNE.fic");
-var disposition = fic.CreateFixedRecordLayout(analyse, dataOffset: 1776, recordCount: 5);
-foreach (var emplacement in fic.ReadFixedRecords(disposition))
-    Console.WriteLine($"{emplacement.Values["NOM"]} : {emplacement.Values["FLAGADMIN"]}");
+WddWindevAnalysis analysis24 = WddWindevAnalysis.Open("SuperNoteExtra.wdd");
+FicHfsqlDataFile data24 = FicHfsqlDataFile.Open("PERSONNE.fic");
+MmoHfsqlMemoFile memos24 = MmoHfsqlMemoFile.Open("PERSONNE.mmo");
+HfsqlFixedRecordLayout layout24 = data24.CreateFixedRecordLayout(analysis24, 1734, 1);
+
+HfsqlFixedRecord record24 = data24.ReadFixedRecords(layout24)[0];
+ulong memoReference24 = (ulong)record24.Values["DESC"];
+HfsqlMemoBlock memo24 = memos24.ReadMemo(data24, memoReference24);
+
+Console.WriteLine(memo24.DecodeText(HfsqlMemoTextEncoding.Cp1252));
 ```
 
-Utiliser le WDD qui correspond réellement aux deux GUID du FIC. Le nom de présentation SuperNoteExtra est fictif. `CreateFixedRecordLayout` refuse une analyse incompatible, des types non pris en charge ou un pas incohérent. Ce profil fixe a été recoupé sur PERSONNE 28 ; il ne généralise pas sa disposition aux FIC RAD.
+Cet exemple utilise les paramètres du témoin 24 : un emplacement de 127 octets à 1734, une référence MMO 210 et quatre octets utiles à 250. Le WDD doit correspondre aux deux GUID du FIC. Le schéma place PRENOM avant NOM ; le lecteur respecte son répertoire. Le témoin 25 possède un début à 1746 et un autre ordre de rubriques : réutiliser sa disposition serait incorrect.
 
-Le début 1776 et le nombre 5 restent explicites. Les états actif/rayé/supprimé ne sont pas déterminés ; chaque emplacement est conservé, y compris l’identifiant brut tout à 1. `CanReadRecords` reste `false` pour la découverte automatique complète. `PasswordStatus` reste `Unknown` car l’absence de mot de passe n’est pas détectée par le lecteur.
+Le début et le nombre d’emplacements restent fournis explicitement. Les états actifs, rayés et supprimés ne sont pas décodés. `CanReadRecords` concerne la découverte automatique et reste faux ; `ReadFixedRecords` est une lecture explicite distincte. `PasswordStatus` reste `Unknown`.
 
-## CLI
+## Périmètre vérifié
 
-```sh
-dotnet artifacts/cli/WindevReader.Cli.dll inspect SuperNoteExtra.wdd
-dotnet artifacts/cli/WindevReader.Cli.dll layout PERSONNE.fic SuperNoteExtra.wdd 1776 5 disposition.json
-dotnet artifacts/cli/WindevReader.Cli.dll records PERSONNE.fic disposition.json emplacements.json
-dotnet artifacts/cli/WindevReader.Cli.dll preview FEN_Notes.wdw previsualisation.bmp
-```
+| Famille | Témoins et capacités |
+| --- | --- |
+| WDP, WDD | Versions 15, 24, 25, 28, 29 et 31 ; références et schémas selon les profils |
+| WDW | Versions 15, 24, 25, 29 et 31 ; racines 607/610, source et BMP |
+| WDG | Témoins 28/31 ; procédures |
+| WDA | Témoins 15/28/31 ; sections et buffers d’analyse, sans modèle éditable typé |
+| WDE | Témoins 31 ; propriétés partielles et source |
+| WDL | Un patch 31, révision 3102 ; répertoire et ressources |
+| FIC / NDX | En-têtes 15/24/25/28/29/31 ; valeurs fixes avec disposition explicite |
+| NDX plat | Profils 15/24/25/29/31 au tag 7 ; clés, références brutes et sentinelle |
+| MMO simple | Profils 15/24/25/29/31 ; longueurs explicites et encodage choisi par l’appelant |
 
-Les autres commandes sont `json`, `code`, `extract-resource` et `corpus`. Les fichiers runtime de `artifacts/cli/` doivent rester ensemble.
+Les variantes non fournies, les propriétés d’interface complètes, les métadonnées opaques FIC, le parcours général du B-tree et l’allocation générale des mémos restent ouverts. Les mémos chaînés, compressés ou protégés ne sont pas pris en charge. Le lecteur ne décompile pas le bytecode et ne réécrit pas les fichiers.
+
+## Organisation du code
+
+Chaque lecteur de document ou de fichier physique possède son propre fichier dans `src/WindevReader/`. Les opérations communes de lecture binaire, de décompression, de transformation et de lecture des descriptions de schéma sont dans `Internal/`.
+
+Le code utilise des types explicites, des variables en anglais et en camel case, des blocs développés et des méthodes séparant les étapes de lecture et de validation. `AGENTS.md` conserve les consignes de contribution et `.editorconfig` impose le choix des types explicites. Les méthodes publiques existantes sont conservées.
 
 ## Documentation
 
-- `docs/dotnet/index.mdx` : installation, premiers pas, guides, CLI, API et limites.
-- `docs/file-formats/index.mdx` : structures binaires, section WINDEV et section HFSQL.
-- `docs/file-formats/hfsql/cas-personne.mdx` : étude croisée du FIC, NDX, WDD et WDA.
+- `docs/file-formats/windev/` : WDP, WDW, WDD, WDG, WDA, WDE et WDL, avec les variantes dans chaque page de format.
+- `docs/file-formats/hfsql/` : FIC, NDX, MMO, identité des compagnons et protection.
+- `docs/dotnet/` : installation, exemples C#, extraction, CLI, API et erreurs.
+- `examples/` : dispositions JSON des profils recoupés, notamment `personne15-schema-layout.json` et `personne24-schema-layout.json`.
 
-Les pages sont en français, avec tables d’offsets et quatre schémas SVG. Les exemples utilisent le logiciel fictif de prise de note SuperNoteExtra et le logiciel fictif de client mail SuperMailExtra.
+Les pages Docusaurus sont en français. Les exemples C# emploient des identifiants et commentaires en anglais. Les six schémas explicatifs sont en SVG ; les exemples privés ne sont pas distribués.
 
-## Compilation et validation
-
-```sh
-dotnet build WindevReader.sln -c Release -p:UseSharedCompilation=false -m:1 -nr:false
-dotnet run --project tests/WindevReader.Tests -c Release -- /chemin/corpus-initial resultats.json /chemin/personne /chemin/cas-analyse
-```
-
-Les chemins des corpus doivent conserver leurs noms et arborescences d’origine, attendus par les tests. Les deux derniers dossiers sont facultatifs et ajoutent respectivement PERSONNE, puis son analyse et ses compagnons. Les quatre fichiers du nouveau cas sont requis dans le dernier dossier. La suite complète passe **2 894 assertions** ; 534 fichiers ont été étudiés, avec 433 fichiers physiques HFSQL représentant 17 contenus distincts. Les exemples C# de la documentation compilent également.
-
-Les rapports se trouvent dans `artifacts/test-results.json`, `artifacts/extension-validation.json` et `artifacts/analysis-validation.json`.
-
-## Portée
-
-Les références de projet, les sources reconnues, les propriétés partielles d’interfaces, les schémas WDD, les BMP de prévisualisation et les ressources du patch WDL étudié sont exposés. Les valeurs FIC fixes sont accessibles avec une disposition explicite ou construite depuis le WDD 28 compatible.
-
-Les métadonnées opaques FIC, les états logiques, le parcours général du B-tree NDX et l’allocation des mémos restent ouverts. Les tableaux plats de clés 31 sont maintenant lisibles. Le WDA expose ses buffers sans reconstruire un modèle éditable complet. Le lecteur n’exécute pas le WLangage, ne décompile pas le bytecode et ne réécrit pas les formats. Les budgets de `WindevOpenOptions` et les diagnostics décrivent les limites de chaque ouverture.
-
-
-## Nouveaux profils HFSQL 31
-
-Les quatre témoins jours fériés et semaines correspondent au WDD 31 initial. Le lecteur de disposition prend désormais en charge JOUR et MOIS en `UInt8`, ainsi que les dates `Date8Z` (huit chiffres ASCII suivis de NUL, retournés en `string`). Il reconnaît le marqueur brut à Q+31 de la clé composée MOISJOUR et l’omet des valeurs FIC. Une rubrique binaire ordinaire n’est pas reclassée à partir de ses seuls flags.
-
-```csharp
-var jours = FicHfsqlDataFile.Open("jour_ferie.fic");
-var lignes = jours.ReadFixedRecords(jours.CreateFixedRecordLayout(analyse, 1763, 8));
-var semaines = FicHfsqlDataFile.Open("semaine_cours.fic");
-var semaine = semaines.ReadFixedRecords(semaines.CreateFixedRecordLayout(analyse, 1627, 1));
-var indexJours = NdxHfsqlIndexFile.Open("jour_ferie.ndx");
-var cles = indexJours.ReadFlatIndex(3); // profil composé MOIS puis JOUR du témoin
-```
-
-Utiliser l’analyse 31 qui correspond à ces GUID. Les dispositions d’exemple sont dans `examples/`. `ReadFlatIndex` expose un profil clair 31 au tag 7 avec en-tête de 29 octets : 35 clés au total sur les sept tableaux étudiés, chaque clé recoupée avec le FIC. La sentinelle finale est vérifiée et exclue. Les deux références sont conservées brutes ; leur rôle exact n’est pas distinguable quand identifiant et rang physique coïncident. Aucun parcours général de B-tree n’est prétendu implémenté. `MaxIndexEntries` borne l’allocation, par défaut à 100 000 entrées par tableau.
+## Construire et vérifier
 
 ```sh
-dotnet artifacts/cli/WindevReader.Cli.dll index-entries jour_ferie.ndx 3 cles.json
-dotnet run --project tests/WindevReader.Tests -c Release -- /chemin/corpus-initial resultats.json /chemin/personne /chemin/cas-analyse /chemin/hfsql31
+dotnet build WindevReader.sln -c Release
+dotnet run --project tests/WindevReader.Tests -c Release -- /chemin/corpus-initial resultats.json /chemin/personne28 /chemin/analyse28 /chemin/hfsql31 /chemin/projet29 /chemin/projet25 /chemin/projet24 /chemin/projet15 /chemin/analyse15.wda
 ```
 
-Le dossier final contient les quatre nouveaux témoins. Leurs fichiers sont lus sans modification et ne sont pas inclus dans la distribution. Le chapitre `docs/file-formats/hfsql/cas-hfsql31.mdx` donne les cartes binaires, les tableaux d’offsets et les inconnues.
+Les dossiers de corpus conservent les noms et arborescences attendus par les tests ; les projets de test comprennent leur sous-dossier Exe. Les arguments complémentaires sont facultatifs, mais leur omission réduit la couverture.
+
+La suite complète réussit **3 097 assertions**. L’étude porte sur **559 fichiers**, dont **445 fichiers physiques HFSQL**, représentant **29 contenus distincts**. La comparaison des résumés produits avant et après la réécriture est identique sur les **526 fichiers du corpus initial**. Les rapports de validation et les empreintes des livrables sont dans `artifacts/`.
+
+
+## Particularités du témoin 15
+
+Les six familles fournies s’ouvrent sans option expérimentale. Le WDD conserve le codec et le checksum connus, mais sa racine porte le tag 4 à l’offset décodé 192, ses tables le tag 0x12 et ses rubriques le tag 0x10. Le code 38 décrit ici un identifiant automatique de quatre octets.
+
+Le FIC PERSONNE possède un emplacement de 123 octets à 1688. Ses offsets relatifs sont 9 pour l’identifiant `Int32`, 13 pour NOM, 64 pour PRENOM et 115 pour la référence de mémo `UInt64`. La clé NDX d’identifiant mesure quatre octets ; les deux références associées restent sur huit octets. Le bloc MMO commence à 210 et contient 46 octets utiles à 250, lus explicitement en CP1252.
+
+Le WDW stocke des chaînes CP1252 terminées par NUL. Sa racine 607 donne une fenêtre 800 × 600, avec une miniature BMP 150 × 113. Les candidats de chaînes des autres propriétés restent heuristiques et signalés. Les lignes source utilisent un tag 0, des longueurs `u32` pour le texte et l’auteur, puis quatre octets de timestamp ; le lecteur restitue 23 événements de fenêtre et six de projet.
+
+Le WDP possède 19 sections, mais ses références de projet ne sont pas reconstituées : `References` reste vide avec `NoConfigurationDirectory`. Les buffers restent disponibles pour l’étude. Cette limite est détaillée dans la page WDP ; aucun inventaire n’est fabriqué à partir des fichiers voisins. Le WDA 15 supplémentaire conserve quatre sections brutes et ne fournit aucun bloc LZW reconnu ; son nom utilise celui du fichier. Les familles WDG, WDE et WDL 15 n’ont pas été fournies.

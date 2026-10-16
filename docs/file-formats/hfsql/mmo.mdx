@@ -1,52 +1,147 @@
 ---
-title: "MMO : mémos"
-sidebar_label: "MMO : mémos"
+title: "MMO : mémos et blocs de contenu"
 sidebar_position: 3
-description: "MMO : mémos — structures, positions en octets et limites du lecteur autonome."
+description: "En-tête HFSQL de 210 octets, référence FIC et profil de bloc simple à longueur explicite, vérifié en 29 et 31."
 ---
 
-Les mémos déportent des contenus variables hors des emplacements fixes du FIC. Le lecteur reconnaît les champs d’en-tête observés ; il ne suit pas encore les chaînes d’allocation des contenus.
+Le MMO contient des données variables référencées depuis le FIC. Le WDD décrit la rubrique ; la valeur physique de cette rubrique dans le FIC peut être une référence sur huit octets. Lire ces huit octets comme le texte du mémo serait incorrect.
 
-Les positions sont exprimées en **octets**. Les inconnues sont indiquées comme telles ; voir les [conventions](../conventions.mdx).
+Le lecteur 0.9.0 expose l’en-tête et un profil de **bloc simple, non transformé et non chaîné**, recoupé sur un mémo 15, un mémo 24, un mémo 25, un mémo 29 et deux mémos du fichier 31 déjà fourni. Il ne reconstitue pas l’allocation générale du MMO.
 
-## Identification et structure
+## En-tête observé : 210 octets
 
-Le type est `0x00070003`. Le RADRub.mmo fourni mesure **210 octets**, soit exactement le profil d’en-tête ci-dessous.
-
-| Position fichier | Taille | Type | Valeur / commentaire |
+| Offset fichier | Taille | Type | Commentaire |
 | --- | --- | --- | --- |
-| `[0, 90)` | 90 | En-tête physique commun | Identité de l’analyse et de la table |
-| 90 / `0x5A` | 2 | `u16` brut | 1 |
-| 92 / `0x5C` | 2 | `u16` brut | 2 |
-| 94 / `0x5E` | 4 | `u32` brut | 2 dans RAD ; 11 dans le jeu de tâches |
-| 98 / `0x62` | 112 | 14 slots `u64` bruts | Sémantique non entièrement établie |
-| 210 / `0xD2` | Variable | Octets supplémentaires éventuels | Aucun dans les deux MMO RAD |
+| `[0, 90)` | 90 | En-tête physique commun | Type PCS `0x00070003`, analyse et table |
+| 90 | 2 | `u16` brut | 1 dans les profils |
+| 92 | 2 | `u16` brut | 2 dans les profils |
+| 94 | 4 | `u32` brut | Valeur variable, sans sémantique attribuée |
+| 98 | 112 | `u64[14]` bruts | `RawHeaderSlots` ; sentinelles et positions non interprétées |
+| À partir de 210 | Variable | Corps du MMO | Blocs et données auxiliaires |
 
-La position d’un slot `j` est `98 + 8 × j`, pour `0 <= j < 14`.
+Les MMO RAD initiaux mesurent 210 octets et ne contiennent aucun corps après cet en-tête. Les quatorze slots sont tous à 1. Dans le nouveau MMO 29, ils sont également tous à 1 alors qu’un mémo existe : **ce tableau n’est pas une liste exhaustive de tous les mémos**. Le lecteur ne s’en sert pas pour énumérer le contenu.
 
-| Profil | Taille | Slots 98–209 | Octets après 210 |
+## Bloc simple non transformé
+
+La référence `P` est un offset absolu dans le MMO. Dans PERSONNE 29, le FIC contient 210 ; la charge utile est à `P+40`, soit 250.
+
+![Du FIC au contenu à longueur explicite dans le MMO](../assets/memo-reference.svg)
+
+### Enveloppe externe : 21 octets
+
+Les mots sans rôle établi restent nommés selon leur position. Aucun checksum n’est validé pour les deux mots `u16`.
+
+| Offset relatif à `P` | Taille | Type | Valeur 29 / rôle reconnu |
 | --- | --- | --- | --- |
-| RADRub.mmo | 210 | 14 fois `0xFFFFFFFFFFFFFFFF` | 0 |
-| RADProp.mmo | 210 | 14 fois `0xFFFFFFFFFFFFFFFF` | 0 |
-| MMO des tâches | 850 | Valeurs mixtes, dont une position 338 | 640 |
+| `+0` | 2 | `u16` brut | `0xF407` |
+| `+2` | 4 | `u32` | Longueur de région : 39 |
+| `+6` | 4 | `u32` | Copie de la longueur : 39 ; égalité exigée |
+| `+10` | 1 | `u8` brut | 0 dans le profil accepté |
+| `+11` | 8 | `u64` brut | Tout à 1 ; le lecteur refuse une autre valeur, sans suivre de chaîne |
+| `+19` | 2 | `u16` brut | `0xF651` |
 
-Les valeurs toutes à un sont des sentinelles observées. Leur présence ne suffit pas à leur attribuer un sens de « page libre » ou de « mémo supprimé ».
+### Préfixe de charge utile : 19 octets
 
-## Limites du spécimen fourni
+| Offset relatif à `P` | Taille | Type | Valeur 29 / commentaire |
+| --- | --- | --- | --- |
+| `+21` | 4 | `u32` brut | 1 ; signification non attribuée |
+| `+25` | 8 | `u64` brut | 268 / `0x010C` ; ce mot n’est pas présenté comme un pointeur validé |
+| `+33` | 2 | `u16` brut | 0 |
+| `+35` | 1 | `u8` brut | 0 ; aucun choix d’encodage n’en est déduit |
+| `+36` | 4 | `u32` | Longueur des données : 20 |
+| `+40` | 20 dans ce témoin | Octets | Contenu du mémo, sans terminateur compté |
 
-Le MMO RADRub permet de valider le préfixe, les identités, les mots supplémentaires, les slots et la fin du fichier. Sans octets après 210, il ne démontre pas le format des mémos non vides.
+Le lecteur vérifie `longueur_à_+2 = longueur_à_+6 = 19 + longueur_à_+36`, puis les bornes de `[P+40, P+40+longueur)`. Pour le témoin 29 : `39 = 19 + 20` et la fin du contenu est 270.
 
-Le MMO des tâches fournit un contre-exemple contenant du texte UTF-16LE. Retrouver du texte ne suffit pas à déterminer l’allocation, les fragments, les chaînages et le lien des mémos avec les enregistrements FIC. Ces mécanismes ne sont pas présentés comme décodés.
+Le fichier continue jusqu’à 338 avec des zéros et d’autres octets résiduels. Ils ne sont pas inclus dans le texte. La taille totale du fichier ne donne pas la longueur d’un mémo.
 
-RADRub.mmo partage le GUID de table de RADRub.FIC et non celui de RADFic.FIC. Une table peut ne pas avoir de compagnon MMO dans le jeu étudié.
+## Recoupement 29 / 31
+
+| Témoin | Référence `P` | Données à `P+40` | Longueur de région | Longueur des données | Encodage explicitement utilisé |
+| --- | --- | --- | --- | --- | --- |
+| PERSONNE 29 | 210 | 250 | 39 | 20 | CP1252 |
+| Fichier de tâches 31, bloc A | 210 | 250 | 45 | 26 | UTF-16LE |
+| Fichier de tâches 31, bloc B | 594 | 634 | 119 | 100 | UTF-16LE |
+
+Les trois exemples satisfont la relation de taille. Une autre région à 338 dans le fichier de tâches n’est pas acceptée comme ce type de bloc ; elle n’est pas interprétée comme un mémo supplémentaire par recherche de chaînes.
+
+L’encodage n’est pas déduit de la version. `DecodeText(Cp1252)` décode exactement la longueur déclarée. `DecodeText(Utf16Le)` exige un nombre pair d’octets et des séquences UTF-16 valides. **Aucun NUL n’est exigé ni retiré** ; un octet nul à l’intérieur de la plage est conservé. Un encodage erroné peut donner un texte erroné même si les octets sont structurellement acceptés.
 
 ## API
 
 ```csharp
-var memo = MmoHfsqlMemoFile.Open(@"D:\Projet\SuperNoteExtra\RADRub.mmo");
-Console.WriteLine(memo.HasBytesAfterHeader);
-foreach (ulong slot in memo.RawHeaderSlots)
-    Console.WriteLine($"{slot:X16}");
+HfsqlMemoBlock block = mmo.ReadMemo(fic, reference); // Also verifies both GUIDs.
+
+Console.WriteLine(block.PayloadOffset);
+
+Console.WriteLine(block.PayloadByteLength);
+
+string text = block.DecodeText(HfsqlMemoTextEncoding.Cp1252);
+ReadOnlyMemory<byte> octets = block.Data;
 ```
 
-`HasBytesAfterHeader` indique seulement une longueur supérieure à 210, pas un compte de mémos. Aucun texte supposé déchiffré n’est retourné par cette API.
+L’overload `ReadMemo(reference)` fournit l’accès brut lorsqu’on dispose déjà d’une référence vérifiée ; il ne contrôle pas un FIC compagnon. `ReadMemo(fic, reference)` exige l’identité commune d’analyse et de table.
+
+Les limites `MaxDecodedBlockBytes` et `MaxStringBytes` bornent respectivement le bloc déclaré et le décodage texte. La référence 0, un offset dans l’en-tête, une plage tronquée, des longueurs contradictoires ou un profil non reconnu sont refusés.
+
+## Limites
+
+La libre allocation, les listes de blocs, les compressions, le chiffrement, les mémos chaînés et la détection automatique d’encodage restent inconnus ou non pris en charge. Les slots d’en-tête et les mots bruts ne suffisent pas à les reconstruire. La [disposition FIC 29](./fic.mdx) explique le cas complet, avec des tableaux de positions.
+
+## Bloc simple recoupé en versions 25 et 29
+
+Le MMO 25 mesure **338 octets**, comme le témoin 29. Son en-tête porte le type `0x00070003`, la version 25 à 14 et les modes nuls à 88 et 89. Ses GUID correspondent au FIC et au WDD 25. La référence `u64` à `FIC[1865]` vaut **210** ; le FIC 29 possède la même valeur à `FIC[1849]`.
+
+| Élément du bloc | Position fichier MMO | Taille / type | Valeur dans les deux profils |
+| --- | --- | --- | --- |
+| Début du bloc P | 210 | En-tête externe de 21 octets | Mots auxiliaires conservés bruts |
+| Longueur de région, copie 1 | 212 | `u32` LE | 39 |
+| Longueur de région, copie 2 | 216 | `u32` LE | 39 |
+| Mode | 220 | `u8` | 0 |
+| Lien brut | 221 | `u64` LE | Tout à 1, aucune chaîne suivie |
+| Contrôle interne | 231 | 19 octets | Structure décrite plus haut |
+| Longueur utile | 246 | `u32` LE | 20 |
+| Texte | 250 | 20 octets CP1252 | Contenu avec accents, anonymisé dans la documentation |
+| Fin utile exclue | 270 | 0 | Les octets après cette limite ne sont pas du texte déclaré |
+
+La région déclarée fait `19 + 20 = 39` octets et le bloc accessible `21 + 39 = 60` octets. L’API conserve exactement les vingt octets, sans chercher un NUL ni lire jusqu’à la fin du fichier. L’encodage CP1252 est choisi explicitement et confirmé sur les caractères accentués. Une phrase fictive de même longueur, « Une note très utile. », peut illustrer le contenu ; elle ne remplace pas les octets du fichier étudié.
+
+Le même découpage a été recoupé avec deux blocs UTF-16LE du MMO 31 initial : P=210, données à 250 sur 26 octets ; P=594, données à 634 sur 100 octets. La version ne détermine donc pas l’encodage du texte. `ReadMemo` accepte **15, 24, 25, 29 et 31** pour cette structure simple, avec contrôle des longueurs, du mode, du lien sentinelle, des bornes et des budgets. Aucun changement d’allocation générale ou de protection n’est déduit de ces quatre blocs.
+
+## Mémo de quatre octets en version 24
+
+Le MMO 24 mesure **338 octets**. La référence `u64 = 210` à `FIC[1853]` mène au même type de bloc simple non transformé et non chaîné que les témoins 25/29, mais avec une charge utile plus courte.
+
+| Position fichier MMO | Taille | Type | Valeur |
+| --- | --- | --- | --- |
+| 210 | 21 | En-tête externe | Début P |
+| 212 / 216 | 4 chacun | `u32` LE | Deux copies égales à **23** |
+| 220 | 1 | `u8` | Mode 0 |
+| 221 | 8 | `u64` LE | Lien brut tout à 1 |
+| 231 | 19 | Contrôle interne | Préfixe de charge utile |
+| 246 | 4 | `u32` LE | Longueur utile : **4** |
+| 250 | 4 | Octets ASCII | `54 65 73 74`, soit « Test » |
+| 254 | 0 | Fin utile exclusive | Les octets suivants ne font pas partie du texte déclaré |
+
+`23 = 19 + 4` ; l’ensemble lu mesure `21 + 23 = 44` octets. Les vingt octets utiles des témoins 25/29 ne sont pas une taille fixe de mémo. Le lecteur utilise le champ de longueur et ne recherche pas la fin du texte dans les zéros jusqu’à l’EOF.
+
+Les quatre caractères sont ASCII : ils sont compatibles avec CP1252, sans prouver que cet encodage est unique. L’appelant choisit explicitement `Cp1252` pour cet exemple. La version ne détermine pas l’encodage et aucun détecteur n’est ajouté. `ReadMemo` accepte cette structure en **24, 15, 24, 25, 29 et 31**, sans prise en charge générale des chaînes, compressions ou allocations.
+
+## Mémo accentué de 46 octets en version 15
+
+Le MMO 15 mesure **338 octets**. Les GUID correspondent au WDD, au FIC et au NDX 15. La référence de huit octets à `FIC[1803]` vaut **210** et mène à un bloc simple non transformé et non chaîné, de même structure que les blocs récents reconnus.
+
+| Position MMO | Taille | Type | Valeur / rôle |
+| --- | --- | --- | --- |
+| 210 | 21 | En-tête externe | Début P |
+| 212 / 216 | 4 chacun | `u32` LE | Copies de longueur : **65** |
+| 220 | 1 | `u8` | Mode 0 |
+| 221 | 8 | `u64` LE | Lien brut tout à 1 |
+| 231 | 19 | Contrôle interne | Préfixe de charge utile |
+| 246 | 4 | `u32` LE | Longueur utile : **46** |
+| 250 | 46 | Texte CP1252 | Phrase avec accents ; valeur illustrative non publiée |
+| 296 | 0 | Fin utile exclusive | Le reste jusqu’à 338 ne fait pas partie du texte déclaré |
+
+`65 = 19+46` et la région lue mesure `21+65 = 86` octets. Les accents sont compatibles avec le décodage CP1252 choisi explicitement ; aucun terminateur n’est retiré.
+
+Ce recoupement ne résout pas l’allocation générale, les chaînes de blocs, les compressions ni les mots de passe. L’ancienne version du produit ne justifie pas d’abaisser les contrôles de bornes, d’identité ou de budget.

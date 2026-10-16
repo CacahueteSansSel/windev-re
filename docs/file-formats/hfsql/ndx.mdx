@@ -13,7 +13,7 @@ Les positions sont exprimées en **octets**. Les inconnues sont indiquées comme
 
 Le type est `0x00070002`. Après l’en-tête commun, un compte et un pointeur annoncent un **répertoire terminal de positions sur 64 bits**. Le découpage a été vérifié sur les 160 NDX initiaux, représentant quatre contenus distincts, puis sur PERSONNE.ndx en WINDEV 28.
 
-Les positions sont exposées comme débuts de régions/descriptions d’index. Le profil plat 31 du [cas jours et semaines](./cas-hfsql31.mdx) permet désormais de lire des clés en clair. Les comparateurs généraux, liens de pages et parcours B-tree restent inconnus.
+Les positions sont exposées comme débuts de régions/descriptions d’index. Le profil plat des témoins 15, 24, 25, 29 et 31 décrit ci-dessous permet désormais de lire des clés en clair. Les comparateurs généraux, liens de pages et parcours B-tree restent inconnus.
 
 ## Champs repérés
 
@@ -68,11 +68,18 @@ Les régions entre ces positions mesurent respectivement 1 726, 2 038, 2 038 et 
 ## API
 
 ```csharp
-var index = NdxHfsqlIndexFile.Open(@"D:\Projet\SuperNoteExtra\RADFic.ndx");
+NdxHfsqlIndexFile index = NdxHfsqlIndexFile.Open(@"D:\Projet\SuperNoteExtra\RADFic.ndx");
+
 Console.WriteLine(index.DeclaredIndexCount);
+
 Console.WriteLine(index.DirectoryOffset);
+
 foreach (int position in index.IndexDescriptorOffsets)
+{
     Console.WriteLine(position);
+}
+
+
 ReadOnlyMemory<byte> region = index.ReadIndexRegion(0);
 ```
 
@@ -97,9 +104,170 @@ Les pointeurs du répertoire désignent des descripteurs de 60 octets dans tous 
 
 `IndexDescriptors` expose ces champs. Les valeurs sentinelles des pointeurs bruts restent des `ulong` ; elles ne sont pas converties en adresses exploitables. Le lecteur ne suit pas ces pointeurs et ne leur attribue pas encore de rôle de racine B-tree, de liste libre ou de feuille.
 
-Dans PERSONNE, le premier descripteur est situé à 5 034, tandis que `RawPointerAt28` vaut 135. **Le premier descripteur n’est donc pas nécessairement le début de l’index logique.** `ReadIndexRegion(i)` conserve son contrat historique : il renvoie les octets entre deux descripteurs consécutifs, ou jusqu’au répertoire terminal. Ce n’est pas une reconstruction des pages de l’index. Voir la [carte complète du cas PERSONNE](./cas-personne.mdx#ndx--descripteurs-et-régions).
+Dans PERSONNE, le premier descripteur est situé à 5 034, tandis que `RawPointerAt28` vaut 135. **Le premier descripteur n’est donc pas nécessairement le début de l’index logique.** `ReadIndexRegion(i)` conserve son contrat historique : il renvoie les octets entre deux descripteurs consécutifs, ou jusqu’au répertoire terminal. Ce n’est pas une reconstruction des pages de l’index. La carte des pointeurs PERSONNE 28 figure ci-dessous.
 
+## Descripteurs déplacés du témoin PERSONNE 28
 
-## Lire le profil plat 31
+| Offset fichier | Taille | Type | Valeur | Commentaire |
+| --- | --- | --- | --- | --- |
+| 90 | 2 | `u16` brut | 1 | Paramètre brut |
+| 92 | 2 | `u16` brut | 4 | Paramètre brut |
+| 94 | 4 | `u32` brut | 17 819 | `0x459B` |
+| 98 | 4 | `u32` brut | 1 280 | Pas une taille de page universelle démontrée |
+| 102 | 4 | `u32` brut | 512 | Paramètre brut |
+| 106 | 1 | `u8` brut | 0 | Paramètre brut |
+| 107 | 2 | `u16` | 3 | Compte du répertoire terminal |
+| 109 | 2 | `u16` brut | 27 099 | `0x69DB` |
+| 111 | 8 | `u64` | 12 896 | Pointeur absolu du répertoire |
+| 119 | 16 | `octets[16]` | Nuls | Jusqu’à l’offset 135 |
+| 12 896 | 8 | `u64` | 5 034 | Descripteur 0 |
+| 12 904 | 8 | `u64` | 9 229 | Descripteur 1 |
+| 12 912 | 8 | `u64` | 12 836 | Descripteur 2 |
+| 12 920 | 0 | Fin exclusive | `12896 + 3 × 8` | Couverture exacte |
 
-`ReadFlatIndex(i)` expose un en-tête de 29 octets au tag 7, puis des clés de largeur fixe et deux références brutes par entrée. Le compte inclut une sentinelle tout à 1, retirée de la liste `Entries`. Les tableaux ont été recoupés avec tous les emplacements des deux nouveaux FIC, soit sept tableaux et 35 clés. Ce décodage ciblé ne s’applique ni aux NDX RAD opaques ni au profil PERSONNE 28. Les [tables d’offsets et limites](./cas-hfsql31.mdx#ndx--répertoires-et-tableaux-de-clés-en-clair) détaillent ce profil.
+Le [descripteur de 60 octets](./ndx.mdx#descripteur-terminal-de-60-octets) possède les valeurs suivantes. Les noms `P16`, `L24`, `P28`, `P36` reprennent les offsets relatifs bruts, sans sémantique B-tree supposée.
+
+| Descripteur `D` | Mot `+0` (`u16`) | Mot `+10` (`u32`) | Mot `+14` (`u16`) | `P16` (`u64`) | `L24` (`u32`) | `P28` (`u64`) | `P36` (`u64`) |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| 5 034 | `0x1442` | 55 | 8 | 1 484 | 852 | 135 | 2 336 |
+| 9 229 | `0x4A48` | 60 | 4 | 6 323 | 448 | 5 094 | 6 771 |
+| 12 836 | `0x7857` | 65 | 1 | 10 423 | 145 | 9 289 | 10 568 |
+
+Dans les trois cas, `P16 + L24 = P36` ; les trois pointeurs tombent à l’intérieur du fichier. Ce contrôle établit une relation physique, pas le rôle exact des régions.
+
+### Découpage physique recoupé par les pointeurs
+
+Les libellés A, B et C désignent seulement des régions observées. Aucun format de page n’est prétendu intégralement décodé.
+
+| Ensemble | Région A : `[P28, P16)` | Taille A | Région B : `[P16, P36)` | Taille B | Région C : `[P36, D)` | Taille C | Descripteur |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| 0 | `[135, 1484)` | 1 349 | `[1484, 2336)` | 852 | `[2336, 5034)` | 2 698 | `[5034, 5094)` |
+| 1 | `[5094, 6323)` | 1 229 | `[6323, 6771)` | 448 | `[6771, 9229)` | 2 458 | `[9229, 9289)` |
+| 2 | `[9289, 10423)` | 1 134 | `[10423, 10568)` | 145 | `[10568, 12836)` | 2 268 | `[12836, 12896)` |
+
+Les régions contiennent aussi des morceaux de SVG, des textes UTF-16 et des suites ressemblant à des adresses mémoire. Leur présence ne les identifie pas comme des clés de la table. L’hypothèse de zones non initialisées ou de données résiduelles reste une **inférence** ; la taille utile et les structures d’allocation ne sont pas établies. Une recherche de chaînes seule ne produit pas un lecteur NDX fiable. Aucun SVG ou texte résiduel n’est extrait comme donnée métier par l’API.
+
+## Tableaux plats : structures et exemples 31
+
+| Fichier | Compte à 107 (`u16`) | Répertoire à 111 (`u64`) | Descripteurs annoncés |
+| --- | --- | --- | --- |
+| jour_ferie.ndx | 4 | 9 971 | 135 ; 2 893 ; 5 221 ; 7 549 |
+| semaine_cours.ndx | 3 | 8 529 | 135 ; 2 893 ; 5 711 |
+
+Les descripteurs mesurent toujours 60 octets. Dans ce profil, `P16` est tout à 1 et `L24` vaut zéro. `P28` pointe juste après le descripteur, sur un tableau plat, et `P36` borne la région qui le contient. Cette observation ne nomme pas ces pointeurs pour les autres profils.
+
+| Fichier / indice | Descripteur | Tableau `P28` | Borne `P36` | Largeur de clé à `D+14` | Compte, sentinelle incluse | Correspondance recoupée |
+| --- | --- | --- | --- | --- | --- | --- |
+| Jours / 0 | 135 | 195 | 1 544 | 8 | 9 | IDJOUR_FERIE |
+| Jours / 1 | 2 893 | 2 953 | 4 087 | 1 | 9 | JOUR |
+| Jours / 2 | 5 221 | 5 281 | 6 415 | 1 | 9 | MOIS |
+| Jours / 3 | 7 549 | 7 609 | 8 790 | 2 | 9 | MOISJOUR : MOIS puis JOUR |
+| Semaine / 0 | 135 | 195 | 1 544 | 8 | 2 | IDSEMAINE_COURS |
+| Semaine / 1 | 2 893 | 2 953 | 4 332 | 9 | 2 | DATEDEB |
+| Semaine / 2 | 5 711 | 5 771 | 7 150 | 9 | 2 | DATEFIN |
+
+Ces correspondances sont vérifiées contre les valeurs FIC. Le lecteur ne déduit pas automatiquement le nom de l’index du seul descripteur.
+
+### En-tête du tableau : 29 octets
+
+Soit `P` le début annoncé par `P28`.
+
+| Offset relatif | Taille | Type | Valeur / rôle reconnu |
+| --- | --- | --- | --- |
+| `P+0` | 2 | `u16` brut | Mot variable ; checksum non établi |
+| `P+2` | 2 | `u16` | 29 dans le profil étudié |
+| `P+4` | 4 | `u32` brut | Copie du compte ; exigée égale au compte à +9 |
+| `P+8` | 1 | `u8` | Tag 7 |
+| `P+9` | 4 | `u32` | Compte d’entrées incluant la sentinelle |
+| `P+13` | 8 | `u64` brut | Tout à 1 |
+| `P+21` | 8 | `u64` brut | Tout à 1 |
+| `P+29` | Variable | Tableau d’entrées | Pas `largeur_clé + 16` |
+
+### Une entrée
+
+| Offset dans l’entrée | Taille | Type | Contenu |
+| --- | --- | --- | --- |
+| 0 | `K` | `octets[K]` | Clé, ordre binaire lexicographique non décroissant |
+| `K` | 8 | `u64` LE | Première référence brute |
+| `K+8` | 8 | `u64` LE | Seconde référence brute |
+
+Les deux références sont égales dans tous ces témoins. Elles correspondent à la fois aux identifiants et aux rangs physiques à partir de 1, car les identifiants sont ici continus et dans l’ordre. **Leur nature exacte ne peut pas être distinguée sur ces seuls fichiers** ; l’API conserve des noms neutres.
+
+La dernière entrée contient uniquement des octets `FF`, clé et références comprises. Elle est validée puis exclue de `Entries`. Les 35 entrées retournées se répartissent en `4 × 8 + 3 × 1`. Il n’y a pas 42 lignes métier : les mêmes valeurs sont indexées plusieurs fois et les sept sentinelles ne sont pas des lignes.
+
+### Représentation des clés
+
+| Champ recoupé | Octets de clé observés | Remarque |
+| --- | --- | --- |
+| Identifiant 1 | `80 00 00 00 00 00 00 01` | Compatible avec un entier BE dont le bit de signe est inversé ; validé ici seulement sur les identifiants positifs présents |
+| JOUR / MOIS | Un octet | Valeur égale au `u8` du FIC ; les doublons sont conservés |
+| MOISJOUR | Deux octets | Mois suivi du jour : par exemple `05 08` |
+| DATEDEB | `32 30 32 36 30 35 30 34 00` | Même ASCII Z que dans le FIC |
+
+Les deux références restent en **petit-boutiste**, même quand la clé d’identifiant présente un ordre d’octets différent. Ne pas appliquer l’endianess des entiers FIC à tous les octets d’une clé d’index.
+
+### Pourquoi les chaînes brutes ne suffisent pas
+
+D’autres régions NDX contiennent des textes de dates, notamment des valeurs antérieures, avec un autre tag et un compte nul dans le profil observé. Elles ne sont pas parcourues par `ReadFlatIndex`. Extraire tous les motifs `2026...` du fichier produirait des valeurs qui ne correspondent pas à l’unique emplacement de SEMAINE_COURS.
+
+## Même tableau plat dans PERSONNE 25 et 29
+
+Les deux témoins mesurent **2 901 octets**, avec un descripteur à 135. Leur contenu complet n’est pas identique, mais les limites et les valeurs du tableau de clés sont les mêmes.
+
+| Offset fichier | Taille | Type | Valeur dans les deux témoins |
+| --- | --- | --- | --- |
+| 107 | 2 | `u16` LE | 1 descripteur |
+| 111 | 8 | `u64` LE | Répertoire terminal à 2 893 |
+| 135 | 60 | Descripteur | P16 tout à 1, L24=0, P28=195, P36=1 544 |
+| 149 = D+14 | 2 | `u16` LE | Largeur de clé K=8 |
+| 195 | 29 | En-tête de tableau | Tag 7 à +8 ; comptes à +4 et +9 égaux à 2 |
+| 224 | 8 | `octets[8]` | Clé `80 00 00 00 00 00 00 01` |
+| 232 | 8 | `u64` LE | Première référence brute : 1 |
+| 240 | 8 | `u64` LE | Seconde référence brute : 1 |
+| 248 | 24 | `octets[24]` | Sentinelle tout à `FF` |
+| 2 893 | 8 | `u64` LE | Position du descripteur : 135 |
+| 2 901 | 0 | Fin exclusive | `2893 + 1 × 8` |
+
+Le `u16` à P+2 vaut **29** dans ces fichiers WINDEV **25** et **29** : c’est la longueur d’en-tête de page, pas la version du produit. `ReadFlatIndex` accepte les profils **15, 24, 25, 29 et 31**, uniquement quand le mode et tous les contrôles de structure concordent. Le profil PERSONNE 28 reste refusé par cette méthode et conserve l’accès à ses descripteurs bruts.
+
+L’identifiant et les deux références valent 1 ; ce cas ne permet toujours pas de distinguer numéro logique, rang physique et identifiant comme sémantique générale des références. Le parcours du B-tree et les autres types de pages ne sont pas implémentés.
+
+## Tableau plat également vérifié en version 24
+
+Le NDX PERSONNE 24 mesure **2 901 octets** et reprend les limites vérifiées en 25/29 :
+
+| Position fichier | Taille | Type | Valeur / rôle |
+| --- | --- | --- | --- |
+| 107 | 2 | `u16` LE | Un descripteur |
+| 111 | 8 | `u64` LE | Répertoire à 2 893 |
+| 135 | 60 | Descripteur | P16 tout à 1, L24=0, P28=195, P36=1544 |
+| 149 = D+14 | 2 | `u16` LE | Largeur de clé : 8 |
+| 195 | 29 | En-tête de tableau | Tag 7 ; deux entrées, sentinelle incluse |
+| 224 | 8 | Clé binaire | `80 00 00 00 00 00 00 01` |
+| 232 / 240 | 8 chacun | `u64` LE | Deux références brutes égales à 1 |
+| 248 | 24 | Octets | Sentinelle entièrement `FF` |
+| 2 893 | 8 | `u64` LE | Position du descripteur : 135 |
+
+La longueur **29** à P+2 ne désigne donc pas la version WINDEV. `ReadFlatIndex` accepte les profils reconnus **24, 15, 24, 25, 29 et 31**, après contrôle du mode, du descripteur, des limites, des comptes, de l’ordre des clés et de la sentinelle. Le compte 2 fournit une seule entrée utile. Le parcours général du B-tree et la nature distincte des deux références restent inconnus.
+
+## PERSONNE 15 : clé de quatre octets
+
+Le NDX 15 mesure **2 661 octets**, contre 2 901 dans les témoins PERSONNE 24/25/29. Le répertoire et le descripteur restent reconnus, mais la clé d’identifiant mesure quatre octets au lieu de huit.
+
+| Offset fichier | Taille | Type | Valeur |
+| --- | --- | --- | --- |
+| 107 | 2 | `u16` LE | Un descripteur |
+| 111 | 8 | `u64` LE | Répertoire à **2653** |
+| 135 | 60 | Descripteur | Longueur 60, P16 tout à 1, L24=0, P28=195, P36=1424 |
+| 149 = D+14 | 2 | `u16` LE | Largeur de clé **4** |
+| 195 | 29 | En-tête de tableau plat | Tag 7 ; deux entrées avec sentinelle |
+| 224 | 4 | Clé binaire | **`80 00 00 01`** |
+| 228 | 8 | `u64` LE | Première référence brute : 1 |
+| 236 | 8 | `u64` LE | Seconde référence brute : 1 |
+| 244 | **20** | Octets | Sentinelle entièrement `FF` |
+| 2653 | 8 | `u64` LE | Position du descripteur : 135 |
+| 2661 | 0 | Fin exclusive | `2653+8` |
+
+La formule du pas reste `largeur_clé+16`, donc **20** ici, et non 24. Les deux références restent sur **huit octets** : leur largeur ne suit pas celle de la clé. La clé est compatible avec une représentation BE de l’identifiant 32 bits dont le bit de signe est inversé ; seule la valeur positive 1 est présente, ce qui ne valide pas le domaine entier de ce codec.
+
+La méthode `ReadFlatIndex` accepte le profil 15 avec les mêmes contrôles de mode, de limites, de comptes et de sentinelle. Le nombre **29** à P+2 reste la longueur d’en-tête du tableau et ne représente pas la version WINDEV. Le parcours général du B-tree et la nature distincte des deux références restent inconnus.

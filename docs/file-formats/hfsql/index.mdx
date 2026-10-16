@@ -9,12 +9,12 @@ Le schéma et les données sont séparés. Le WDD donne des descriptions ; les F
 
 | Format | Rôle | Ce qui est acquis |
 | --- | --- | --- |
-| [FIC](./fic.mdx) | Valeurs et gestion des emplacements | Profils fixes 28 et 31 recoupés avec leur schéma ; positions de début et compte encore explicites |
-| [NDX](./ndx.mdx) | Index | Répertoire, descripteurs et tableaux plats de clés 31 ; parcours général du B-tree non décodé |
-| [MMO](./mmo.mdx) | Mémos | En-têtes observés ; allocation et lecture du contenu non prises en charge |
+| [FIC](./fic.mdx) | Valeurs et gestion des emplacements | Profils fixes 15, 24, 25, 28, 29 et 31 recoupés avec leur schéma ; positions de début et compte encore explicites |
+| [NDX](./ndx.mdx) | Index | Répertoire, descripteurs et tableaux plats de clés 15/24/25/29/31 ; parcours général du B-tree non décodé |
+| [MMO](./mmo.mdx) | Mémos | En-têtes et blocs simples 15/24/25/29/31 ; allocation générale non prise en charge |
 
-Lire d’abord [l’en-tête commun](./en-tete.mdx), puis le [cas PERSONNE avec son analyse](./cas-personne.mdx). L’association repose sur les deux GUID, pas seulement sur les noms de fichiers. La [protection](./protection.mdx) reste distincte de cette association.
+Lire d’abord [l’en-tête commun](./en-tete.mdx), puis les [emplacements FIC et leur schéma](./fic.mdx). L’association repose sur les deux GUID, pas seulement sur les noms de fichiers. La [protection](./protection.mdx) reste distincte de cette association.
 
 Le guide [schéma et données en .NET](../../dotnet/schema-et-donnees.mdx) montre comment lire les rubriques nommées sans recopier leurs offsets à la main.
 
-Le [cas HFSQL 31](./cas-hfsql31.mdx) ajoute deux tables, les dates ASCII Z et les premières clés NDX recoupées avec les valeurs FIC.
+Chaque page regroupe ses variantes : les valeurs et dates dans FIC, les pages et clés dans NDX, les références et blocs de mémo dans MMO.

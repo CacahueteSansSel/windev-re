@@ -8,23 +8,33 @@ sidebar_position: 3
 ```csharp
 using WindevReader;
 
-var projet = WdpWindevProject.Open("SuperNoteExtra.wdp");
-foreach (var reference in projet.References)
+WdpWindevProject project = WdpWindevProject.Open("SuperNoteExtra.wdp");
+
+foreach (WindevProjectReference reference in project.References)
+{
     Console.WriteLine($"{reference.ConfigurationName}: {reference.Name}");
+}
 ```
 
-`References` recense le répertoire de configuration reconnu. Il ne résout pas les chemins et n’ouvre pas les éléments référencés. Certains caches partiels ne contiennent pas ce répertoire ; un diagnostic les signale.
+`References` recense le répertoire de configuration reconnu. Il ne résout pas les chemins et n’ouvre pas les éléments référencés. Certains caches partiels ne contiennent pas ce répertoire ; un diagnostic les signale. Dans le témoin 15, sa structure n’est pas reconstituée : `References` reste vide avec `NoConfigurationDirectory`, sans constituer un inventaire du projet.
 
 ## Propriétés d’une fenêtre
 
 ```csharp
-var fenetre = WdwWindevWindow.Open("FEN_Notes.wdw");
-Console.WriteLine(fenetre.Caption);
-if (fenetre.Bounds is { } cadre)
-    Console.WriteLine($"{cadre.Width} × {cadre.Height}");
+WdwWindevWindow window = WdwWindevWindow.Open("FEN_Notes.wdw");
 
-foreach (var element in fenetre.Elements)
+Console.WriteLine(window.Caption);
+
+if (window.Bounds is { } bounds)
+{
+    Console.WriteLine($"{bounds.Width} × {bounds.Height}");
+}
+
+
+foreach (WindevUiElement element in window.Elements)
+{
     Console.WriteLine($"{element.Name} : {element.InferredKind}");
+}
 ```
 
 Les catégories d’éléments sont inférées à partir des préfixes de noms : elles ne constituent pas une reconstruction complète des classes de contrôles. Certaines propriétés, dont `Bounds`, peuvent être absentes d’un profil non reconnu.
@@ -32,15 +42,20 @@ Les catégories d’éléments sont inférées à partir des préfixes de noms :
 ## Procédures et événements source
 
 ```csharp
-var collection = WdgWindevGlobalProcedures.Open("ProceduresGlobales.wdg");
-foreach (var procedure in collection.Procedures)
+WdgWindevGlobalProcedures collection = WdgWindevGlobalProcedures.Open("ProceduresGlobales.wdg");
+
+foreach (WindevProcedure procedure in collection.Procedures)
 {
     Console.WriteLine(procedure.Name);
+
     Console.WriteLine(procedure.Source);
 }
 
-foreach (var bloc in fenetre.CodeBlocks)
-    Console.WriteLine($"{bloc.OwnerName}, événement {bloc.EventId} :\n{bloc.Source}");
+
+foreach (WindevCodeBlock block in window.CodeBlocks)
+{
+    Console.WriteLine($"{block.OwnerName}, événement {block.EventId} :\n{block.Source}");
+}
 ```
 
 `GlobalDeclarations` conserve les blocs de déclarations globales. `CodeBlocks` et `Lines` donnent accès aux identifiants numériques d’événement, langues et métadonnées de lignes reconnues. La propriété `Source` assemble les lignes ; elle ne traduit pas tous les identifiants d’événements en noms.
@@ -48,10 +63,14 @@ foreach (var bloc in fenetre.CodeBlocks)
 ## États
 
 ```csharp
-var etat = WdeWindevReport.Open("ETAT_Notes.wde");
-Console.WriteLine(etat.NoDataMessage);
-foreach (var element in etat.Elements)
+WdeWindevReport report = WdeWindevReport.Open("ETAT_Notes.wde");
+
+Console.WriteLine(report.NoDataMessage);
+
+foreach (WindevUiElement element in report.Elements)
+{
     Console.WriteLine(element.Name);
+}
 ```
 
 Le lecteur inventorie les propriétés et les éléments reconnus ; il ne calcule pas une pagination et ne produit pas de rendu de l’état.
