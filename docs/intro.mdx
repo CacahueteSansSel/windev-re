@@ -1,14 +1,56 @@
 ---
-title: "Comprendre les fichiers et utiliser le lecteur"
+title: "Introduction & Contexte"
 displayed_sidebar: formatsSidebar
 sidebar_position: 0
 ---
 
-Ce site présente une étude des formats binaires WINDEV et HFSQL, accompagnée d’une bibliothèque .NET autonome en lecture seule.
+> Cette section est une des seules à ne pas être générée par IA sur ce site.
 
-- [Formats de fichiers](./file-formats/index.mdx) : une page par format, avec ses sections, blocs, offsets en octets et types de champs.
-- [Documentation .NET](./dotnet/index.mdx) : installation, exemples C#, API, commandes CLI et gestion des erreurs.
+## Contexte
 
-Les explications distinguent les observations confirmées, les profils particuliers et les parties encore inconnues. Une ouverture réussie ne signifie pas que chaque propriété du format soit décodée.
+### WINDEV
 
-Les exemples applicatifs utilisent **le logiciel de prise de note SuperNoteExtra** et **le logiciel de client mail SuperMailExtra**, deux projets fictifs. Les schémas explicatifs sont des SVG ; leurs légendes précisent les coordonnées et les tailles qui font foi.
+WINDEV est une solution de développement logiciel réalisée par PCSOFT depuis 1993. Elle est particulièrement utilisée dans les logiciels métiers spécifiques, principalement en France.
+
+WINDEV propose un éditeur complet de fenêtres, de code, du schéma de base de données (dit dans le jargon **l'analyse**), et de documents programmables et éditables (dit les **états**).
+
+Cette solution propose tous les outils clés en main pour réaliser un logiciel en un temps record, d'où leur slogan : *Développez 10x plus vite*.
+
+### Quelques subtilités
+
+Quand on regarde un projet WINDEV en détail, on remarque rapidement un détail étrange :
+
+**Tous les fichiers sources (donc formant le code source de l'application) ne sont pas au format texte mais dans des formats illisibles et binaires**.
+
+Ces formats ne sont bien évidemment **pas documentés** et rendent le code source très opaque. **Volontairement ?**
+
+Les formats sont d'une complexité telle qu'il est fortement envisageable qu'ils soient développés et conçus pour rendre leur compréhension complexe, voire impossible. Certainement pour **obliger le développeur à rester dans l'écosystème**. C'est absolument malveillant.
+
+### Le point de bascule
+
+En 2024, la société derrière WINDEV (PCSOFT) est rachetée par **Constellation Software**, un fond d'investissement canadien.
+Cette société va faire basculer WINDEV dans un modèle **Software as a Service** avec des abonnements recurrent, dans un but de réaliser du chiffre, et toujours plus de chiffre.
+
+Pire encore, en 2026, **Constellation Software** fera revoir le mode de facturation de PCSOFT sur WINDEV pour instaurer des prix intolérables, et des pratiques plus que honteuses, notamment de **faire payer chaque session d'un logiciel** à des prix inacceptables.
+
+Cette dérive irresponsable de PCSOFT met beaucoup d'entreprises au pied du mur. Et si quiconque arrête de payer la grande taxe royale à sa majesté, **il perdra accès à l'éditeur**. Mais également **à son propre code source et son propre programme**, car les formats **sont binaires et propriétaires**, et volontairement conçus pour **être le moins lisible possible**.
+
+### L'intelligence Artificielle
+
+Etudier comment PCSOFT a construit son escape-game interminable prendrait un temps fou, déjà pour comprendre la panoplie de format personnalisés qu'ils ont développé (carrément on dirait que c'est une obsession pour eux) et toute la couche de protection parfaitement inutile qui va avec... Il faudrait un temps fou.
+
+Un temps qu'on n'a pas actuellement, car PCSOFT mettra sa nouvelle tarification en vigueur avant début 2027.
+
+Dans ce contexte, tout naturellement, l'IA entre donc en jeu. Même si je ne suis pas dans l'équipe des gens qui développent 100% avec des modèles d'IA, je suis conscient que dans ce contexte, il ne vaut mieux pas ignorer les dernières avancées technologiques et accepter d'utiliser l'IA **comme un outil**.
+
+### Le rôle de ce site
+
+Voilà donc le rôle de ce site : documenter, **grâce à l'IA**, l'ensemble des formats binaires et propriétaires de WINDEV pour rendre à chaque développeur son droit fondamental sur son code source qui lui est propre. Et de fournir une des cartes nécessaires pour quitter l'écosystème avant que le bateau coule. Ou avant que PCSOFT se fasse sanctionner par la justice française.
+
+Cette documentation est accompagnée d'une bibliothèque .NET **écrite par IA** en C# qui permet une lecture de l'ensemble des formats, en adéquation avec cette documentation.
+
+### Licence
+
+Vu que le travail **a été réalisé par une IA**, **il n'y a pas à mettre de licence restrictive** : l'ensemble de ces résultats et analyses sont sous [**Unlicense**](https://unlicense.org). Donc vous avez **le droit de faire ce que vous voulez avec tout ça**.
+
+**Je ne serai pas l'hypocrite qui oserait dire qu'il a tout fait alors qu'il a juste parlé avec un chatbot**.
