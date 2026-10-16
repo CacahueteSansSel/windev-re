@@ -4,6 +4,40 @@
         <name>WindevReader</name>
     </assembly>
     <members>
+        <member name="M:WindevReader.FicHfsqlDataFile.ReadFixedRecords(WindevReader.HfsqlFixedRecordLayout)">
+            <summary>Reads physical slots with a caller-supplied layout; does not infer schema, decrypt, or filter deleted records.</summary>
+        </member>
+        <member name="M:WindevReader.FicHfsqlDataFile.CreateFixedRecordLayout(WindevReader.WddWindevAnalysis,System.Int32,System.Int32)">
+            <summary>Uses a matching WINDEV 15/24/25/28/29/31 WDD to name/type fixed fields. Data offset and physical count remain caller-supplied.
+            Only the observed 9-byte-prefix, fixed-field profile is supported. Does not classify live/deleted records.</summary>
+        </member>
+        <member name="T:WindevReader.HfsqlFixedFieldType">
+            <summary>Explicit interpretation selected by the caller, not a recovered HFSQL schema type code.</summary>
+        </member>
+        <member name="T:WindevReader.HfsqlFixedRecordLayout">
+            <summary>Physical slot boundaries and fields supplied by the caller. Offsets of fields are relative to each slot.</summary>
+        </member>
+        <member name="M:WindevReader.HfsqlFixedRecordLayout.#ctor(System.Int32,System.Int32,System.Int32,System.Collections.Generic.IReadOnlyList{WindevReader.HfsqlFixedField})">
+            <summary>Physical slot boundaries and fields supplied by the caller. Offsets of fields are relative to each slot.</summary>
+        </member>
+        <member name="T:WindevReader.HfsqlFixedRecordView">
+            <summary>Lazy, bounded physical access. Does not infer whether a slot is active, deleted, erased or a template.</summary>
+        </member>
+        <member name="T:WindevReader.HfsqlIndexEntry">
+            <summary>One key and two raw references. Both references match 1-based physical FIC slots in the observed 31 files.</summary>
+        </member>
+        <member name="M:WindevReader.HfsqlIndexEntry.#ctor(System.Int32,System.UInt64,System.UInt64)">
+            <summary>One key and two raw references. Both references match 1-based physical FIC slots in the observed 31 files.</summary>
+        </member>
+        <member name="T:WindevReader.HfsqlFlatIndex">
+            <summary>Observed clear, flat WINDEV 24/25/29/31 page. Terminal all-FF entry is validated and excluded from Entries.</summary>
+        </member>
+        <member name="T:WindevReader.HfsqlMemoBlock">
+            <summary>Observed single-block, mode-0 MMO payload. Allocation chains and raw control words remain uninterpreted.</summary>
+        </member>
+        <member name="M:WindevReader.HfsqlMemoBlock.DecodeText(WindevReader.HfsqlMemoTextEncoding)">
+            <summary>Explicit encoding applied to exactly the declared payload length. No terminator is assumed or removed.</summary>
+        </member>
         <member name="T:WindevReader.HfsqlPhysicalHeader">
             <summary>Verified clear header. Raw flags and mode bytes deliberately have no inferred cryptographic names.</summary>
         </member>
@@ -25,13 +59,6 @@
         <member name="M:WindevReader.HfsqlPhysicalFile.FindTableDefinition(WindevReader.WddWindevAnalysis)">
             <summary>Returns a description only when both GUIDs match. Matching metadata does not decrypt data.</summary>
         </member>
-        <member name="M:WindevReader.FicHfsqlDataFile.ReadFixedRecords(WindevReader.HfsqlFixedRecordLayout)">
-            <summary>Reads physical slots with a caller-supplied layout; does not infer schema, decrypt, or filter deleted records.</summary>
-        </member>
-        <member name="M:WindevReader.FicHfsqlDataFile.CreateFixedRecordLayout(WindevReader.WddWindevAnalysis,System.Int32,System.Int32)">
-            <summary>Uses a matching WINDEV 28/31 WDD to name/type fixed fields. Data offset and physical count remain caller-supplied.
-            Only the observed 9-byte-prefix, fixed-field profile is supported. Does not classify live/deleted records.</summary>
-        </member>
         <member name="T:WindevReader.HfsqlIndexDescriptor">
             <summary>Fields at relative offsets 0, 6, 10, 14, 16, 24, 28, 36, 44..59 in a 60-byte descriptor.
             No checksum, key type, tree root or free-page semantics are assigned without further evidence.</summary>
@@ -40,47 +67,20 @@
             <summary>Fields at relative offsets 0, 6, 10, 14, 16, 24, 28, 36, 44..59 in a 60-byte descriptor.
             No checksum, key type, tree root or free-page semantics are assigned without further evidence.</summary>
         </member>
-        <member name="P:WindevReader.NdxHfsqlIndexFile.IndexDescriptorOffsets">
-            <summary>Positions read from the terminal u64 directory. Index key/B-tree semantics remain unsupported.</summary>
-        </member>
-        <member name="P:WindevReader.NdxHfsqlIndexFile.IndexDescriptors">
-            <summary>60-byte descriptors referenced by the terminal directory. Pointers remain raw structural observations.</summary>
-        </member>
-        <member name="M:WindevReader.NdxHfsqlIndexFile.ReadFlatIndex(System.Int32)">
-            <summary>Reads the observed clear WINDEV 31 flat page (tag 7, 29-byte header). No B-tree traversal or key-name inference.</summary>
-        </member>
-        <member name="M:WindevReader.NdxHfsqlIndexFile.ReadIndexRegion(System.Int32)">
-            <summary>Bytes between an announced descriptor and the next one (or the directory), without B-tree interpretation.</summary>
-        </member>
-        <member name="P:WindevReader.MmoHfsqlMemoFile.RawHeaderSlots">
-            <summary>Fourteen raw u64 slots starting at offset 98 in the observed header profile; semantics are not mapped.</summary>
-        </member>
-        <member name="T:WindevReader.HfsqlFixedFieldType">
-            <summary>Explicit interpretation selected by the caller, not a recovered HFSQL schema type code.</summary>
-        </member>
-        <member name="T:WindevReader.HfsqlFixedRecordLayout">
-            <summary>Physical slot boundaries and fields supplied by the caller. Offsets of fields are relative to each slot.</summary>
-        </member>
-        <member name="M:WindevReader.HfsqlFixedRecordLayout.#ctor(System.Int32,System.Int32,System.Int32,System.Collections.Generic.IReadOnlyList{WindevReader.HfsqlFixedField})">
-            <summary>Physical slot boundaries and fields supplied by the caller. Offsets of fields are relative to each slot.</summary>
-        </member>
-        <member name="T:WindevReader.HfsqlFixedRecordView">
-            <summary>Lazy, bounded physical access. Does not infer whether a slot is active, deleted, erased or a template.</summary>
-        </member>
-        <member name="T:WindevReader.HfsqlIndexEntry">
-            <summary>One key and two raw references. Both references match 1-based physical FIC slots in the observed 31 files.</summary>
-        </member>
-        <member name="M:WindevReader.HfsqlIndexEntry.#ctor(System.Int32,System.UInt64,System.UInt64)">
-            <summary>One key and two raw references. Both references match 1-based physical FIC slots in the observed 31 files.</summary>
-        </member>
-        <member name="T:WindevReader.HfsqlFlatIndex">
-            <summary>Observed clear, flat WINDEV 31 page. Terminal all-FF entry is validated and excluded from Entries.</summary>
-        </member>
         <member name="T:WindevReader.Internal.PcsLegacyCipher">
             <summary>Independent implementation of the legacy PCS byte transformation used by WDD 0x061D.</summary>
         </member>
         <member name="T:WindevReader.Internal.PcsLzw">
-            <summary>PCS LSB-first LZW: clear=0, literals=1..256, EOF=257, codes grow from 9 to 16 bits.</summary>
+            <summary>Reads the PCS LZW variant: least-significant bits first, 9 to 16-bit codes.</summary>
+        </member>
+        <member name="P:WindevReader.MmoHfsqlMemoFile.RawHeaderSlots">
+            <summary>Fourteen raw u64 slots starting at offset 98 in the observed header profile; semantics are not mapped.</summary>
+        </member>
+        <member name="M:WindevReader.MmoHfsqlMemoFile.ReadMemo(System.UInt64)">
+            <summary>Reads the observed uncompressed single-block memo. A reference is an absolute offset, not a slot number.</summary>
+        </member>
+        <member name="M:WindevReader.MmoHfsqlMemoFile.ReadMemo(WindevReader.FicHfsqlDataFile,System.UInt64)">
+            <summary>Also verifies that the memo belongs to the caller's FIC by both GUIDs.</summary>
         </member>
         <member name="T:WindevReader.WindevUiElement">
             <summary>An identifier found in an object property buffer. Kind is inferred from its naming prefix.</summary>
@@ -89,7 +89,7 @@
             <summary>An identifier found in an object property buffer. Kind is inferred from its naming prefix.</summary>
         </member>
         <member name="P:WindevReader.WindevDataField.RawCompositeMarker">
-            <summary>Raw byte at +31 after the four field CStrings; value 1 recouped with MOISJOUR 31.</summary>
+            <summary>Raw byte at +31 after the four field CStrings; value 1 verified against MOISJOUR in version 31.</summary>
         </member>
         <member name="P:WindevReader.WindevDataField.IsCompositeKey">
             <summary>Observed type-28 composite profile; ordinary type-28 binary fields retain marker 0.</summary>
@@ -98,7 +98,7 @@
             <summary>Friendly type for codes observed in the supplied schema; unknown codes remain explicit.</summary>
         </member>
         <member name="P:WindevReader.WindevDataTable.RawRecordByteLength">
-            <summary>Raw u32 at +12 after the table's six strings. Physical slot length verified on PERSONNE 28 only.</summary>
+            <summary>Raw u32 at +12 after the table's six strings. Verified against the supplied fixed-record profiles.</summary>
         </member>
         <member name="T:WindevReader.WindevDataRelation">
             <summary>WINDEV 28 relation names and identifiers; cardinalities and constraint flags remain raw.</summary>
@@ -106,8 +106,20 @@
         <member name="M:WindevReader.WindevDataRelation.#ctor(System.UInt64,System.String,System.UInt64,System.String,System.UInt64,System.String,System.UInt64,System.String,System.UInt64,System.String,System.Collections.Generic.IReadOnlyList{System.UInt16},System.UInt32,System.Int32)">
             <summary>WINDEV 28 relation names and identifiers; cardinalities and constraint flags remain raw.</summary>
         </member>
-        <member name="P:WindevReader.WdwWindevWindow.Preview">
-            <summary>Complete BMP recovered from the LZW envelope of section 4, when recognized.</summary>
+        <member name="P:WindevReader.NdxHfsqlIndexFile.IndexDescriptorOffsets">
+            <summary>Positions read from the terminal u64 directory. Index key/B-tree semantics remain unsupported.</summary>
+        </member>
+        <member name="P:WindevReader.NdxHfsqlIndexFile.IndexDescriptors">
+            <summary>60-byte descriptors referenced by the terminal directory. Pointers remain raw structural observations.</summary>
+        </member>
+        <member name="M:WindevReader.NdxHfsqlIndexFile.ReadFlatIndex(System.Int32)">
+            <summary>Reads the observed clear WINDEV 15/24/25/29/31 flat page (tag 7, 29-byte header). No B-tree traversal or key-name inference.</summary>
+        </member>
+        <member name="M:WindevReader.NdxHfsqlIndexFile.ReadIndexRegion(System.Int32)">
+            <summary>Bytes between an announced descriptor and the next one (or the directory), without B-tree interpretation.</summary>
+        </member>
+        <member name="T:WindevReader.WdaWindevAnalysisSource">
+            <summary>Additional low-level access to the editable .wda source of an analysis.</summary>
         </member>
         <member name="T:WindevReader.WindevLibraryChunk">
             <summary>A stored range whose offset is relative to the library payload, not the file.</summary>
@@ -127,8 +139,8 @@
         <member name="M:WindevReader.WdlWindevLibrary.ReadWindowProperties(WindevReader.WindevLibraryEntry)">
             <summary>Decodes the observed compiled window property chunk (16-byte prefix + LZW), not a complete WDW file.</summary>
         </member>
-        <member name="T:WindevReader.WdaWindevAnalysisSource">
-            <summary>Additional low-level access to the editable .wda source of an analysis.</summary>
+        <member name="P:WindevReader.WdwWindevWindow.Preview">
+            <summary>Complete BMP recovered from the LZW envelope of section 4, when recognized.</summary>
         </member>
         <member name="T:WindevReader.IWindevFile">
             <summary>Read-only file access shared by PCS documents, compiled libraries and physical HFSQL files.</summary>

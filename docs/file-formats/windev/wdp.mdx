@@ -17,9 +17,9 @@ Pour utiliser le lecteur, consulter la [documentation .NET](../../dotnet/index.m
 | --- | --- |
 | Extension | `.wdp` |
 | Type du conteneur (`u32` à `F[8]`) | `0x00001001` |
-| Sections d'un projet complet étudié | 20 |
+| Sections des projets complets étudiés | 19 en 15 ; 20 dans les témoins récents |
 | Sections d'un cache de projet étudié | 2 |
-| Versions de produit observées | 28 et 31 |
+| Versions de produit observées | 15, 24, 25, 28, 29 et 31 |
 
 L'en-tête commun est décrit dans le [chapitre PCS](./pcs.mdx). Il ne suffit pas de vérifier l'extension : les caches situés dans `.cpl` ont aussi l'extension `.wdp`.
 
@@ -217,3 +217,142 @@ Dans ces caches, `P = 111`. Ils n'ont pas la section 13 d'un projet complet et n
 ## Limites de l'interprétation
 
 Le corpus comporte un seul bloc principal de configuration détaillé par projet complet. Les configurations multiples ne sont pas validées. Les réglages de la section 1, de nombreux mots auxiliaires et la structure exhaustive des ressources restent inconnus.
+
+
+## Profil 29
+
+Le nouveau projet 29 reprend 20 sections et le début de charge utile à 345. La section de configuration à 4300 fournit trois références avec le lecteur existant. Sa [carte complète](./wdd.mdx) distingue le code, les blocs décompressés et les réglages restés opaques.
+
+## Carte mesurée en version 29
+
+Le début des sections vaut `32 + lire_u32(F, 32) = 345`. Les tailles couvrent exactement le fichier.
+
+| Section | Tag `u8` | Début dans `F` | Longueur | Lecture reconnue |
+| --- | --- | --- | --- | --- |
+| 0 | 0 | 345 | 88 | Identité |
+| 1 | 1 | 433 | 1 492 | Réglages conservés bruts |
+| 2 | 2 | 1 925 | 1 129 | Source ; bloc LZW à +4 → 6 247 octets |
+| 3 | 0 | 3 054 | 0 | Vide |
+| 4 | 0 | 3 054 | 64 | Bloc reconnu à +0 → 64 octets |
+| 5 | 0 | 3 118 | 0 | Vide |
+| 6 | 6 | 3 118 | 502 | Chaînes de chemins |
+| 7 | 0 | 3 620 | 72 | Auxiliaire |
+| 8 | 19 | 3 692 | 53 | Auxiliaire |
+| 9 | 0 | 3 745 | 9 | Auxiliaire |
+| 10 | 0 | 3 754 | 0 | Vide |
+| 11 | 0 | 3 754 | 546 | Bloc à +0 → 1 937 octets |
+| 12 | 0 | 4 300 | 0 | Vide |
+| 13 | 0 | 4 300 | 7 181 | Configuration et trois références encadrées |
+| 14 | 10 | 11 481 | 38 | Bloc à +12 → 36 octets |
+| 15 | 0 | 11 519 | 0 | Vide |
+| 16 | 17 | 11 519 | 37 | Auxiliaire |
+| 17 | 0 | 11 556 | 21 | Auxiliaire |
+| 18 | 0 | 11 577 | 815 | Bloc à +0 → 2 088 octets |
+| 19 | 0 | 12 392 | 1 503 | Auxiliaire |
+| Fin | — | 13 895 | 0 | Fin exclusive |
+
+La configuration reconnue est « Exécutable Windows 64 bits ». Les trois références exposées correspondent au nom du projet, à la fenêtre et au chemin du WDD. Le lecteur n’ouvre pas automatiquement leurs chemins et ne considère pas chaque référence comme un fichier source distinct.
+
+## Profil binaire observé en version 25
+
+Le témoin mesure **10 604 octets**. L’en-tête conserve 20 sections et `PayloadOffset = 345`. Le répertoire et le LZW utilisent les mêmes structures que les profils récents ; les tailles ci-dessous sont propres au témoin, pas des constantes de version.
+
+| Section | Tag `u8` | Début dans `F` | Longueur stockée | Bloc : offset dans la section → octets décodés |
+| --- | --- | --- | --- | --- |
+| 0 | 0 | 345 | 88 | — |
+| 1 | 1 | 433 | 1433 | — |
+| 2 | 2 | 1866 | 582 | +4 → 3320 |
+| 3 | 0 | 2448 | 0 | — |
+| 4 | 0 | 2448 | 55 | +0 → 64 |
+| 5 | 0 | 2503 | 0 | — |
+| 6 | 6 | 2503 | 502 | — |
+| 7 | 0 | 3005 | 1744 | — |
+| 8 | 19 | 4749 | 52 | — |
+| 9 | 0 | 4801 | 9 | — |
+| 10 | 0 | 4810 | 0 | — |
+| 11 | 0 | 4810 | 646 | +0 → 1980 |
+| 12 | 0 | 5456 | 0 | — |
+| 13 | 0 | 5456 | 3438 | +12 → 3874 |
+| 14 | 10 | 8894 | 38 | +12 → 36 |
+| 15 | 0 | 8932 | 0 | — |
+| 16 | 17 | 8932 | 37 | — |
+| 17 | 0 | 8969 | 21 | — |
+| 18 | 0 | 8990 | 816 | +0 → 2088 |
+| 19 | 0 | 9806 | 798 | — |
+
+La différence utile pour la lecture se trouve dans la **section 13** : une enveloppe LZW à `S+12` produit **3 874 octets**, contre une région non compressée dans le témoin 29. La version 28 étudiée utilise déjà cette représentation compressée : la présence de LZW doit être vérifiée dans le fichier, pas déduite d’une règle « ancienne/nouvelle version ».
+
+Les trois références encadrées commencent aux offsets **69, 108 et 149 du buffer décompressé**. Elles désignent le projet, la fenêtre et le chemin du WDD. Leurs noms applicatifs sont illustrés par le logiciel fictif de prise de note SuperNoteExtra ; les offsets restent ceux du témoin et ne doivent pas être recalculés à partir du nom fictif. `ConfigurationNames` est vide pour ce profil compressé : le lecteur récupère les références mais n’attribue pas un nom de configuration non établi.
+
+La section 2 contient **11 événements source**, y compris les événements ne comportant que des lignes vides. Le marqueur de corps est `0x14` ; voir la [structure des événements WLangage](./wlangage.mdx#variantes-mesurées-par-version). Les réglages de section 1 et la section 7, plus volumineuse ici, restent conservés bruts. Aucun rôle nouveau n’est attribué à ces blocs sur leur seule taille.
+
+## Profil binaire observé en version 24
+
+Le WDP 24 mesure **10 094 octets**, conserve **20 sections** et commence sa charge utile à **345**. Les tailles suivantes sont propres au témoin, pas des constantes applicables à tout projet 24.
+
+| Section | Tag `u8` | Offset fichier | Octets stockés | Bloc reconnu : offset relatif → octets décodés |
+| --- | --- | --- | --- | --- |
+| 0 | 0 | 345 | 88 | — |
+| 1 | 1 | 433 | 1522 | — |
+| 2 | 2 | 1955 | 615 | +4 → 3042 |
+| 3 | 0 | 2570 | 0 | — |
+| 4 | 0 | 2570 | 44 | +0 → 64 |
+| 5 | 0 | 2614 | 0 | — |
+| 6 | 6 | 2614 | 488 | — |
+| 7 | 0 | 3102 | 1632 | — |
+| 8 | 19 | 4734 | 52 | — |
+| 9 | 0 | 4786 | 9 | — |
+| 10 | 0 | 4795 | 0 | — |
+| 11 | 0 | 4795 | 626 | +0 → 1856 |
+| 12 | 0 | 5421 | 0 | — |
+| 13 | 0 | 5421 | 2967 | +12 → 3332 |
+| 14 | 10 | 8388 | 38 | +12 → 36 |
+| 15 | 0 | 8426 | 0 | — |
+| 16 | 17 | 8426 | 37 | — |
+| 17 | 0 | 8463 | 21 | — |
+| 18 | 0 | 8484 | 816 | +0 → 2088 |
+| 19 | 0 | 9300 | 794 | — |
+
+La section 13, à `F[5421]`, contient une enveloppe LZW à `S+12` qui produit **3 332 octets**. Comme dans le témoin 25, les trois références encadrées commencent à **69, 108 et 149 dans le buffer décompressé**. Elles représentent le projet, la fenêtre et le chemin du WDD. Les exemples utilisent le logiciel fictif de prise de note SuperNoteExtra ; les noms remplacés ne servent pas à recalculer les offsets mesurés.
+
+Le nom de configuration n’est pas établi dans cette représentation compressée : `ConfigurationNames` reste vide, tandis que `References` expose les trois entrées reconnues. La section 2 contient **10 événements source et 20 lignes**, avec un tag de corps `0x14`. Le témoin 25 en contient 11 : ce nombre dépend du contenu du projet et ne devient pas une constante du format.
+
+Aucune nouvelle transformation n’est nécessaire pour le répertoire et les blocs reconnus. Les sections de réglages restent opaques lorsque leur structure n’est pas recoupée. Le détail des [événements source](./wlangage.mdx) est partagé avec les profils correspondants.
+
+## Profil binaire observé en version 15
+
+Le WDP 15 mesure **5 874 octets** et comporte **19 sections**, contre 20 dans les projets complets récents étudiés. Le début des sections vaut `32 + lire_u32(F,32) = 332`. Le même répertoire d’entrées de cinq octets couvre exactement le fichier ; les changements ne se résument donc pas à accepter une nouvelle valeur de version.
+
+| Section | Tag `u8` | Début dans F | Octets stockés | Bloc reconnu : offset relatif → octets décodés |
+| --- | --- | --- | --- | --- |
+| 0 | 0 | 332 | 80 | — |
+| 1 | 1 | 412 | 1125 | — |
+| 2 | 2 | 1537 | 346 | +4 → 1703 |
+| 3 | 0 | 1883 | 0 | — |
+| 4 | 0 | 1883 | 67 | +0 → 64 |
+| 5 | 0 | 1950 | 103 | — |
+| 6 | 6 | 2053 | 99 | — |
+| 7 | 0 | 2152 | 1980 | — |
+| 8 | 19 | 4132 | 43 | — |
+| 9 | 0 | 4175 | 9 | — |
+| 10 | 0 | 4184 | 0 | — |
+| 11 | 0 | 4184 | 289 | +0 → 773 |
+| 12 | 0 | 4473 | 166 | +12 → 298 |
+| 13 | 0 | 4639 | 579 | +12 → 1311 |
+| 14 | 10 | 5218 | 38 | +12 → 36 |
+| 15 | 17 | 5256 | 35 | +12 → 20 |
+| 16 | 17 | 5291 | 37 | — |
+| 17 | 0 | 5328 | 21 | — |
+| 18 | 0 | 5349 | 525 | +0 → 1158 |
+
+### Identité et source
+
+Le nom du projet est une **chaîne CP1252 terminée par NUL à S0+4**, après le `u32` brut égal à 7. Il n’utilise pas l’encadrement `FF CE 88 F1 … FE ED 98 E1` des versions récentes. Les exemples applicatifs restent illustrés par le logiciel fictif de prise de note SuperNoteExtra ; les positions mesurées ne sont pas recalculées à partir de ce nom remplacé.
+
+La section 2 conserve son préfixe de quatre octets et l’enveloppe LZW reconnue. Ses **1 703 octets décodés** contiennent **six événements et douze lignes**, ici vides. Les groupes utilisent le tag `0x0A`, les corps le tag `0x10` et les lignes une représentation à longueurs explicites ; voir le [source WLangage 15](./wlangage.mdx#source-de-la-version-15--longueurs-explicites).
+
+### Configuration : limite de lecture
+
+La section 13 produit **1 311 octets** à partir du LZW situé à +12. Des noms et textes sont lisibles, mais le répertoire de références encadrées des versions récentes **n’est pas reconnu** dans ce témoin. La section 12 contient aussi un bloc distinct de **298 octets** ; elle n’est pas vide comme dans les témoins récents.
+
+La bibliothèque expose les sections et les buffers, mais retourne `References.Count = 0`, `ConfigurationNames` vide et le diagnostic `NoConfigurationDirectory`. Ce zéro signifie « références non reconstituées », pas « projet ne contenant aucun élément ». Les chemins de la section 6 ne sont pas convertis en références de compilation par une simple recherche de chaînes. Aucune fenêtre ou procédure n’est inventée à partir des fichiers voisins.

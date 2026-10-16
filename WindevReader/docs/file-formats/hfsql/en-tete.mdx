@@ -28,7 +28,7 @@ Les fichiers partagent la signature PCS, puis changent de structure après les 2
 | 4 / `0x04` | 4 | `u32` | Taille/révision PCS : 20 |
 | 8 / `0x08` | 4 | `u32` | Type physique |
 | 12 / `0x0C` | 2 | `u16` brut | Révision produit : 2 dans les fichiers 31 ; 0 dans PERSONNE 28 |
-| 14 / `0x0E` | 2 | `u16` | WINDEV 31 ou 28 dans le nouveau couple PERSONNE |
+| 14 / `0x0E` | 2 | `u16` | WINDEV 15, 24, 25, 28, 29 ou 31 selon le témoin |
 | 16 / `0x10` | 2 | `u16` brut | 0 dans les spécimens |
 | 18 / `0x12` | 2 | `u16` brut | `0x040C` |
 | 20 / `0x14` | 33 | `CString` ASCII | GUID de l’analyse propriétaire |
@@ -64,7 +64,12 @@ Le MMO fourni, **RADRub.mmo**, appartient donc à RADRub.FIC, et pas à RADFic.F
 | Supplément PERSONNE | 2 : un FIC et un NDX | 2 |
 | Total après PERSONNE | 429 | 13 |
 | Supplément jours / semaines 31 | 4 | 4 |
-| Total élargi | 433 | 17 |
+| Total après les témoins 31 | 433 | 17 |
+| Supplément PERSONNE 29 | 3 | 3 |
+| Supplément PERSONNE 25 | 3 | 3 |
+| Supplément PERSONNE 24 | 3 | 3 |
+| Supplément PERSONNE 15 | 3 | 3 |
+| Total élargi | 445 | 29 |
 
 Les 53 jeux de huit fichiers RAD représentent 424 chemins ; le jeu de tâches ajoute trois fichiers. Les sauvegardes historiques ne sont donc pas des centaines de variantes indépendantes.
 
@@ -72,9 +77,30 @@ Le GUID RAD est absent du WDD applicatif décodé et du buffer logique WDA exami
 
 ## Portée de la lecture
 
-Les en-têtes, le répertoire terminal NDX et ses descripteurs de 60 octets sont accessibles. Depuis la version 0.3.0, les emplacements FIC en clair peuvent être lus avec une disposition explicite fournie par l’appelant. La découverte automatique du schéma et des états reste indisponible : `CanReadRecords` vaut `false` pour cette capacité automatique et `PasswordStatus` vaut `Unknown`. Voir le [cas PERSONNE](./cas-personne.mdx).
+Les en-têtes, le répertoire terminal NDX et ses descripteurs de 60 octets sont accessibles. Depuis la version 0.3.0, les emplacements FIC en clair peuvent être lus avec une disposition explicite fournie par l’appelant. La découverte automatique du schéma et des états reste indisponible : `CanReadRecords` vaut `false` pour cette capacité automatique et `PasswordStatus` vaut `Unknown`. Voir le [cas PERSONNE](./fic.mdx).
 
 Voir les chapitres [FIC](./fic.mdx), [NDX](./ndx.mdx), [MMO](./mmo.mdx) et [protection](./protection.mdx).
 
 
 Le nouveau WDD 28 correspondant à PERSONNE a désormais été associé aux deux fichiers physiques. Ce recoupement ne change pas le constat sur les tables RAD, dont l’analyse propriétaire n’a pas été identifiée dans le corpus initial.
+
+## Valeurs mesurées sur le couple PERSONNE 28
+
+Tous les entiers de cette page sont lus en petit-boutiste. Les intervalles sont à fin exclue.
+
+| Offset fichier | Taille | Type | FIC | NDX | Commentaire |
+| --- | --- | --- | --- | --- | --- |
+| 0 | 4 | `octets[4]` | `50 43 53 00` | Identique | Signature PCS |
+| 4 | 4 | `u32` | 20 | 20 | Révision/taille du préambule |
+| 8 | 4 | `u32` | `0x00070001` | `0x00070002` | Famille physique |
+| 12 | 2 | `u16` brut | 0 | 0 | Diffère de la valeur 2 des fichiers 31 précédents |
+| 14 | 2 | `u16` | 28 | 28 | Version WINDEV |
+| 16 | 2 | `u16` brut | 0 | 0 | Rôle non établi |
+| 18 | 2 | `u16` brut | `0x040C` | Identique | Paramètre brut |
+| 20 | 33 | ASCII Z | GUID A | GUID A | 32 chiffres hexadécimaux puis NUL |
+| 53 | 33 | ASCII Z | GUID T | GUID T | Identité de table |
+| 86 | 2 | `u16` brut | `0x8000` | Identique | Aucun détecteur universel de chiffrement déduit |
+| 88 | 1 | `u8` brut | 0 | 0 | `RawModeAt88` |
+| 89 | 1 | `u8` brut | 0 | 0 | `RawModeAt89` |
+
+Les GUID A et T ne sont pas publiés : seule leur égalité entre compagnons est nécessaire à l’explication.

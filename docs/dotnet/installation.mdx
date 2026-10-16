@@ -5,12 +5,12 @@ sidebar_position: 1
 
 ## Utiliser le package local
 
-Le package livré est `artifacts/WindevReader.0.5.0.nupkg`. Il cible `net8.0` et ne dépend d’aucun package externe. Il n’est pas nécessaire qu’il soit publié sur NuGet.org pour l’installer.
+Le package livré est `artifacts/WindevReader.0.9.0.nupkg`. Il cible `net8.0` et ne dépend d’aucun package externe. Il n’est pas nécessaire qu’il soit publié sur NuGet.org pour l’installer.
 
 ```sh
 dotnet new console --framework net8.0 -n LectureWinDev
 cd LectureWinDev
-dotnet add package WindevReader --version 0.5.0 --source /chemin/vers/WindevReader/artifacts
+dotnet add package WindevReader --version 0.9.0 --source /chemin/vers/WindevReader/artifacts
 ```
 
 Ajouter `using WindevReader;` dans le programme, puis suivre les [premiers pas](./premiers-pas.mdx). Le chemin `--source` désigne le dossier contenant le `.nupkg`, pas le fichier lui-même.

@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 370" role="img" aria-labelledby="title description">
+  <title id="title">FIC : quatre octets de moins pour l’identifiant du témoin 15</title>
+  <desc id="description">Les emplacements commencent par neuf octets de gestion. Le profil 15 contient un identifiant de quatre octets et mesure 123 octets. Les témoins comparés de 24, 25 et 29 utilisent huit octets et un pas de 127. Deux champs texte de 51 octets et une référence de mémo de huit octets suivent dans les deux cas.</desc>
+  <rect width="1000" height="370" rx="16" fill="#f5f7fc"/>
+  <g font-family="system-ui, sans-serif" fill="#17233d">
+    <text x="30" y="38" font-size="22" font-weight="700">La largeur de l’identifiant décale les champs suivants</text>
+    <text x="30" y="65" font-size="15">Offsets relatifs au début de l’emplacement ; dessin à échelle adaptée pour les petits champs.</text>
+    <text x="30" y="111" font-size="18" font-weight="700">Témoin 15 — 123 octets</text>
+    <text x="30" y="227" font-size="18" font-weight="700">Témoins comparés 24 / 25 / 29 — 127 octets</text>
+  </g>
+  <g stroke="#ffffff" stroke-width="2">
+    <rect x="30" y="124" width="110" height="54" rx="5" fill="#64748b"/>
+    <rect x="140" y="124" width="110" height="54" rx="5" fill="#6d28d9"/>
+    <rect x="250" y="124" width="295" height="54" rx="5" fill="#0369a1"/>
+    <rect x="545" y="124" width="295" height="54" rx="5" fill="#0f766e"/>
+    <rect x="840" y="124" width="130" height="54" rx="5" fill="#b45309"/>
+    <rect x="30" y="240" width="110" height="54" rx="5" fill="#64748b"/>
+    <rect x="140" y="240" width="130" height="54" rx="5" fill="#6d28d9"/>
+    <rect x="270" y="240" width="285" height="54" rx="5" fill="#0369a1"/>
+    <rect x="555" y="240" width="285" height="54" rx="5" fill="#0f766e"/>
+    <rect x="840" y="240" width="130" height="54" rx="5" fill="#b45309"/>
+  </g>
+  <g font-family="system-ui, sans-serif" fill="#ffffff" font-size="16" text-anchor="middle">
+    <text x="85" y="147">Gestion<tspan x="85" dy="20">9 octets</tspan></text>
+    <text x="195" y="147">Identifiant<tspan x="195" dy="20">4 octets</tspan></text>
+    <text x="397" y="147">Texte A<tspan x="397" dy="20">51 octets</tspan></text>
+    <text x="692" y="147">Texte B<tspan x="692" dy="20">51 octets</tspan></text>
+    <text x="905" y="147">Réf. mémo<tspan x="905" dy="20">8 octets</tspan></text>
+    <text x="85" y="263">Gestion<tspan x="85" dy="20">9 octets</tspan></text>
+    <text x="205" y="263">Identifiant<tspan x="205" dy="20">8 octets</tspan></text>
+    <text x="412" y="263">Texte A<tspan x="412" dy="20">51 octets</tspan></text>
+    <text x="697" y="263">Texte B<tspan x="697" dy="20">51 octets</tspan></text>
+    <text x="905" y="263">Réf. mémo<tspan x="905" dy="20">8 octets</tspan></text>
+  </g>
+  <g font-family="ui-monospace, monospace" fill="#17233d" font-size="14">
+    <text x="30" y="199">+0</text><text x="140" y="199">+9</text><text x="250" y="199">+13</text><text x="545" y="199">+64</text><text x="840" y="199">+115</text>
+    <text x="30" y="315">+0</text><text x="140" y="315">+9</text><text x="270" y="315">+17</text><text x="555" y="315">+68</text><text x="840" y="315">+119</text>
+  </g>
+  <text x="30" y="350" font-family="system-ui, sans-serif" font-size="15" fill="#17233d">Les champs A et B suivent l’ordre du WDD : leurs noms ne sont pas imposés par ce dessin.</text>
+</svg>

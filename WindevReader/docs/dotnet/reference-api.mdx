@@ -33,7 +33,7 @@ Toutes les classes ci-dessous appartiennent à l’espace de noms `WindevReader`
 | `WindevDataRelation` | Tables/rubriques source et cible avec identifiants, `Name`, `RawFlags`, `RawTrailer` | `Offset` dans `DecodedSchema` |
 | `WindevSchemaDirectoryEntry` | `Name`, `Offset`, `Count` | Destination dans `DecodedSchema` |
 
-`Type` est un libellé pour les codes rencontrés. Un code inconnu reste `Unknown`. Un mémo de stockage 8 n’est pas interprété comme une chaîne de huit octets.
+`Type` est un libellé pour les codes rencontrés. Un code inconnu reste `Unknown`. Le code 38 du témoin 15 devient `AutomaticIdentifier32` ; ses quatre octets sont lus comme `Int32` par la disposition explicite. Un mémo de stockage 8 n’est pas interprété comme une chaîne de huit octets.
 
 ## Données physiques
 
@@ -42,11 +42,14 @@ Toutes les classes ci-dessous appartiennent à l’espace de noms `WindevReader`
 | `HasSameIdentityAs(other)` | Compare GUID d’analyse et de table |
 | `MatchesAnalysis(analysis)` | Compare le GUID d’analyse |
 | `FindTableDefinition(analysis)` | Retrouve une table avec les deux correspondances ; sinon `null` |
-| `CreateFixedRecordLayout(analysis, dataOffset, recordCount)` | Profils WDD/FIC 28 et 31 fixes recoupés ; noms/types depuis le schéma, début/compte explicites |
+| `CreateFixedRecordLayout(analysis, dataOffset, recordCount)` | Profils WDD/FIC 28, 29 et 31 fixes recoupés ; noms/types depuis le schéma, début/compte explicites |
 | `ReadFixedRecords(layout)` | Vue paresseuse `HfsqlFixedRecordView` des emplacements |
 | `HfsqlFixedRecord.Values` | Dictionnaire de valeurs CLR par nom de champ |
 | `HfsqlFixedRecord.RawData` | Octets exacts de l’emplacement, exclus du JSON |
-| `ReadFlatIndex(index)` | Profil plat 31 au tag 7 ; clés et références brutes, sentinelle exclue |
+| `ReadFlatIndex(index)` | Profil plat 15/24/25/29/31 au tag 7 ; clés et références brutes, sentinelle exclue |
+| `ReadMemo(reference)` | Bloc MMO simple ; référence absolue, sans association FIC implicite |
+| `ReadMemo(fic, reference)` | Même lecture, avec comparaison des deux GUID du propriétaire |
+| `HfsqlMemoBlock.DecodeText(encoding)` | Longueur exacte, encodage CP1252 ou UTF-16LE explicitement choisi |
 | `ReadIndexRegion(index)` | Octets entre descripteurs terminaux, pas un index logique reconstruit |
 
 `HfsqlFixedRecordLayout` contient `DataOffset`, `RecordByteLength`, `RecordCount`, `Fields`. `HfsqlFixedField` contient `Name`, `Offset`, `ByteLength`, `Type`.
@@ -72,4 +75,10 @@ Ces noms de types explicites ne sont pas les codes binaires HFSQL. Les entiers s
 `WindevWindowPreview` expose `BmpData`, `Width`, `Height`, `SaveBmp(path)`, `GetRgba32()`. `WindevLibraryChunk.PayloadRelativeOffset` est relatif à la charge utile WDL. Utiliser `ReadStoredChunk` pour éviter de recalculer manuellement la position fichier.
 
 
-`HfsqlFlatIndex` expose `Offset`, `KeyByteLength`, `DeclaredEntryCount`, `TerminalSentinelOffset`, `Entries`. Chaque `HfsqlIndexEntry` donne son offset absolu, `Key` (mémoire exclue du JSON), `KeyHex` et les deux références `u64` brutes. Le lecteur valide le profil 31 observé et n’utilise pas les valeurs résiduelles d’autres régions comme entrées supplémentaires.
+`HfsqlFlatIndex` expose `Offset`, `KeyByteLength`, `DeclaredEntryCount`, `TerminalSentinelOffset`, `Entries`. Chaque `HfsqlIndexEntry` donne son offset absolu, `Key` (mémoire exclue du JSON), `KeyHex` et les deux références `u64` brutes. Le lecteur valide les profils 15/24/25/29/31 observés et n’utilise pas les valeurs résiduelles d’autres régions comme entrées supplémentaires.
+
+
+`HfsqlMemoBlock` expose `Offset`, `PayloadOffset`, `PayloadByteLength`, `StoredRegionByteLength` et `Data` (exclue du JSON). Les mots bruts restent accessibles avec des noms relatifs à leur position. Le décodage ne retire aucun NUL, préserve les zéros inclus dans la plage déclarée et vérifie les séquences UTF-16LE. Il n’effectue pas de détection d’encodage ni de parcours de chaînes de blocs. Les références de mémos issues de la disposition FIC sont de type CLR `ulong`.
+
+
+Dans le profil source 15, les identités et titres sont CP1252 Z ; les lignes et auteurs utilisent des longueurs explicites. Les `WindevString` candidats du buffer de propriétés ont un offset au texte et une taille incluant NUL, avec le diagnostic `HeuristicLegacyStrings`. Ils ne représentent pas des propriétés entièrement interprétées. Les pages [chaînes](../file-formats/windev/chaines.mdx) et [WDW](../file-formats/windev/wdw.mdx) précisent les repères.

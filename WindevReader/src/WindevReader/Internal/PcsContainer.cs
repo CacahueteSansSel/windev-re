@@ -1,88 +1,254 @@
 using System.Text;
 
 namespace WindevReader.Internal;
-internal sealed record PcsContainer(byte[] RawData, WindevHeader Header,
-    IReadOnlyList<WindevSection> Sections, List<WindevDiagnostic> Diagnostics)
+internal sealed record PcsContainer(
+    byte[] RawData,
+    WindevHeader Header,
+    IReadOnlyList<WindevSection> Sections,
+    List<WindevDiagnostic> Diagnostics)
 {
+    private const int directoryOffset = 85;
+    private const int directoryEntryLength = 5;
+    private const int compressionHeaderLength = 11;
     public static PcsContainer Read(string filename, WindevOpenOptions options)
     {
         options.Validate();
-        using var stream = File.OpenRead(filename);
-        if (stream.Length > options.MaxFileBytes) throw new WindevFormatException("File exceeds reader limit");
-        var data = new byte[(int)stream.Length]; stream.ReadExactly(data);
+
+        using FileStream stream = File.OpenRead(filename);
+
+        if (stream.Length > options.MaxFileBytes)
+        {
+            throw new WindevFormatException("File exceeds reader limit");
+        }
+
+        byte[] data = new byte[(int)stream.Length];
+
+        stream.ReadExactly(data);
+
         return Parse(data, options);
     }
+
     public static PcsContainer Parse(byte[] data, WindevOpenOptions options)
     {
-        options.Validate(); Binary.Require(data, 0, 85);
-        if (!data.AsSpan(0, 4).SequenceEqual("PCS\0"u8)) throw new WindevFormatException("Not a PCS document", 0);
-        if (Binary.U32(data, 4) != 20) throw new UnsupportedWindevFormatException("Unsupported PCS container revision", 4);
+        options.Validate();
+
+        ValidateHeader(data);
+
         ushort version = Binary.U16(data, 14);
-        if (version is not (28 or 31) && !options.AllowUntestedVersions)
-            throw new UnsupportedWindevFormatException($"WINDEV {version} was not validated; opt in with AllowUntestedVersions", 14);
-        int count = Binary.Count(Binary.U32(data, 81), 256, 81);
-        if (count == 0) throw new WindevFormatException("PCS section directory is empty", 81);
-        int tableEnd = 85 + count * 5; Binary.Require(data, 85, count * 5);
-        ulong payloadValue = 32UL + Binary.U32(data, 32);
-        int payload = Binary.Offset(payloadValue, data.Length);
-        if (payload < tableEnd) throw new WindevFormatException("PCS payload overlaps its section directory", 32);
-        long expectedEnd = payload;
-        for (int i = 0; i < count; i++) expectedEnd += Binary.U32(data, 86 + i * 5);
-        if (expectedEnd != data.Length) throw new WindevFormatException("PCS section lengths do not cover the file exactly", 85);
-        var diagnostics = new List<WindevDiagnostic>();
-        if (version is not (28 or 31)) diagnostics.Add(new("UntestedVersion", DiagnosticSeverity.Warning, $"WINDEV {version} is untested."));
-        var sections = new List<WindevSection>(); int offset = payload, totalDecoded = 0, blockCount = 0;
-        uint kind = Binary.U32(data, 8);
-        for (int i = 0; i < count; i++)
+        uint documentType = Binary.U32(data, 8);
+        bool knownVersion = version is 28 or 31 ||
+            (version is 15 or 24 or 25 or 29 && documentType is 0x1001 or 2 or 0x70004) ||
+            (version == 15 && documentType == 0x80002);
+
+        if (!knownVersion && !options.AllowUntestedVersions)
         {
-            byte tag = data[85 + i * 5]; int length = (int)Binary.U32(data, 86 + i * 5);
-            ReadOnlyMemory<byte> raw = data.AsMemory(offset, length);
-            var blocks = new List<WindevDecodedBlock>();
-            if ((kind & 0xffff) == 4 && i == 1 && length != 0)
+            throw new UnsupportedWindevFormatException($"WINDEV {version} was not validated; opt in with AllowUntestedVersions", 14);
+        }
+
+        int sectionCount = Binary.Count(Binary.U32(data, 81), 256, 81);
+        int payloadOffset = ReadPayloadOffset(data, sectionCount);
+        List<WindevDiagnostic> diagnostics = new List<WindevDiagnostic>();
+
+        if (!knownVersion)
+        {
+            diagnostics.Add(new WindevDiagnostic("UntestedVersion", DiagnosticSeverity.Warning, $"WINDEV {version} is untested."));
+        }
+
+        List<WindevSection> sections = new List<WindevSection>();
+        int sectionOffset = payloadOffset;
+        int totalDecodedBytes = 0;
+        int decodedBlockCount = 0;
+
+        for (int sectionIndex = 0; sectionIndex < sectionCount; sectionIndex++)
+        {
+            int entryOffset = directoryOffset + sectionIndex * directoryEntryLength;
+            byte tag = data[entryOffset];
+            int sectionLength = (int)Binary.U32(data, entryOffset + 1);
+            ReadOnlyMemory<byte> sectionData = data.AsMemory(sectionOffset, sectionLength);
+            List<WindevDecodedBlock> blocks;
+
+            if ((documentType & 0xffff) == 4 && sectionIndex == 1 && sectionLength != 0)
             {
-                byte[] decrypted = PcsLegacyCipher.DecodeAnalysis(raw.Span);
-                byte[] decoded = DecodeLzwWrapper(decrypted, 4, options, out int storedLength);
-                byte[] full = new byte[decoded.Length + 4]; decrypted.AsSpan(0, 4).CopyTo(full); decoded.CopyTo(full, 4);
-                CheckBudget(full.Length, options, ref totalDecoded, ref blockCount);
-                blocks.Add(new(0, storedLength + 4, "PCS-legacy + LZW", full, options));
+                WindevDecodedBlock schemaBlock = DecodeSchema(sectionData, options, ref totalDecodedBytes, ref decodedBlockCount);
+
+                blocks = new List<WindevDecodedBlock>
+                {
+                    schemaBlock
+                };
             }
             else
             {
-                for (int p = 0; p <= length - 11; p++)
+                bool legacyPropertyText = version == 15 && documentType == 2 && sectionIndex == 1;
+
+                blocks = FindCompressedBlocks(
+                    sectionData, options, ref totalDecodedBytes, ref decodedBlockCount, legacyPropertyText);
+
+                if (sectionIndex == 2 && tag == 2 && sectionLength > 0 && blocks.All(block => block.Offset != 4))
                 {
-                    if (raw.Span[p] != 4 || raw.Span[p + 9] != 0 || raw.Span[p + 10] != 0) continue;
-                    uint encoded = Binary.U32(raw.Span, p + 1), decodedSize = Binary.U32(raw.Span, p + 5);
-                    if (encoded < 2 || encoded > length - p - 11 || decodedSize > options.MaxDecodedBlockBytes) continue;
-                    byte[] decoded;
-                    try { decoded = DecodeLzwWrapper(raw.Span, p, options, out _); }
-                    catch (WindevFormatException) { continue; } // Candidate discovery in opaque property/image buffers.
-                    CheckBudget(decoded.Length, options, ref totalDecoded, ref blockCount);
-                    int storedLength = 11 + (int)encoded;
-                    blocks.Add(new(p, storedLength, "PCS-LZW", decoded, options)); p += storedLength - 1;
+                    throw new WindevFormatException("Code section could not be decoded", sectionOffset + 4);
                 }
-                // The executable code section always carries a direct, four-byte-prefixed LZW envelope in this corpus.
-                if (i == 2 && tag == 2 && length > 0 && blocks.All(b => b.Offset != 4))
-                    throw new WindevFormatException("Code section could not be decoded", offset + 4);
             }
-            sections.Add(new(i, tag, offset, raw, blocks.AsReadOnly(), options)); offset += length;
+
+            sections.Add(new WindevSection(sectionIndex, tag, sectionOffset, sectionData, blocks.AsReadOnly(), options));
+
+            sectionOffset += sectionLength;
         }
-        return new(data, new(20, kind, version, Binary.U16(data, 12), Encoding.ASCII.GetString(data, 70, 10), payload, count),
-            sections.AsReadOnly(), diagnostics);
+
+        WindevHeader header = new WindevHeader(
+            20,
+            documentType,
+            version,
+            Binary.U16(data, 12),
+            Encoding.ASCII.GetString(data, 70, 10),
+            payloadOffset,
+            sectionCount);
+
+        return new PcsContainer(data, header, sections.AsReadOnly(), diagnostics);
     }
+
+    private static void ValidateHeader(ReadOnlySpan<byte> data)
+    {
+        Binary.Require(data, 0, directoryOffset);
+
+        if (!data[..4].SequenceEqual("PCS\0"u8))
+        {
+            throw new WindevFormatException("Not a PCS document", 0);
+        }
+
+        if (Binary.U32(data, 4) != 20)
+        {
+            throw new UnsupportedWindevFormatException("Unsupported PCS container revision", 4);
+        }
+    }
+
+    private static int ReadPayloadOffset(ReadOnlySpan<byte> data, int sectionCount)
+    {
+        if (sectionCount == 0)
+        {
+            throw new WindevFormatException("PCS section directory is empty", 81);
+        }
+
+        int directoryLength = sectionCount * directoryEntryLength;
+
+        Binary.Require(data, directoryOffset, directoryLength);
+
+        int payloadOffset = Binary.Offset(32UL + Binary.U32(data, 32), data.Length);
+
+        if (payloadOffset < directoryOffset + directoryLength)
+        {
+            throw new WindevFormatException("PCS payload overlaps its section directory", 32);
+        }
+
+        long expectedEnd = payloadOffset;
+
+        for (int sectionIndex = 0; sectionIndex < sectionCount; sectionIndex++)
+        {
+            expectedEnd += Binary.U32(data, directoryOffset + 1 + sectionIndex * directoryEntryLength);
+        }
+
+        if (expectedEnd != data.Length)
+        {
+            throw new WindevFormatException("PCS section lengths do not cover the file exactly", directoryOffset);
+        }
+
+        return payloadOffset;
+    }
+
+    private static WindevDecodedBlock DecodeSchema(
+        ReadOnlyMemory<byte> sectionData,
+        WindevOpenOptions options,
+        ref int totalDecodedBytes,
+        ref int decodedBlockCount)
+    {
+        byte[] transformedData = PcsLegacyCipher.DecodeAnalysis(sectionData.Span);
+        byte[] decodedData = DecodeLzwWrapper(transformedData, 4, options, out int storedLength);
+        byte[] schemaData = new byte[decodedData.Length + 4];
+
+        transformedData.AsSpan(0, 4).CopyTo(schemaData);
+
+        decodedData.CopyTo(schemaData, 4);
+
+        CheckBudget(schemaData.Length, options, ref totalDecodedBytes, ref decodedBlockCount);
+
+        return new WindevDecodedBlock(0, storedLength + 4, "PCS-legacy + LZW", schemaData, options);
+    }
+
+    private static List<WindevDecodedBlock> FindCompressedBlocks(
+        ReadOnlyMemory<byte> sectionData,
+        WindevOpenOptions options,
+        ref int totalDecodedBytes,
+        ref int decodedBlockCount,
+        bool legacyText)
+    {
+        List<WindevDecodedBlock> blocks = new List<WindevDecodedBlock>();
+
+        for (int blockOffset = 0; blockOffset <= sectionData.Length - compressionHeaderLength; blockOffset++)
+        {
+            ReadOnlySpan<byte> data = sectionData.Span;
+
+            if (data[blockOffset] != 4 || data[blockOffset + 9] != 0 || data[blockOffset + 10] != 0)
+            {
+                continue;
+            }
+
+            uint encodedLength = Binary.U32(data, blockOffset + 1);
+            uint decodedLength = Binary.U32(data, blockOffset + 5);
+
+            if (encodedLength < 2 || encodedLength > data.Length - blockOffset - compressionHeaderLength || decodedLength > options.MaxDecodedBlockBytes)
+            {
+                continue;
+            }
+
+            byte[] decodedData;
+
+            try
+            {
+                decodedData = DecodeLzwWrapper(data, blockOffset, options, out _);
+            }
+            catch (WindevFormatException)
+            {
+                // Opaque regions may contain bytes that only resemble a compression envelope.
+                continue;
+            }
+
+            CheckBudget(decodedData.Length, options, ref totalDecodedBytes, ref decodedBlockCount);
+
+            int storedLength = compressionHeaderLength + (int)encodedLength;
+
+            blocks.Add(new WindevDecodedBlock(blockOffset, storedLength, "PCS-LZW", decodedData, options, legacyText));
+
+            blockOffset += storedLength - 1;
+        }
+
+        return blocks;
+    }
+
     public static byte[] DecodeLzwWrapper(ReadOnlySpan<byte> data, int offset, WindevOpenOptions options, out int storedLength)
     {
-        Binary.Require(data, offset, 11);
+        Binary.Require(data, offset, compressionHeaderLength);
+
         if (data[offset] != 4 || data[offset + 9] != 0 || data[offset + 10] != 0)
+        {
             throw new UnsupportedWindevFormatException("Unsupported compression envelope", offset);
-        int length = Binary.Count(Binary.U32(data, offset + 1), data.Length, offset + 1);
-        int expected = Binary.Count(Binary.U32(data, offset + 5), options.MaxDecodedBlockBytes, offset + 5);
-        Binary.Require(data, offset + 11, length); storedLength = length + 11;
-        return PcsLzw.Decode(data.Slice(offset + 11, length), expected, options.MaxDecodedBlockBytes);
+        }
+
+        int encodedLength = Binary.Count(Binary.U32(data, offset + 1), data.Length, offset + 1);
+        int decodedLength = Binary.Count(Binary.U32(data, offset + 5), options.MaxDecodedBlockBytes, offset + 5);
+
+        Binary.Require(data, offset + compressionHeaderLength, encodedLength);
+
+        storedLength = encodedLength + compressionHeaderLength;
+
+        return PcsLzw.Decode(data.Slice(offset + compressionHeaderLength, encodedLength), decodedLength, options.MaxDecodedBlockBytes);
     }
-    private static void CheckBudget(int length, WindevOpenOptions options, ref int total, ref int count)
+
+    private static void CheckBudget(int length, WindevOpenOptions options, ref int totalDecodedBytes, ref int decodedBlockCount)
     {
-        if (++count > options.MaxDecodedBlocks || length > options.MaxTotalDecodedBytes - total)
+        if (++decodedBlockCount > options.MaxDecodedBlocks || length > options.MaxTotalDecodedBytes - totalDecodedBytes)
+        {
             throw new WindevFormatException("Total decompression budget exceeded");
-        total += length;
+        }
+
+        totalDecodedBytes += length;
     }
 }

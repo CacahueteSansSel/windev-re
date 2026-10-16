@@ -129,3 +129,18 @@ La zone auxiliaire observée mesure huit octets par section dans ces familles. C
 ## Autres familles partageant la signature PCS
 
 Les WDL et fichiers physiques HFSQL partagent les 20 premiers octets, puis changent de structure. Il ne faut pas leur appliquer le compte à 81 ni le répertoire à 85 de ce chapitre documentaire. Voir les [bibliothèques WDL](./wdl.mdx) et l’[en-tête physique HFSQL](../hfsql/en-tete.mdx).
+
+## Périmètre des versions vérifiées
+
+| Famille | Versions acceptées sur les témoins fournis |
+| --- | --- |
+| WDP, WDD | 15, 24, 25, 28, 29, 31 |
+| WDW | 15, 24, 25, 29, 31 |
+| WDG | 28 et 31 ; aucun témoin 15, 24, 25 ou 29 fourni |
+| WDA | 15, 28 et 31 ; sections brutes seules pour le témoin 15 |
+| WDE | 31 ; aucun témoin 15, 24, 25 ou 29 fourni |
+| FIC, NDX | 15, 24, 25, 28, 29, 31, via le lecteur physique HFSQL |
+| MMO | 15, 24, 25, 29, 31, avec lecture ciblée de blocs simples |
+| WDL | 31, profil de patch étudié |
+
+Les témoins décrits ici sont binaires et commencent par `PCS\0`. La compatibilité ascendante annoncée par [PC SOFT](https://doc.pcsoft.fr/?2036002=) concerne son produit et ne fournit pas une spécification binaire : les marqueurs internes doivent être vérifiés par famille. Aucun format texte ni aucune version intermédiaire ne sont certifiés par cette étude.

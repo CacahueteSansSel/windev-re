@@ -106,7 +106,7 @@ Les historiques sont utiles pour comparer les changements de structures, mais il
 
 ## Limites
 
-La décompression et les frontières des quatre sections sont établies. La totalité de la sérialisation logique du WDA, sa représentation graphique et son petit bloc opaque final ne sont pas entièrement interprétés. La spécification typée la plus avancée est celle du [WDD](./wdd.mdx).
+Les frontières des quatre sections sont établies ; la décompression concerne les profils qui contiennent une enveloppe reconnue. La totalité de la sérialisation logique du WDA, sa représentation graphique et son petit bloc opaque final ne sont pas entièrement interprétés. La spécification typée la plus avancée est celle du [WDD](./wdd.mdx).
 
 
 ## Recoupement avec le WDA de PERSONNE, version 28
@@ -131,3 +131,39 @@ Dans le buffer logique décompressé `L`, le `u32` à **475** vaut 124. Le GUID 
 | FLAGADMIN | 2 933 ; 2 996 ; 3 306 ; 3 328 | Présent aussi dans le WDD |
 
 Ces CStrings ne sont pas des chaînes encadrées PCS. `DecodedBlocks[i].Strings` recense seulement les chaînes encadrées reconnues ; une liste vide n’implique pas l’absence de texte dans `Data`. Le lecteur WDA reste une API de sections et de buffers, sans modèle typé de son graphe éditable.
+
+
+## Profil 15 : sections brutes et section graphique vide
+
+Le témoin 15 mesure **374 octets**. Son type reste `0x00080002` ; le répertoire PCS contient quatre entrées à partir de 85. La charge utile commence à `32 + u32(F + 32) = 137`.
+
+| Section | Tag (`u8`) | Début absolu `F` | Longueur (`u32`) | Lecture |
+| --- | --- | --- | --- | --- |
+| 0 | 0 | 137 | 158 | Données brutes ; aucune enveloppe LZW reconnue |
+| 1 | 0 | 295 | 0 | Section graphique vide dans ce témoin |
+| 2 | 0 | 295 | 12 | Région auxiliaire brute |
+| 3 | 0 | 307 | 67 | Préfixe `3D 01`, puis 65 octets opaques |
+| Fin | — | 374 | 0 | Couverture exacte du fichier |
+
+Les sections 1 et 2 ont le même début : une section vide ne consomme aucun octet. Ce cas doit être conservé dans la liste des sections.
+
+### Valeurs observées dans la section 0
+
+`S` désigne le début de cette section, soit 137. Les lectures suivantes décrivent les valeurs brutes ; leur rôle sémantique reste inconnu.
+
+| Position | Taille | Type | Valeur | Commentaire |
+| --- | --- | --- | --- | --- |
+| `S + 0` | 4 | `u32` LE | 2304 (`0x00000900`) | Ce n’est pas une signature LZW 04 |
+| `S + 4` | 4 | `u32` LE | 1 | Aucun nom d’analyse n’est établi à cet endroit |
+| `S + 8` | 4 | `u32` LE | 150 | Égal à la longueur de section moins 8 ; observation limitée au témoin |
+| `S + 12` | 4 | `u32` LE | 1 | Rôle inconnu |
+| `S + 16` | 4 | `u32` LE | 1 | Rôle inconnu |
+| `[S + 20, S + 158)` | 138 | `octets[138]` | Valeurs numériques et zones nulles | Structure des objets non reconstruite |
+
+Le premier `u32` de la section 2 vaut 8 ; les huit octets suivants sont nuls. Le préfixe de la section 3 ne suffit pas à déterminer une transformation.
+
+### Comportement du lecteur
+
+`WdaWindevAnalysisSource.Open(filename)` accepte ce profil 15 et conserve les quatre sections dans `Sections`. Les listes `DecodedBlocks` sont vides : la bibliothèque ne fabrique aucun buffer décodé à partir des régions opaques. `Name` utilise le nom du fichier sans extension, car aucune identité interne n’est interprétée pour ce WDA.
+
+Le diagnostic `LowLevelAnalysisSource` reste présent. Ce témoin ne valide ni une description typée des tables dans le WDA, ni une équivalence de son contenu avec le WDD 15 fourni séparément. Pour les tables et rubriques, utiliser le [lecteur WDD](./wdd.mdx).

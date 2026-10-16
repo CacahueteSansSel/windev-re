@@ -17,11 +17,11 @@ Pour utiliser le lecteur, consulter la [documentation .NET](../../dotnet/index.m
 | --- | --- |
 | Extension | `.wdw` |
 | Type PCS | `0x00000002` |
-| Version du produit étudiée | 31 |
+| Versions étudiées | 15, 24, 25, 29 et 31 |
 | Sections | 12 |
-| Descripteur racine des propriétés observé | 610, soit `0x00000262` |
+| Descripteurs racine observés | 607 (15/24/25/29) ; 610 (31) |
 
-Le corpus comprend 22 fenêtres applicatives et six gabarits. Toutes les fenêtres de ce corpus sont enregistrées en version 31 ; une équivalence complète avec des fenêtres version 28 n'est pas validée.
+Le corpus initial comprend 22 fenêtres applicatives et six gabarits, enregistrés en version 31. Deux témoins 25/29 sont détaillés plus bas ; une équivalence complète avec des fenêtres version 28 n'est pas validée.
 
 ## Carte complète de FEN_Journal.wdw
 
@@ -164,3 +164,170 @@ La section 3 reste partiellement interprétée. La section 4 est désormais iden
 ## Limites
 
 Le titre et les dimensions du descripteur 610 sont identifiés. Les coordonnées des champs individuels, les styles, les liaisons de données, les images des contrôles individuels, les plans et la hiérarchie complète restent à cartographier. Les régions inconnues sont conservées dans les buffers décodés.
+
+## Carte mesurée en version 29
+
+| Section | Tag `u8` | Début dans `F` | Longueur | Bloc reconnu : offset relatif → longueur décodée |
+| --- | --- | --- | --- | --- |
+| 0 | 0 | 241 | 134 | Identité |
+| 1 | 17 | 375 | 3 403 | +28 → 13 982 |
+| 2 | 2 | 3 778 | 4 135 | +4 → 22 594, source WLangage |
+| 3 | 0 | 7 913 | 740 | +0 → 1 834 |
+| 4 | 8 | 8 653 | 14 876 | +0 → 1 920 066, BMP complet |
+| 5 | 19 | 23 529 | 62 | Auxiliaire |
+| 6 | 0 | 23 591 | 0 | Vide |
+| 7 | 0 | 23 591 | 0 | Vide |
+| 8 | 25 | 23 591 | 253 | +24 → 316 |
+| 9 | 10 | 23 844 | 36 | +12 → 24 |
+| 10 | 0 | 23 880 | 0 | Vide |
+| 11 | 6 | 23 880 | 25 | +0 → 35 |
+| Fin | — | 23 905 | 0 | Fin exclusive |
+
+### Descripteur racine 607
+
+Dans le premier buffer de propriétés décompressé `B`, le `u32` à **4** vaut **607**, au lieu de 610 dans le profil 31. La première chaîne encadrée commence à 8 et finit à 29.
+
+| Offset dans `B` | Taille | Type | Valeur / sens |
+| --- | --- | --- | --- |
+| 37 | 4 | `i32` lu depuis `u32` | X : 0 |
+| 41 | 4 | `i32` lu depuis `u32` | Y : 0 |
+| 45 | 4 | `u32` | Largeur : 800 |
+| 49 | 4 | `u32` | Hauteur : 600 |
+| 592 | 17 | Chaîne encadrée | Titre de quatre caractères |
+
+Le déplacement du titre est `fin_première_chaîne + 563`, contre `+571` dans le profil 31. Les coordonnées restent à `fin_première_chaîne + 8`. Le lecteur sélectionne le profil par la version et le descripteur ; il ne déplace pas arbitrairement toutes les propriétés de huit octets.
+
+La [prévisualisation BMP](./previsualisation-bmp.mdx) confirme indépendamment 800 × 600, 32 bits, BGRX, compression 3 et pixels à +66 dans le BMP. Sa longueur vaut `66 + 800 × 600 × 4`. L’image est récupérée du WDW, sans génération d’une nouvelle image.
+
+Les événements source contiennent les traitements d’ajout d’une personne et de relecture du premier enregistrement, avec affectation de NOM, PRENOM et DESC. Ces lignes sont lues comme des données ; aucun WLangage n’est exécuté.
+
+## Profil de fenêtre observé en version 25
+
+Le fichier mesure **9 888 octets**. Le répertoire commence comme dans le profil 29 : douze sections, charge utile à `F[241]`. Les tags 5 et 11 des sections vides 7 et 10 diffèrent du témoin 29 ; leur absence de charge utile ne permet pas d’en attribuer la fonction.
+
+| Section | Tag `u8` | Début dans `F` | Longueur stockée | Bloc : offset dans la section → octets décodés |
+| --- | --- | --- | --- | --- |
+| 0 | 0 | 241 | 134 | — |
+| 1 | 17 | 375 | 2848 | +28 → 10611 |
+| 2 | 2 | 3223 | 2272 | +4 → 13398 |
+| 3 | 0 | 5495 | 612 | +0 → 1433 |
+| 4 | 8 | 6107 | 3366 | +0 → 67866 |
+| 5 | 19 | 9473 | 62 | — |
+| 6 | 0 | 9535 | 0 | — |
+| 7 | 5 | 9535 | 0 | — |
+| 8 | 25 | 9535 | 292 | +24 → 412 |
+| 9 | 10 | 9827 | 36 | +12 → 24 |
+| 10 | 11 | 9863 | 0 | — |
+| 11 | 6 | 9863 | 25 | +0 → 35 |
+
+### Racine : comparer les coordonnées plutôt que supposer un décalage
+
+Soit `B` le premier buffer de propriétés décompressé et `E` la fin exclusive de sa première chaîne encadrée. Les nombres de cette table sont mesurés, et chaque ligne est un profil distinct.
+
+| Champ | Type / taille | Témoin 25 | Témoin 29 | Profil 31 |
+| --- | --- | --- | --- | --- |
+| Mot initial auxiliaire | `u32`, 4 octets | Absent avant le descripteur | Présent à `B+0` | Présent à `B+0` |
+| Descripteur racine | `u32`, 4 octets | 607 à `B+0` | 607 à `B+4` | 610 à `B+4` |
+| Première chaîne | Encadrée, variable | `B+4`, fin `E=25` | `B+8`, fin `E=29` | `B+8`, fin variable |
+| X, Y, largeur, hauteur | Quatre entiers 32 bits | `E+8`, donc 33, 37, 41, 45 | `E+8`, donc 37, 41, 45, 49 | `E+8` |
+| Titre | Chaîne encadrée | `E+506 = B+531` | `E+563 = B+592` | `E+571` |
+
+Le témoin 25 annonce X=0, Y=0, largeur=800 et hauteur=600. Le titre encadré à 531 mesure 17 octets, pour quatre caractères. Les positions de toutes les autres propriétés ne se déduisent pas d’une translation unique : la différence de titre dépasse celle du préfixe racine. Le lecteur exige la version, la position de la première chaîne et la valeur du descripteur avant d’exposer `Bounds` et `Caption`.
+
+### Prévisualisation réduite
+
+Le bloc de section 4 donne un **BMP standard de 67 866 octets**, au lieu d’un bitmap de la taille de la fenêtre :
+
+| Offset dans le BMP | Taille | Type | Valeur mesurée |
+| --- | --- | --- | --- |
+| 0 | 2 | ASCII | `BM` |
+| 2 | 4 | `u32` LE | 67 866 |
+| 10 | 4 | `u32` LE | Début des pixels : 66 |
+| 14 | 4 | `u32` LE | En-tête DIB : 40 |
+| 18 / 22 | 4 chacun | `i32` LE | Largeur 150 / hauteur positive 113 |
+| 28 | 2 | `u16` LE | 32 bits par pixel |
+| 30 | 4 | `u32` LE | 3 : `BI_BITFIELDS` |
+| 54 / 58 / 62 | 4 chacun | `u32` LE | Masques R=`0x00FF0000`, G=`0x0000FF00`, B=`0x000000FF` |
+| 66 | 67 800 | Pixels BGRX | Lignes de bas en haut ; `150 × 113 × 4` |
+
+Le BMP est réduit à 150 × 113 alors que les propriétés décrivent 800 × 600. Les dimensions de prévisualisation ne remplacent donc jamais les dimensions de fenêtre. L’enveloppe LZW et le BMP restent standards pour le profil reconnu ; aucun codec PNG/JPEG supplémentaire n’est nécessaire. La [page BMP](./previsualisation-bmp.mdx) décrit les contrôles et la conversion des pixels.
+
+La section source contient **36 événements**, dont l’ajout des valeurs NOM, PRENOM et DESC avec `HAjoute`. Le tag de corps `0x14` et le tag de propriétaire `0x0B` sont décrits dans le [chapitre WLangage](./wlangage.mdx). Les noms de contrôles restent des indices pour `Elements`, sans décodage complet de leur hiérarchie.
+
+## Profil de fenêtre observé en version 24
+
+Le WDW 24 mesure **9 973 octets**, comporte **12 sections** et une charge utile à **241**. Sa racine utilise le même profil que le témoin 25 : le descripteur `u32 = 607` est à `B[0]`, et la première chaîne encadrée commence à `B[4]`, sans mot auxiliaire de quatre octets avant le descripteur.
+
+| Section | Tag `u8` | Offset fichier | Octets stockés | Bloc reconnu : offset relatif → octets décodés |
+| --- | --- | --- | --- | --- |
+| 0 | 0 | 241 | 134 | — |
+| 1 | 17 | 375 | 2811 | +28 → 10147 |
+| 2 | 2 | 3186 | 2121 | +4 → 13353 |
+| 3 | 0 | 5307 | 657 | +0 → 1504 |
+| 4 | 8 | 5964 | 3552 | +0 → 67866 |
+| 5 | 19 | 9516 | 62 | — |
+| 6 | 0 | 9578 | 0 | — |
+| 7 | 5 | 9578 | 0 | — |
+| 8 | 25 | 9578 | 334 | +24 → 511 |
+| 9 | 10 | 9912 | 36 | +12 → 24 |
+| 10 | 11 | 9948 | 0 | — |
+| 11 | 6 | 9948 | 25 | +0 → 35 |
+
+| Champ dans le premier buffer de propriétés B | Offset | Taille / type | Valeur |
+| --- | --- | --- | --- |
+| Descripteur | 0 | 4, `u32` LE | 607 |
+| Nom de fenêtre | 4 | 21, chaîne encadrée | Nom technique de huit caractères ; fin E=25 |
+| X | 33 = E+8 | 4, `i32` lu depuis `u32` | 0 |
+| Y | 37 | 4, `i32` lu depuis `u32` | 0 |
+| Largeur | 41 | 4, `u32` | 800 |
+| Hauteur | 45 | 4, `u32` | 600 |
+| Titre | 531 = E+506 | 17, chaîne encadrée | Quatre caractères |
+
+Le buffer de propriétés mesure **10 147 octets**, contre 10 611 pour le témoin 25. Les chemins de gabarits et les propriétés restantes diffèrent : cette égalité de racine ne justifie pas d’appliquer un décalage constant à tout le document.
+
+La section 4 produit un BMP complet de **67 866 octets**, avec signature `BM`, pixels à **66**, dimensions **150 × 113**, profondeur **32 bits** et compression BMP **3 (`BI_BITFIELDS`)**. Les masques et le stockage BGRX sont identiques au profil 25 décrit plus haut. La fenêtre mesure pourtant **800 × 600** : le lecteur conserve séparément les dimensions de la fenêtre et celles de la miniature.
+
+Le source compte **36 événements et 83 lignes**, avec propriétaires au tag `0x0B` et corps au tag `0x14`. Les contrôles et l’ajout de PERSONNE sont lisibles. Les styles complets, les coordonnées de chaque contrôle et la hiérarchie restent partiels ; aucune lecture de ces propriétés opaques n’est déduite de la seule version.
+
+## Profil de fenêtre observé en version 15
+
+Le WDW 15 mesure **9 968 octets**. Les douze sections commencent à **241** et utilisent encore les enveloppes LZW communes.
+
+| Section | Tag `u8` | Début dans F | Octets stockés | Bloc reconnu : offset relatif → octets décodés |
+| --- | --- | --- | --- | --- |
+| 0 | 0 | 241 | 118 | — |
+| 1 | 17 | 359 | 2763 | +28 → 9385 |
+| 2 | 2 | 3122 | 1381 | +4 → 8371 |
+| 3 | 0 | 4503 | 451 | +0 → 1100 |
+| 4 | 8 | 4954 | 4695 | +0 → 67866 |
+| 5 | 19 | 9649 | 53 | — |
+| 6 | 0 | 9702 | 0 | — |
+| 7 | 5 | 9702 | 0 | — |
+| 8 | 25 | 9702 | 205 | +24 → 256 |
+| 9 | 10 | 9907 | 36 | +12 → 24 |
+| 10 | 11 | 9943 | 0 | — |
+| 11 | 6 | 9943 | 25 | +0 → 35 |
+
+### Racine et textes sans encadrement
+
+Le buffer de propriétés B mesure **9 385 octets**. Les textes concernés sont des **CP1252 Z**, et non des chaînes encadrées. Le nom interne contient un caractère accentué ; la bibliothèque utilise ce nom enregistré, indépendamment de l’orthographe du nom de fichier.
+
+| Champ dans B | Offset | Taille | Type / valeur |
+| --- | --- | --- | --- |
+| Descripteur racine | 0 | 4 | `u32` LE = 607 |
+| Nom de fenêtre | 4 | 13 | CP1252 Z ; douze caractères, fin exclusive E=17 |
+| X | 25 = E+8 | 4 | `i32` lu depuis `u32`, valeur 0 |
+| Y | 29 | 4 | `i32` lu depuis `u32`, valeur 0 |
+| Largeur | 33 | 4 | `u32`, valeur 800 |
+| Hauteur | 37 | 4 | `u32`, valeur 600 |
+| Titre | 486 = E+469 | 19 | CP1252 Z ; dix-huit caractères avec accent |
+
+Le descripteur vaut aussi 607 dans les témoins 24/25/29, mais cela ne garantit ni l’encodage des chaînes ni le déplacement du titre. En 15, le lecteur utilise `E+469` ; les profils 24/25 utilisent `E+506` avec une première chaîne encadrée.
+
+Les noms, catégories et autres textes trouvés dans les propriétés restent **des candidats** : sans signature d’encadrement, une suite terminée par NUL peut aussi provenir de données binaires. Le diagnostic `HeuristicLegacyStrings` le précise. Le nom racine, le titre et les dimensions utilisent leurs structures et offsets vérifiés ; les éléments de contrôles conservent leur qualification de catégories inférées. Les candidats ne constituent pas une cartographie complète des propriétés.
+
+### Source et miniature
+
+Le buffer source de **8 371 octets** restitue **23 événements et 57 lignes**. Le traitement d’ajout de PERSONNE est rattaché au propriétaire du bouton grâce à son nom à longueur explicite suivi du groupe `0x0A`. La chaîne « PROCEDURE » présente dans une autre structure n’est pas transformée artificiellement en ligne d’événement. Voir les [structures source 15](./wlangage.mdx#source-de-la-version-15--longueurs-explicites).
+
+La section 4 donne un BMP standard de **67 866 octets**, miniature **150 × 113** de la fenêtre **800 × 600** : signature `BM`, DIB 40, pixels à 66, profondeur 32 bits, compression BMP 3 et masques BGRX déjà décrits. Les coordonnées et tailles des contrôles, styles et hiérarchie complète ne sont pas reconstitués.

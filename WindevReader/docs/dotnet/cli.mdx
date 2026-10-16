@@ -12,9 +12,10 @@ L’outil se lance avec `dotnet artifacts/cli/WindevReader.Cli.dll`. Dans les ex
 | `code FICHIER [SORTIE]` | Source WLangage des documents source reconnus |
 | `preview WDW SORTIE.bmp` | BMP de prévisualisation |
 | `extract-resource WDL INDICE SORTIE` | Ressource d’une entrée WDL |
-| `layout FIC WDD DEBUT COMPTE [SORTIE]` | Disposition fixe nommée depuis un WDD 28 ou 31 compatible |
-| `index-entries NDX INDICE [SORTIE]` | Clés et références du profil plat NDX 31 reconnu |
+| `layout FIC WDD DEBUT COMPTE [SORTIE]` | Disposition fixe nommée depuis un WDD 15, 24, 25, 28, 29 ou 31 compatible |
+| `index-entries NDX INDICE [SORTIE]` | Clés et références du profil plat NDX 15/24/25/29/31 reconnu |
 | `records FIC DISPOSITION.json [SORTIE]` | Valeurs des emplacements physiques de la disposition explicite |
+| `memo MMO REFERENCE ENCODAGE [SORTIE]` | Texte d’un bloc simple avec encodage explicite |
 | `corpus DOSSIER [SORTIE]` | Rapport récursif d’ouverture des familles reconnues |
 
 Sans argument de sortie facultatif, le résultat textuel est écrit sur la sortie standard. Le code retour est 0 en cas de succès, 1 pour une erreur traitée et 2 lorsque les arguments initiaux sont insuffisants. Les arguments DEBUT, COMPTE et INDICE sont des entiers décimaux ; les indices commencent à zéro.
@@ -67,3 +68,14 @@ dotnet WindevReader.Cli.dll index-entries jour_ferie.ndx 3 mois-jour-index.json
 ```
 
 Le WDD doit être celui des tables 31. La clé composée de l’indice 3 est vérifiée dans le témoin JOUR_FERIE ; cet indice ne nomme pas la même rubrique dans tous les NDX.
+
+
+## Mémo du témoin 29
+
+```sh
+dotnet WindevReader.Cli.dll layout PERSONNE.fic SuperMailExtra.wdd 1730 1 personne29-layout.json
+dotnet WindevReader.Cli.dll records PERSONNE.fic personne29-layout.json personne29.json
+dotnet WindevReader.Cli.dll memo PERSONNE.mmo 210 cp1252 description.txt
+```
+
+La commande `memo` travaille sur une référence absolue explicite ; elle ne reçoit pas le FIC et n’en vérifie donc pas les GUID. Utiliser l’overload C# avec propriétaire pour cette vérification supplémentaire. La sortie texte utilise le comportement d’écriture UTF-8 habituel de la CLI, après décodage de la source CP1252 ou UTF-16LE.

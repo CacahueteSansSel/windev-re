@@ -8,11 +8,14 @@ sidebar_position: 5
 ```csharp
 using WindevReader;
 
-var fenetre = WdwWindevWindow.Open("FEN_Notes.wdw");
-if (fenetre.Preview is { } image)
+WdwWindevWindow window = WdwWindevWindow.Open("FEN_Notes.wdw");
+
+if (window.Preview is { } image)
 {
     image.SaveBmp("previsualisation.bmp");
+
     Console.WriteLine($"{image.Width} × {image.Height}");
+
     byte[] pixels = image.GetRgba32();
 }
 ```
@@ -22,10 +25,13 @@ if (fenetre.Preview is { } image)
 ## Inventorier un patch
 
 ```csharp
-var patch = WdlWindevLibrary.Open("SuperNoteExtra.wdl.1.0.77.0.6");
-foreach (var entree in patch.Entries)
-    Console.WriteLine($"{entree.Index}: {entree.LogicalName}, " +
-        $"ressource={entree.IsResource}, segments={entree.Chunks.Count}");
+WdlWindevLibrary patch = WdlWindevLibrary.Open("SuperNoteExtra.wdl.1.0.77.0.6");
+
+foreach (WindevLibraryEntry entry in patch.Entries)
+{
+    Console.WriteLine($"{entry.Index}: {entry.LogicalName}, " +
+        $"ressource={entry.IsResource}, segments={entry.Chunks.Count}");
+}
 ```
 
 Le lecteur reconnaît le patch fourni de révision 3102. Le suffixe numérique ne change pas son type PCS.
@@ -33,8 +39,9 @@ Le lecteur reconnaît le patch fourni de révision 3102. Le suffixe numérique n
 ## Extraire une ressource
 
 ```csharp
-var ressource = patch.Entries.Single(e => e.OriginalPath == "ARCHIVE.PNG");
-byte[] contenu = patch.ReadResource(ressource);
+WindevLibraryEntry resource = patch.Entries.Single(e => e.OriginalPath == "ARCHIVE.PNG");
+byte[] contenu = patch.ReadResource(resource);
+
 File.WriteAllBytes("archive-extraite.png", contenu);
 ```
 
@@ -43,9 +50,10 @@ File.WriteAllBytes("archive-extraite.png", contenu);
 ## Consulter une fenêtre compilée
 
 ```csharp
-var entreeFenetre = patch.Entries.Single(e => e.LogicalName == "FEN_Journal");
-var proprietes = patch.ReadWindowProperties(entreeFenetre);
-Console.WriteLine(proprietes.DecodedByteLength);
+WindevLibraryEntry windowEntry = patch.Entries.Single(e => e.LogicalName == "FEN_Journal");
+WindevDecodedBlock properties = patch.ReadWindowProperties(windowEntry);
+
+Console.WriteLine(properties.DecodedByteLength);
 ```
 
 Ce résultat est un buffer de propriétés reconnu, pas un WDW source reconstruit. Le bytecode compilé n’est pas décompilé en WLangage.

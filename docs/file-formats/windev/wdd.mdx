@@ -107,7 +107,7 @@ Les cartes suivantes concernent le corpus initial 31. Les marqueurs 28 sont indi
 | Extension | `.wdd` |
 | Type PCS | `0x00070004` |
 | Sections du spécimen | 2 |
-| Versions validées | 28 et 31 |
+| Versions validées | 28, 29 et 31 |
 | Variante interne du schéma | `0x0060 / 0x061D` |
 | Analyse courante | 6 tables, 37 rubriques, génération 24 |
 
@@ -379,4 +379,123 @@ Les GUID lient une description à ses fichiers physiques. Le WDD applicatif four
 
 ## Une taille du schéma n’est pas toujours une zone de valeur FIC
 
-Le type 28 avec le marqueur à `Q+31` égal à 1 de MOISJOUR est maintenant recoupé avec une clé composée NDX. Cette rubrique n’ajoute pas quatre octets au FIC : le pas JOUR_FERIE reste 70. L’API expose `RawCompositeMarker` et `IsCompositeKey` pour ce profil vérifié, et `Type` vaut `CompositeKey` au lieu du libellé binaire générique antérieur. Les autres tuples restent bruts ou conservent leur interprétation antérieure. Voir le [cas HFSQL 31](../hfsql/cas-hfsql31.mdx).
+Le type 28 avec le marqueur à `Q+31` égal à 1 de MOISJOUR est maintenant recoupé avec une clé composée NDX. Cette rubrique n’ajoute pas quatre octets au FIC : le pas JOUR_FERIE reste 70. L’API expose `RawCompositeMarker` et `IsCompositeKey` pour ce profil vérifié, et `Type` vaut `CompositeKey` au lieu du libellé binaire générique antérieur. Les autres tuples restent bruts ou conservent leur interprétation antérieure. Voir les [clés NDX](../hfsql/ndx.mdx) et la comparaison des marqueurs ci-dessous.
+
+## WDD : marqueurs propres à la version 29
+
+La section 0 est vide à 111 ; la section 1 commence à 111 et mesure 1 208 octets. La transformation héritée et le LZW existants produisent un schéma `H` de **2 287 octets**, checksum vérifié. Sa variante interne reste `0x0060 / 0x061D`.
+
+| Élément | Offset dans `H` | Type / valeur |
+| --- | --- | --- |
+| Métadonnées d’analyse | 252 | Génération 1 |
+| Table PERSONNE | 662 | Marqueur `u8 = 0x21` |
+| Longueur brute d’emplacement | 716 | `u32 = 127` |
+| Index des noms de tables | 2 203 | Une entrée |
+| Répertoire de rubriques | 2 049 | Quatre entrées |
+| Répertoire des liaisons | 1 014 | Compte nul ; pas de liaison non vide validée en 29 |
+
+| Rubrique | Description dans `H` | Marqueur `u8` | Suffixe typé `Q` | Code `u16` à `Q` | Déclaré `u16` à `Q+7` | Stockage `u16` à `Q+9` |
+| --- | --- | --- | --- | --- | --- | --- |
+| IDPERSONNE | 1 014 | `0x17` | 1 100 | 24 | 8 | 8 |
+| NOM | 1 303 | `0x17` | 1 371 | 2 | 50 | 51 |
+| PRENOM | 1 547 | `0x17` | 1 621 | 2 | 50 | 51 |
+| DESC | 1 803 | `0x17` | 1 871 | 29 | 8 | 8 |
+
+Le code de rubrique **29** de DESC indique un mémo texte ; ce nombre n’est pas la version WINDEV. Ses huit octets sont une référence de mémo, pas une chaîne de huit caractères.
+
+## Clé composée et rubrique binaire
+
+Le profil WDD de MOISJOUR est `RawTypeCode = 28`, `RawFlags = 0x1C`, `Size = 2`, `StorageSize = 4`. Son suffixe typé commence à `H[9028]` ; l’octet à **Q+31**, donc `H[9059]`, vaut 1. Il est exposé comme `RawCompositeMarker`. La rubrique binaire HASH du même schéma porte aussi le code 28 et les flags 0x1C, mais cet octet vaut 0 : les flags seuls ne distinguent donc pas ces deux cas.
+
+`IsCompositeKey` exige le type 28 et ce marqueur à 1 ; le libellé devient `CompositeKey`. L’association du marqueur est recoupée sur MOISJOUR et reste une interprétation du profil étudié. Les autres rubriques binaires conservent leur type. Les composants et l’ordre de la clé sont vérifiés dans le NDX, pas reconstitués automatiquement par le lecteur WDD.
+
+## Profil de schéma observé en version 25
+
+Le WDD fourni mesure **1 317 octets**. Deux sections commencent à `F[111]` : la section 0 est vide et la section 1 mesure **1 206 octets**. La transformation héritée puis le LZW produisent un schéma `H` de **2 171 octets** ; le checksum est vérifié. Les mots de révision interne restent `0x0060` et `0x061D`. Le LZW fournit 2 167 octets, auxquels s’ajoute le préfixe de quatre octets conservé dans `H`.
+
+### Comparaison des marqueurs
+
+| Structure | Type | Version 15 | Version 24 | Version 25 | Version 28 | Version 29 | Version 31 |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| Enregistrement de table | `u8` à son début | `0x12` | `0x19` | `0x19` | `0x20` | `0x21` | `0x22` |
+| Enregistrement de rubrique | `u8` à son début | `0x10` | `0x15` | `0x15` | `0x16` | `0x17` | `0x20` |
+
+Ces octets sont des marqueurs de structure, pas les versions majeures. Aucune formule d’incrémentation ne permet de certifier les versions 26, 27 ou 30 ; le lecteur sélectionne explicitement les profils observés.
+
+| Élément | Offset dans `H` | Type / valeur |
+| --- | --- | --- |
+| Racine de l’analyse | 252 | Tag `u8 = 5`, génération 1 après les chaînes |
+| Table PERSONNE | 662 | Tag `u8 = 0x19` |
+| Longueur d’emplacement | 716 | `u32` LE = 127 |
+| Répertoire des liaisons | 1 012 | Compte 0 ; aucune liaison non vide validée en 25 |
+| Répertoire des rubriques | 1 933 | Quatre entrées, précédées de quatre octets |
+| Index des noms de tables | 2 087 | Une entrée |
+| Fin exclusive | 2 171 | Fin du schéma décodé |
+
+| Rubrique | Début dans `H` | Tag `u8` | Suffixe typé `Q` | Type `u16` à Q | Taille `u16` à Q+7 | Stockage `u16` à Q+9 |
+| --- | --- | --- | --- | --- | --- | --- |
+| IDPERSONNE | 1 012 | `0x15` | 1 098 | 24 | 8 | 8 |
+| NOM | 1 268 | `0x15` | 1 342 | 2 | 50 | 51 |
+| PRENOM | 1 485 | `0x15` | 1 565 | 2 | 50 | 51 |
+| DESC | 1 714 | `0x15` | 1 788 | 29 | 8 | 8 |
+
+Le lecteur retrouve les descriptions par les pointeurs du répertoire, puis lit les chaînes de longueur variable avant le suffixe typé. Il ne réutilise pas les offsets absolus du témoin 29. Le type 29 de DESC désigne le mémo texte, indépendamment de la version WINDEV ; ses huit octets de stockage contiennent ici une référence vers le MMO. L’identité des fichiers physiques est contrôlée avec les deux GUID, qui ne sont pas publiés dans les exemples.
+
+## Profil de schéma observé en version 24
+
+Le WDD 24 mesure **1 305 octets** : la section 0 est vide à 111 ; la section 1 commence à 111 et mesure **1 194 octets**. La transformation héritée et le LZW déjà reconnus produisent `H`, un schéma de **2 153 octets**, préfixe de quatre octets inclus. La somme de contrôle est vérifiée ; la révision interne reste `0x0060 / 0x061D`.
+
+| Élément | Offset dans H | Type / valeur |
+| --- | --- | --- |
+| Racine d’analyse | 252 | Tag `u8 = 5`, génération 1 après les chaînes |
+| Table PERSONNE | 662 | Tag `u8 = 0x19`, comme le témoin 25 |
+| Taille d’emplacement | 716 | `u32` LE = 127 |
+| Répertoire de liaisons | 1 012 | Compte 0 ; aucune liaison non vide validée en 24 |
+| Répertoire de rubriques | 1 915 | Quatre entrées de 12 octets, après quatre octets de préfixe |
+| Index des noms de tables | 2 069 | Une entrée |
+| Fin exclusive | 2 153 | Fin du schéma |
+
+| Ordre du répertoire | Rubrique | Début dans H | Tag `u8` | Suffixe Q | Code `u16` à Q | Taille `u16` à Q+7 | Stockage `u16` à Q+9 |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| 0 | IDPERSONNE | 1 012 | `0x15` | 1 098 | 24 | 8 | 8 |
+| 1 | PRENOM | 1 268 | `0x15` | 1 342 | 2 | 50 | 51 |
+| 2 | NOM | 1 491 | `0x15` | 1 559 | 2 | 50 | 51 |
+| 3 | DESC | 1 702 | `0x15` | 1 770 | 29 | 8 | 8 |
+
+**PRENOM précède NOM dans ce schéma**, contrairement aux témoins 25/29. C’est une différence de contenu observée, pas une règle de tri propre à WINDEV 24. Le lecteur conserve l’ordre du répertoire et ne trie pas les rubriques par nom. La correspondance avec les champs physiques dépend de cet ordre et des deux GUID, jamais du seul nom PERSONNE.
+
+Les marqueurs de table `0x19` et de rubrique `0x15` sont les mêmes qu’en 25. La différence de longueur et les nouveaux offsets ne demandent aucun nouveau codec. Les GUID et libellés applicatifs privés sont remplacés dans la documentation ; les tableaux gardent les positions mesurées.
+
+## Profil de schéma observé en version 15
+
+Le WDD 15 mesure **1 279 octets**. Sa section 0 est vide à 111 ; sa section 1 commence à 111 et mesure **1 168 octets**. La transformation héritée et le LZW reconnus produisent un schéma H de **1 892 octets** : quatre octets de préfixe conservés et **1 888 octets décompressés**. La révision interne reste `0x0060 / 0x061D` et la somme de contrôle est vérifiée.
+
+### Marqueurs et répertoires
+
+| Élément | Offset dans H | Taille / type | Valeur ou structure |
+| --- | --- | --- | --- |
+| Première entrée de répertoire | 8 | `u64` + `u32` | Pointeur racine 192, compte 1 |
+| Racine d’analyse | 192 | `u8` puis CString | **Tag 4**, contre 5 dans les témoins récents |
+| Génération | 272 | `u32` LE | 1 après les quatre chaînes de la racine |
+| Table PERSONNE | 586 | `u8` | **Tag `0x12`** |
+| Segment fixe après les six chaînes de table | 628 | 48 octets | Métadonnées de table |
+| Taille d’emplacement | 640 = 628+12 | `u32` LE | **123** |
+| Répertoire de liaisons | 900 | Pointeur du répertoire, compte 0 | Aucune liaison non vide validée en 15 |
+| Répertoire de rubriques | 1 666 | Préfixe 4 + quatre entrées de 12 | Pointeurs vers les descriptions |
+| Index des noms de tables | 1 808 | CString + pointeur `u64` | Une table |
+| Fin exclusive | 1 892 | — | Fin du schéma reconstruit |
+
+La racine à **192**, au lieu de 252 dans les témoins récents, ne doit pas être remplacée par une constante dans le lecteur. Le pointeur `u64` à H+8 fait foi. Les GUID applicatifs ne sont pas publiés ; leur égalité est vérifiée entre l’analyse et les trois fichiers physiques.
+
+### Rubriques et identifiant de quatre octets
+
+| Rubrique | Début dans H | Tag `u8` | Suffixe Q | Code `u16` à Q | Taille `u16` à Q+7 | Stockage `u16` à Q+9 |
+| --- | --- | --- | --- | --- | --- | --- |
+| IDPERSONNE | 900 | `0x10` | 986 | **38 (`0x26`)** | **4** | **4** |
+| NOM | 1 118 | `0x10` | 1 192 | 2 | 50 | 51 |
+| PRENOM | 1 297 | `0x10` | 1 377 | 2 | 50 | 51 |
+| DESC | 1 488 | `0x10` | 1 559 | 29 | 8 | 8 |
+
+Le code **38** est exposé comme `AutomaticIdentifier32`, avec une largeur de stockage de quatre octets. Le code 24 des identifiants de huit octets des autres témoins n’est pas réutilisé par approximation. La disposition FIC choisit une lecture explicite `Int32` de ce profil ; l’unique valeur positive 1 ne suffit pas à démontrer le domaine numérique complet du moteur.
+
+L’ordre est NOM puis PRENOM et les valeurs sont conservées sous ces noms, même si leur signification humaine semble inversée. Le type 29 de DESC reste une référence de mémo de huit octets. Les marqueurs `0x10` des rubriques et `0x10` des événements source appartiennent à des structures différentes : un octet seul n’identifie pas une famille globale d’enregistrement.

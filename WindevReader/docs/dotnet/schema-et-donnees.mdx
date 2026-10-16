@@ -8,18 +8,25 @@ sidebar_position: 4
 ```csharp
 using WindevReader;
 
-var analyse = WddWindevAnalysis.Open("SuperNoteExtra.wdd");
-foreach (var table in analyse.Tables)
+WddWindevAnalysis analysis = WddWindevAnalysis.Open("SuperNoteExtra.wdd");
+
+foreach (WindevDataTable table in analysis.Tables)
 {
     Console.WriteLine($"{table.Name}, longueur brute : {table.RawRecordByteLength}");
-    foreach (var rubrique in table.Fields)
-        Console.WriteLine($"{rubrique.Name}: {rubrique.Type}, " +
-            $"déclaré {rubrique.Size}, stocké {rubrique.StorageSize}");
+
+    foreach (WindevDataField field in table.Fields)
+    {
+        Console.WriteLine($"{field.Name}: {field.Type}, " +
+            $"déclaré {field.Size}, stocké {field.StorageSize}");
+    }
 }
 
-foreach (var liaison in analyse.Relations)
-    Console.WriteLine($"{liaison.SourceTable}.{liaison.SourceField} -> " +
-        $"{liaison.TargetTable}.{liaison.TargetField}");
+
+foreach (WindevDataRelation relation in analysis.Relations)
+{
+    Console.WriteLine($"{relation.SourceTable}.{relation.SourceField} -> " +
+        $"{relation.TargetTable}.{relation.TargetField}");
+}
 ```
 
 `Relations` expose le profil non vide 28 étudié. Les cardinalités et les règles de contrainte restent des mots bruts dans `RawFlags` ; consulter les diagnostics pour un profil non pris en charge.
@@ -29,37 +36,39 @@ foreach (var liaison in analyse.Relations)
 ## Vérifier que le FIC correspond à l’analyse
 
 ```csharp
-var fic = FicHfsqlDataFile.Open("PERSONNE.fic");
-var index = NdxHfsqlIndexFile.Open("PERSONNE.ndx");
-Console.WriteLine(fic.HasSameIdentityAs(index)); // comparaison des deux GUID
-Console.WriteLine(fic.MatchesAnalysis(analyse)); // GUID d’analyse
-var definition = fic.FindTableDefinition(analyse); // null si incompatibles
+FicHfsqlDataFile fic = FicHfsqlDataFile.Open("PERSONNE.fic");
+NdxHfsqlIndexFile index = NdxHfsqlIndexFile.Open("PERSONNE.ndx");
+
+Console.WriteLine(fic.HasSameIdentityAs(index)); // Compares both GUIDs.
+
+Console.WriteLine(fic.MatchesAnalysis(analysis)); // Compares the analysis GUID.
+
+WindevDataTable? definition = fic.FindTableDefinition(analysis); // Returns null when the identities do not match.
 ```
 
 Les noms de fichiers ne prouvent pas cette association. `FindTableDefinition` exige le GUID d’analyse et le GUID de table. Une correspondance ne déchiffre pas les données et ne vérifie pas un mot de passe.
 
 ## Lire PERSONNE avec les noms du schéma
 
-Avec le WDD correspondant, la bibliothèque 0.5.0 peut construire la disposition des rubriques fixes. Dans le témoin, le premier emplacement commence à **1 776** et le fichier contient **cinq emplacements**. Ces deux paramètres viennent de l’étude physique ; l’API ne les découvre pas.
+Avec le WDD correspondant, la bibliothèque 0.9.0 peut construire la disposition des rubriques fixes. Dans le témoin, le premier emplacement commence à **1 776** et le fichier contient **cinq emplacements**. Ces deux paramètres viennent de l’étude physique ; l’API ne les découvre pas.
 
 ```csharp
-var disposition = fic.CreateFixedRecordLayout(analyse,
-    dataOffset: 1776, recordCount: 5);
+HfsqlFixedRecordLayout layout = fic.CreateFixedRecordLayout(analysis, dataOffset: 1776, recordCount: 5);
+HfsqlFixedRecordView records = fic.ReadFixedRecords(layout);
 
-var emplacements = fic.ReadFixedRecords(disposition);
-foreach (var emplacement in emplacements)
+foreach (HfsqlFixedRecord record in records)
 {
-    Console.WriteLine($"Offset {emplacement.Offset} : " +
-        $"{emplacement.Values["NOM"]}, " +
-        $"{emplacement.Values["PRENOM"]}, " +
-        $"âge {emplacement.Values["AGE1"]}, " +
-        $"admin {emplacement.Values["FLAGADMIN"]}");
+    Console.WriteLine($"Offset {record.Offset} : " +
+        $"{record.Values["NOM"]}, " +
+        $"{record.Values["PRENOM"]}, " +
+        $"âge {record.Values["AGE1"]}, " +
+        $"admin {record.Values["FLAGADMIN"]}");
 }
 ```
 
 Pour ce profil, `IDPERSONNE` devient un `long`, `NOM` et `PRENOM` des `string`, `AGE1` un `int` et `FLAGADMIN` un `bool`. Les noms viennent du schéma, même si les valeurs saisies semblent inverser prénom et nom. Le lecteur n’altère pas les valeurs pour les faire correspondre à une convention humaine.
 
-La construction vérifie les GUID, les versions concordantes 28 ou 31, les types et tailles pris en charge, le préfixe observé de neuf octets, le pas annoncé et les bornes physiques. Elle refuse les mémos et types non pris en charge. PERSONNE_MESSAGE est décrite dans le WDD mais son mémo TEXTE n’est pas un champ texte fixe ; ses données physiques n’ont pas été fournies.
+La construction vérifie les GUID, les versions concordantes 15, 24, 25, 28, 29 ou 31, les types et tailles pris en charge, le préfixe observé de neuf octets, le pas annoncé et les bornes physiques. Elle refuse les types non pris en charge ; un mémo texte sur huit octets fournit désormais une référence `ulong`, pas son contenu. PERSONNE_MESSAGE est décrite dans le WDD mais son mémo TEXTE n’est pas un champ texte fixe ; ses données physiques n’ont pas été fournies.
 
 ![Gestion et rubriques d’un emplacement de 124 octets](../file-formats/assets/personne.svg)
 
@@ -68,13 +77,14 @@ La construction vérifie les GUID, les versions concordantes 28 ou 31, les types
 Lorsque la disposition est déjà connue, la méthode historique reste disponible. Les noms et types ci-dessous sont alors choisis par l’appelant.
 
 ```csharp
-var manuelle = new HfsqlFixedRecordLayout(1776, 124, 5,
-    new HfsqlFixedField[] {
-        new("IdentifiantBrut", 9, 8, HfsqlFixedFieldType.Int64),
-        new("TexteA", 17, 51, HfsqlFixedFieldType.Cp1252Z)
-    });
-var vue = fic.ReadFixedRecords(manuelle);
-Console.WriteLine(vue[0].Values["TexteA"]);
+HfsqlFixedRecordLayout manualLayout = new HfsqlFixedRecordLayout(
+    1776,
+    124,
+    5,
+    new HfsqlFixedField[] { new("IdentifiantBrut", 9, 8, HfsqlFixedFieldType.Int64), new("TexteA", 17, 51, HfsqlFixedFieldType.Cp1252Z) });
+HfsqlFixedRecordView recordView = fic.ReadFixedRecords(manualLayout);
+
+Console.WriteLine(recordView[0].Values["TexteA"]);
 ```
 
 La vue valide et copie les définitions de champs, puis décode un emplacement à chaque accès. `SlotIndex` commence à zéro ; `Offset` est absolu dans le FIC. `RawData` de l’emplacement conserve ses octets exacts. Les champs peuvent se recouvrir pour permettre plusieurs lectures explicites d’une même zone.
@@ -89,26 +99,116 @@ Les cinq emplacements incluent une valeur d’identifiant tout à 1, lue -1 en `
 
 `index.IndexDescriptors` donne les descripteurs de 60 octets et leurs pointeurs bruts. `ReadIndexRegion(i)` renvoie les octets entre deux descripteurs terminaux ; ce n’est pas une reconstruction de l’index logique.
 
-`MmoHfsqlMemoFile.Open` expose l’en-tête et `RawHeaderSlots`, sans suivre l’allocation des mémos. `WdaWindevAnalysisSource.Open` expose les sections et buffers décompressés de l’analyse éditable ; l’accès typé aux tables passe par le WDD.
+`MmoHfsqlMemoFile.Open` expose l’en-tête et `RawHeaderSlots`, avec lecture explicite des blocs simples 15/24/25/29/31, sans suivre l’allocation générale des mémos. `WdaWindevAnalysisSource.Open` expose les sections et buffers décompressés de l’analyse éditable ; l’accès typé aux tables passe par le WDD.
 
 
 ## Profils fixes WINDEV 31
 
 ```csharp
-var jours = FicHfsqlDataFile.Open("jour_ferie.fic");
-var joursLignes = jours.ReadFixedRecords(
-    jours.CreateFixedRecordLayout(analyse, 1763, 8));
+FicHfsqlDataFile holidays = FicHfsqlDataFile.Open("jour_ferie.fic");
+HfsqlFixedRecordView holidayRecords = holidays.ReadFixedRecords(holidays.CreateFixedRecordLayout(analysis, 1763, 8));
+FicHfsqlDataFile weeks = FicHfsqlDataFile.Open("semaine_cours.fic");
+HfsqlFixedRecordView weekRecords = weeks.ReadFixedRecords(weeks.CreateFixedRecordLayout(analysis, 1627, 1));
 
-var semaines = FicHfsqlDataFile.Open("semaine_cours.fic");
-var semainesLignes = semaines.ReadFixedRecords(
-    semaines.CreateFixedRecordLayout(analyse, 1627, 1));
-Console.WriteLine(semainesLignes[0].Values["DATEDEB"]); // "20260504"
+Console.WriteLine(weekRecords[0].Values["DATEDEB"]); // "20260504"
 
-var indexJours = NdxHfsqlIndexFile.Open("jour_ferie.ndx");
-foreach (var entree in indexJours.ReadFlatIndex(3).Entries)
-    Console.WriteLine($"{entree.KeyHex}: {entree.RawReference1}");
+NdxHfsqlIndexFile holidayIndex = NdxHfsqlIndexFile.Open("jour_ferie.ndx");
+
+foreach (HfsqlIndexEntry entry in holidayIndex.ReadFlatIndex(3).Entries)
+{
+    Console.WriteLine($"{entry.KeyHex}: {entry.RawReference1}");
+}
 ```
 
 Utiliser ici le WDD 31 qui décrit ces deux tables. La clé composée MOISJOUR est omise de la disposition FIC : elle n’a pas de valeur physique supplémentaire. JOUR et MOIS deviennent des `byte`. Les dates `Date8Z` restent des `string` de huit chiffres, avec un NUL obligatoire dans le stockage. Le lecteur ne valide pas le calendrier et ne convertit pas ces chaînes en horodatages.
 
 `ReadFlatIndex` restitue les clés brutes (`Key`, `KeyHex`) et deux références (`RawReference1`, `RawReference2`). La sentinelle finale est contrôlée puis exclue ; `DeclaredEntryCount` la compte. Aucun nom de rubrique n’est inféré automatiquement. La nature des deux références reste ouverte : dans ces témoins, identifiants et rangs physiques coïncident. Le parcours général du B-tree n’est pas implémenté.
+
+
+## Mémo texte du projet 29
+
+```csharp
+WddWindevAnalysis analysis29 = WddWindevAnalysis.Open("SuperMailExtra.wdd");
+FicHfsqlDataFile data29 = FicHfsqlDataFile.Open("PERSONNE.fic");
+MmoHfsqlMemoFile memos29 = MmoHfsqlMemoFile.Open("PERSONNE.mmo");
+HfsqlFixedRecord record29 = data29.ReadFixedRecords(data29.CreateFixedRecordLayout(analysis29, 1730, 1))[0];
+ulong reference29 = (ulong)record29.Values["DESC"];
+HfsqlMemoBlock memo29 = memos29.ReadMemo(data29, reference29);
+
+Console.WriteLine(memo29.DecodeText(HfsqlMemoTextEncoding.Cp1252));
+```
+
+Le nom SuperMailExtra est fictif : utiliser le WDD 29 correspondant aux GUID. Le premier emplacement est à 1730, le pas vaut 127 et la référence du témoin vaut 210. Le contenu du mémo est à 250 sur 20 octets. Ces octets ont une longueur explicite : les zéros suivants ne sont pas un terminateur inclus dans les données.
+
+`ReadMemo(fic, reference)` vérifie les GUID. `ReadMemo(reference)` permet l’accès de bas niveau sans propriétaire. Le bloc brut est exposé dans `Data`. Le choix CP1252 ou UTF-16LE est explicite et ne dépend pas automatiquement de la version. Les blocs transformés, chaînés ou d’autres profils sont refusés. Voir les [structures MMO](../file-formats/hfsql/mmo.mdx).
+
+
+## Ouvrir le profil 25
+
+Les six lecteurs WDP, WDW, WDD, FIC, NDX et MMO acceptent les témoins 25 sans `AllowUntestedVersions`. L’API reste identique :
+
+```csharp
+WddWindevAnalysis analysis25 = WddWindevAnalysis.Open("SuperNoteExtra.wdd");
+FicHfsqlDataFile data25 = FicHfsqlDataFile.Open("PERSONNE.fic");
+MmoHfsqlMemoFile memos25 = MmoHfsqlMemoFile.Open("PERSONNE.mmo");
+HfsqlFixedRecordLayout layout25 = data25.CreateFixedRecordLayout(analysis25, 1746, 1);
+HfsqlFixedRecord record25 = data25.ReadFixedRecords(layout25)[0];
+HfsqlMemoBlock memo25 = memos25.ReadMemo(data25, (ulong)record25.Values["DESC"]);
+
+Console.WriteLine(memo25.DecodeText(HfsqlMemoTextEncoding.Cp1252));
+
+HfsqlFlatIndex index25 = NdxHfsqlIndexFile.Open("PERSONNE.ndx").ReadFlatIndex(0);
+
+Console.WriteLine(index25.Entries[0].KeyHex);
+```
+
+Utiliser les fichiers compagnons du projet 25 correspondant réellement aux GUID. La position 1746 et le compte 1 sont propres au témoin, fournis explicitement. Les différences binaires sont détaillées dans [FIC](../file-formats/hfsql/fic.mdx), [MMO](../file-formats/hfsql/mmo.mdx) et [NDX](../file-formats/hfsql/ndx.mdx). Ne pas réutiliser la position 1730 du témoin 29.
+
+Pour les fenêtres 25, `Bounds` expose 800 × 600 dans le témoin et `Preview` expose sa miniature 150 × 113. Conserver cette distinction lors d’un affichage ou d’un export ; voir [WDW](../file-formats/windev/wdw.mdx). Les WDA, WDG, WDE et WDL 25 n’ont pas été fournis et ne sont pas certifiés compatibles.
+
+
+## Ouvrir le profil 24
+
+Les six familles fournies en 24 s’ouvrent sans option expérimentale. Le début et le compte des emplacements FIC restent explicites :
+
+```csharp
+WddWindevAnalysis analysis24 = WddWindevAnalysis.Open("SuperNoteExtra.wdd");
+FicHfsqlDataFile data24 = FicHfsqlDataFile.Open("PERSONNE.fic");
+MmoHfsqlMemoFile memos24 = MmoHfsqlMemoFile.Open("PERSONNE.mmo");
+HfsqlFixedRecordLayout layout24 = data24.CreateFixedRecordLayout(analysis24, 1734, 1);
+HfsqlFixedRecord record24 = data24.ReadFixedRecords(layout24)[0];
+ulong memoReference24 = (ulong)record24.Values["DESC"];
+HfsqlMemoBlock memo24 = memos24.ReadMemo(data24, memoReference24);
+
+Console.WriteLine(memo24.DecodeText(HfsqlMemoTextEncoding.Cp1252));
+```
+
+Utiliser le WDD 24 correspondant réellement aux deux GUID. Son ordre est PRENOM puis NOM ; la disposition est construite depuis le schéma, sans reprendre celle du témoin 25. La référence du témoin est 210 et la charge utile ne mesure que quatre octets. Ces limites sont détaillées dans les pages [FIC](../file-formats/hfsql/fic.mdx), [WDD](../file-formats/windev/wdd.mdx) et [MMO](../file-formats/hfsql/mmo.mdx).
+
+
+## Ouvrir le profil 15
+
+Le WDD est indispensable pour choisir la largeur correcte de l’identifiant du témoin 15. Le début et le compte des emplacements restent explicites.
+
+```csharp
+WddWindevAnalysis analysis15 = WddWindevAnalysis.Open("SuperNoteExtra.wdd");
+FicHfsqlDataFile data15 = FicHfsqlDataFile.Open("PERSONNE.FIC");
+MmoHfsqlMemoFile memos15 = MmoHfsqlMemoFile.Open("PERSONNE.mmo");
+HfsqlFixedRecordLayout layout15 = data15.CreateFixedRecordLayout(analysis15, 1688, 1);
+
+HfsqlFixedRecord record15 = data15.ReadFixedRecords(layout15)[0];
+int identifier15 = (int)record15.Values["IDPERSONNE"];
+ulong reference15 = (ulong)record15.Values["DESC"];
+HfsqlMemoBlock memo15 = memos15.ReadMemo(data15, reference15);
+
+Console.WriteLine(memo15.DecodeText(HfsqlMemoTextEncoding.Cp1252));
+
+NdxHfsqlIndexFile index15 = NdxHfsqlIndexFile.Open("PERSONNE.ndx");
+HfsqlFlatIndex page15 = index15.ReadFlatIndex(0);
+
+Console.WriteLine(page15.Entries[0].KeyHex);
+```
+
+Utiliser les compagnons réellement liés par leurs GUID. Le pas vaut 123 et l’identifiant devient un `int`, pas un `long` ; les huit octets de DESC restent une référence `ulong`. Le mémo du témoin commence à 210, ses données à 250 sur 46 octets. Les pages [WDD](../file-formats/windev/wdd.mdx), [FIC](../file-formats/hfsql/fic.mdx), [NDX](../file-formats/hfsql/ndx.mdx) et [MMO](../file-formats/hfsql/mmo.mdx) donnent les structures et les limites.
+
+Les extensions majuscules sont acceptées par le répartiteur de signatures. Le chemin transmis doit néanmoins respecter la casse réelle sur un système de fichiers sensible à la casse. Les références du projet WDP 15 ne sont pas reconstituées : une liste vide accompagnée de `NoConfigurationDirectory` n’est pas un inventaire complet.

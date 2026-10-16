@@ -1,0 +1,31 @@
+{
+  "DataOffset": 1734,
+  "RecordByteLength": 127,
+  "RecordCount": 1,
+  "Fields": [
+    {
+      "Name": "IDPERSONNE",
+      "Offset": 9,
+      "ByteLength": 8,
+      "Type": "Int64"
+    },
+    {
+      "Name": "PRENOM",
+      "Offset": 17,
+      "ByteLength": 51,
+      "Type": "Cp1252Z"
+    },
+    {
+      "Name": "NOM",
+      "Offset": 68,
+      "ByteLength": 51,
+      "Type": "Cp1252Z"
+    },
+    {
+      "Name": "DESC",
+      "Offset": 119,
+      "ByteLength": 8,
+      "Type": "UInt64"
+    }
+  ]
+}

@@ -71,4 +71,4 @@ Aucune routine ne prétend valider un mot de passe sans le vérifier. Les fichie
 
 L’utilisateur a déclaré le couple PERSONNE sans mot de passe. Son en-tête porte WINDEV 28 et les octets `00 80 00 00` à partir de 86 ; les valeurs répétées en fin du FIC sont lisibles sans déchiffrement. Cependant, la région `[90, 584)` reste opaque. Ce témoin réfute l’idée que toute région opaque d’un FIC prouve une protection par mot de passe. Le codec de ses métadonnées n’est pas identifié.
 
-Le mode nul à 88 et le bit `0x8000` à 86 ne suffisent pas à établir un détecteur universel de mot de passe. `PasswordStatus` reste `Unknown` : l’API distingue ce qu’elle peut détecter de l’information fournie par l’utilisateur. Aucun nouveau mot de passe n’a été recherché ou extrait. Voir le [cas détaillé](./cas-personne.mdx).
+Le mode nul à 88 et le bit `0x8000` à 86 ne suffisent pas à établir un détecteur universel de mot de passe. `PasswordStatus` reste `Unknown` : l’API distingue ce qu’elle peut détecter de l’information fournie par l’utilisateur. Aucun nouveau mot de passe n’a été recherché ou extrait. Voir le [cas détaillé](./fic.mdx).

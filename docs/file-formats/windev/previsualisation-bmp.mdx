@@ -104,3 +104,6 @@ Les 22 fenêtres applicatives ont les mêmes dimensions dans le BMP et dans leur
 ## API et portée
 
 `WdwWindevWindow.Preview` expose les dimensions, masques, orientation, `BmpData`, `SaveBmp(filename)` et `GetRgba32()`. Les variantes BMP non prises en charge donnent un diagnostic ; un BMP reconnu mais incohérent est rejeté. Les images des contrôles individuels restent distinctes de cette prévisualisation globale.
+
+
+Les témoins supplémentaires conservent ce BMP standard : le WDW 29 fournit 800 × 600 (1 920 066 octets), le WDW 25 fournit une miniature 150 × 113 (67 866 octets), bien que sa fenêtre mesure 800 × 600. Les cartes des sections et les offsets de propriétés sont regroupés dans la [page WDW](./wdw.mdx).

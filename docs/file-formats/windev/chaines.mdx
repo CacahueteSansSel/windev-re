@@ -110,3 +110,15 @@ Les groupes de huit octets situés après certains noms de fenêtres ou de proc�
 | Longueur en octets, pas en caractères | Décalage après un accent |
 
 Une extraction de chaînes imprimables seule ne permet pas de distinguer un nom de contrôle, une ligne de code, un chemin ou un commentaire. Leur sens dépend du conteneur ou de l'enregistrement environnant.
+
+## Textes du profil 15
+
+Le profil 15 ne remplace pas tous les textes par un même encodage de structure. Trois représentations sont vérifiées :
+
+| Contexte | Longueur / terminaison | Encodage choisi | Coordonnées de WindevString |
+| --- | --- | --- | --- |
+| Identité et propriétés racine WDP/WDW | CP1252 Z | CP1252 | Pour les candidats de propriétés, offset au texte et taille incluant NUL |
+| Noms de groupe et lignes source | `u32` de longueur, puis octets sans NUL | CP1252 | Noms de groupe : offset au préfixe, taille `4+N` |
+| Schéma WDD | CString dans les descriptions | Chaînes de noms et GUID, accents recoupés | Offsets dans le schéma H |
+
+Les candidats de propriétés sans encadrement sont heuristiques et signalés comme tels. Les chaînes d’identité, le titre et les champs source utilisent leurs emplacements vérifiés. Aucun octet absent des fichiers n’est ajouté pour simuler une enveloppe moderne.
