@@ -12,6 +12,10 @@ internal static class Windev24Tests
         NdxHfsqlIndexFile ndx = NdxHfsqlIndexFile.Open(Path.Combine(directory, "Exe/PERSONNE.ndx"));
         MmoHfsqlMemoFile mmo = MmoHfsqlMemoFile.Open(Path.Combine(directory, "Exe/PERSONNE.mmo"));
 
+        check(window.Elements.Single(element => element.Name == "SAI_Nom").Bounds == new WindevBounds(6, 6, 220, 22), "Version 24 control geometry corroborates the common header");
+        check(window.Elements.Single(element => element.Name == "SAI_Nom").Caption == "Nom", "Version 24 input caption corroborates the common field");
+        check(window.Elements.Single(element => element.Name == "BTN_Créé").Caption == "créé", "Version 24 button caption uses its version-specific position");
+
         foreach (IWindevFile file in new IWindevFile[]
         {
             project,

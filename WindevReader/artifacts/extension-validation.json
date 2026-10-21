@@ -1,6 +1,6 @@
 {
-  "Version": "0.9.1",
-  "ResearchDate": "2026-10-16",
+  "Version": "0.10.0",
+  "ResearchDate": "2026-10-21",
   "CorpusFilesOpened": 559,
   "OriginalSourceDocuments": 98,
   "WindowPreviews": 32,
@@ -14,7 +14,7 @@
   "CompiledWindowPropertyBuffers": 2,
   "PhysicalHfsqlFiles": 445,
   "DistinctPhysicalHfsqlContents": 29,
-  "Assertions": 3097,
+  "Assertions": 3134,
   "Net8BuildPassed": true,
   "DocusaurusBuildPassed": true,
   "Limitations": [
@@ -28,7 +28,7 @@
   "NdxDescriptorByteLength": 60,
   "AdditionalAnalysisDocuments": 3,
   "DocumentationMdxPages": 35,
-  "SvgDiagrams": 6,
+  "SvgDiagrams": 7,
   "DocumentationExamplesCompile": true,
   "Wdd28Tables": 2,
   "Wdd28Fields": 8,
@@ -43,9 +43,21 @@
   "NdxDistinctFileContents": 11,
   "Windev24SourceDocuments": 3,
   "PublicApiPreserved": true,
-  "SourceCSharpFiles": 37,
+  "SourceCSharpFiles": 39,
   "ImplicitLocalTypes": 0,
-  "OriginalCorpusSummariesIdentical": true,
+  "OriginalCorpusSummariesIdentical": false,
   "Windev15SourceDocuments": 4,
-  "Windev15ProjectReferencesReconstructed": false
+  "Windev15ProjectReferencesReconstructed": false,
+  "WindowControlBoundsVersions": [
+    24,
+    25,
+    29,
+    31
+  ],
+  "DeferredButtonCaptionVersions": [
+    24,
+    25,
+    29
+  ],
+  "OriginalCorpusSummariesIdenticalExceptUiDiagnosticText": true
 }

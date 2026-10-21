@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="500" viewBox="0 0 1000 500" role="img" aria-labelledby="title description">
+  <title id="title">Rectangles de conception des champs du témoin WDW 29</title>
+  <desc id="description">Les champs Nom, Prenom et Desc commencent à X 24, aux Y 24, 64 et 104. Deux boutons sont placés à Y 188. Les coordonnées sont les entiers du buffer décompressé.</desc>
+  <rect width="1000" height="500" rx="16" fill="#f8fafc"/>
+  <g font-family="system-ui, sans-serif" fill="#0f172a">
+    <text x="36" y="40" font-size="23" font-weight="700">Position et taille enregistrées dans le WDW</text>
+    <text x="36" y="66" font-size="15" fill="#475569">Extrait de la zone de conception · rectangles des champs, libellé compris</text>
+    <g transform="translate(90 105)">
+      <rect width="800" height="240" rx="4" fill="white" stroke="#94a3b8" stroke-width="2"/>
+      <path d="M0 -12 V-4 M24 -12 V-4 M0 -8 H24" stroke="#0284c7"/>
+      <text x="12" y="-17" text-anchor="middle" fill="#0369a1" font-size="13">24</text>
+      <path d="M-16 0 H-5 M-16 24 H-5 M-11 0 V24" stroke="#0284c7"/>
+      <text x="-21" y="18" text-anchor="end" fill="#0369a1" font-size="13">24</text>
+      <rect x="24" y="24" width="272" height="31" rx="4" fill="#dbeafe" stroke="#2563eb"/>
+      <text x="34" y="45" font-size="14">Nom</text>
+      <text x="310" y="45" fill="#1d4ed8" font-size="14">SAI_Nom · (24, 24) · 272 × 31</text>
+      <rect x="24" y="64" width="272" height="31" rx="4" fill="#dbeafe" stroke="#2563eb"/>
+      <text x="34" y="85" font-size="14">Prenom</text>
+      <rect x="24" y="104" width="504" height="70" rx="4" fill="#dbeafe" stroke="#2563eb"/>
+      <text x="34" y="127" font-size="14">Desc</text>
+      <text x="34" y="153" fill="#1d4ed8" font-size="13">(24, 104) · 504 × 70</text>
+      <rect x="24" y="188" width="106" height="31" rx="5" fill="#ede9fe" stroke="#7c3aed"/>
+      <text x="77" y="209" text-anchor="middle" fill="#5b21b6" font-size="14">créé</text>
+      <rect x="140" y="188" width="106" height="31" rx="5" fill="#ede9fe" stroke="#7c3aed"/>
+      <text x="193" y="209" text-anchor="middle" fill="#5b21b6" font-size="14">ouvre</text>
+      <text x="270" y="209" fill="#5b21b6" font-size="14">Boutons : hauteur 31 · largeur 106</text>
+      <text x="800" y="260" text-anchor="end" fill="#64748b" font-size="13">Zone illustrée limitée aux 240 premières unités en Y</text>
+    </g>
+    <rect x="36" y="398" width="928" height="75" rx="10" fill="#e2e8f0"/>
+    <text x="54" y="424" font-size="15" font-weight="600">Lecture binaire : R = position après la chaîne encadrée du nom</text>
+    <text x="54" y="451" font-size="15">X = i32(R + 8) · Y = i32(R + 12) · largeur = i32(R + 16) · hauteur = i32(R + 20)</text>
+  </g>
+</svg>

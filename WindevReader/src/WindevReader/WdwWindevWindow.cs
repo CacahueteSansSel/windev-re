@@ -25,7 +25,9 @@ public sealed class WdwWindevWindow : WindevDocument
             throw new WindevFormatException("Window property section could not be decoded");
         }
 
-        Elements = UiReader.Elements(PropertyBuffers, Name, CodeBlocks);
+        IReadOnlyList<WindevUiElement> candidates = UiReader.Elements(PropertyBuffers, Name, CodeBlocks, includeDuplicateNames: true);
+
+        Elements = WindowControlReader.Read(candidates, PropertyBuffers, Header.WindevVersion, options.MaxStringBytes);
 
         WindevSection? imageSection = Sections.ElementAtOrDefault(4);
         WindevDecodedBlock? image = imageSection?.RawTag == 8 ? imageSection.DecodedBlocks.FirstOrDefault(decodedBlock => decodedBlock.Offset == 0) : null;
@@ -92,7 +94,7 @@ public sealed class WdwWindevWindow : WindevDocument
 
         Warn(
             "PartialUiSemantics",
-            "Property buffers and source events are decoded. Element kinds are inferred from names; layout/styles/bindings and hierarchy are not fully mapped.",
+            "Property buffers and source events are decoded. Recognized control descriptors expose design bounds and selected captions. Element kinds remain inferred from names; visibility, opacity, input state, tab access, styles, bindings and hierarchy are not mapped.",
             1);
     }
 

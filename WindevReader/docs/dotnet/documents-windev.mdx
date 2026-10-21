@@ -39,6 +39,39 @@ foreach (WindevUiElement element in window.Elements)
 
 Les catégories d’éléments sont inférées à partir des préfixes de noms : elles ne constituent pas une reconstruction complète des classes de contrôles. Certaines propriétés, dont `Bounds`, peuvent être absentes d’un profil non reconnu.
 
+## Positions et libellés des champs
+
+Depuis la version 0.10.0, les éléments WDW reconnus possèdent une géométrie et, selon le profil, un libellé. L’exemple conserve les valeurs absentes comme telles :
+
+```csharp
+foreach (WindevUiElement element in window.Elements)
+{
+    if (element.Bounds is WindevBounds controlBounds)
+    {
+        Console.WriteLine($"{element.Name}: X={controlBounds.X}, Y={controlBounds.Y}, " +
+            $"Width={controlBounds.Width}, Height={controlBounds.Height}");
+    }
+
+    Console.WriteLine(element.Caption ?? "Caption profile not recognized");
+
+    if (element.Layout is WindevUiLayout layout)
+    {
+        Console.WriteLine($"Descriptor {layout.RawDescriptor}, bounds offset {layout.BoundsOffset}");
+
+        foreach (WindevUiRawValue rawValue in layout.RawValues)
+        {
+            Console.WriteLine($"D[{rawValue.Offset}], {rawValue.ByteLength} bytes: {rawValue.Value}");
+        }
+    }
+}
+```
+
+`Bounds`, `Caption` et `Layout` sont optionnels. `Caption == null` signifie que le libellé n’est pas reconnu ; cela ne signifie pas nécessairement qu’il est vide. Les positions de `Layout` sont relatives au buffer décompressé associé à l’élément, identifié par `BufferOffset`, et ne sont pas des offsets du fichier compressé.
+
+Les rectangles sont lus dans les profils 24/25/29/31 conformes au descripteur attendu. Les libellés différés des boutons sont reconnus uniquement dans les témoins 24/25/29. Le profil 15 conserve la lecture antérieure de la racine et des candidats de noms ; il ne reçoit pas ce décodage des rectangles enfants.
+
+`RawValues` ne transforme pas les valeurs `0` et `1` en booléens supposés. Visibilité, opacité, état, accès par Tab et type de saisie ne sont pas encore attribués à des champs binaires vérifiés. Le détail des positions, exemples et limites est dans la [page WDW](../file-formats/windev/wdw.mdx#position-taille-et-libellé-des-champs).
+
 ## Procédures et événements source
 
 ```csharp

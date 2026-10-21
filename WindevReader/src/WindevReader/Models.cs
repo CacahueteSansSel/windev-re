@@ -52,7 +52,31 @@ public sealed record WindevUiElement(
     string InferredKind,
     int BufferOffset,
     int Offset,
-    IReadOnlyList<WindevString> NearbyStrings);
+    IReadOnlyList<WindevString> NearbyStrings)
+{
+    /// <summary>Serialized design coordinates when a recognized control descriptor is present.</summary>
+    public WindevBounds? Bounds { get; init; }
+
+    /// <summary>Caption read at a checked field position; null means the caption profile is not recognized.</summary>
+    public string? Caption { get; init; }
+
+    /// <summary>Decoded-buffer positions and uninterpreted numeric values for the recognized layout.</summary>
+    public WindevUiLayout? Layout { get; init; }
+}
+
+/// <summary>Numeric view of raw bytes. No visibility, state, opacity or navigation meaning is implied.</summary>
+public sealed record WindevUiRawValue(int Offset, int ByteLength, ulong Value);
+
+/// <summary>All offsets refer to the element's decoded property buffer, not the compressed file.</summary>
+public sealed record WindevUiLayout(
+    int DescriptorOffset,
+    uint RawDescriptor,
+    int IdentifierOffset,
+    ulong RawIdentifier,
+    int BoundsOffset,
+    int? CaptionOffset,
+    int? CommonTailOffset,
+    IReadOnlyList<WindevUiRawValue> RawValues);
 public sealed record WindevDataField(
     uint Id,
     string Name,

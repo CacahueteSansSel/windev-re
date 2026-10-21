@@ -82,3 +82,10 @@ Accepter une version de conteneur ne certifie pas toutes ses variantes internes.
 Le lecteur ne réécrit pas les fichiers, n’exécute pas le WLangage, ne reconstruit pas les fenêtres source depuis le bytecode et ne rend pas les états. Le décodage HFSQL reste partiel : début et compte des emplacements explicites, états logiques inconnus, parcours général du B-tree NDX et allocation générale des mémos non pris en charge ; les clés des profils plats 15/24/25/29/31 et des blocs simples MMO sont accessibles. L’absence de mot de passe n’est pas détectée automatiquement.
 
 La [validation binaire](../file-formats/validation.mdx) précise les témoins, les recoupements et les questions ouvertes.
+
+
+## Propriétés des champs WDW
+
+`Elements` reste un inventaire partiel de candidats. Un candidat peut avoir `Bounds == null` sans que l’ouverture de la fenêtre échoue. La lecture des rectangles exige un nom encadré conforme et le descripteur 607 (24/25/29) ou 610 (31). Des dimensions négatives font abandonner ce décodage local ; les noms et buffers restent accessibles.
+
+Un libellé endommagé ou absent du profil ne déclenche pas une recherche libre dans les chaînes voisines. Les propriétés de visibilité, opacité, état, accès par Tab et type de saisie restent inconnues, même quand des valeurs brutes compatibles avec une valeur attendue sont présentes.
