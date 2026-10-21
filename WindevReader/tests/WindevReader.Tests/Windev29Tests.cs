@@ -60,6 +60,14 @@ internal static class Windev29Tests
 
         check(window.Elements.Any(entry => entry.Name == "SAI_Desc"), "29 memo input control identified");
 
+        WindowControlTests.Run(window, check, checks);
+
+        WdwWindevWindow confirmation = WdwWindevWindow.Open(Path.Combine(originalRoot, "Origamide/FEN_Confirme.wdw"));
+        WindevUiElement confirmButton = confirmation.Elements.Single(element => element.Name == "BTN_Oui");
+
+        check(confirmButton.Bounds == new WindevBounds(295, 156, 106, 31), "Version 31 descriptor 610 corroborates the signed control geometry");
+        check(confirmButton.Caption is null, "Unmapped version 31 button captions remain unknown");
+
         check(
             schema.Generation == 1 && schema.DecodedSchema.Length == 2287 && schema.Tables.Count == 1,
             "29 WDD checksum and table tag 21");

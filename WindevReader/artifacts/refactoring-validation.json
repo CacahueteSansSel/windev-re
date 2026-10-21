@@ -1,15 +1,16 @@
 {
-  "SourceFiles": 37,
-  "LocalDeclarations": 538,
+  "SourceFiles": 39,
+  "LocalDeclarations": 571,
   "ImplicitLocalTypes": 0,
   "EmbeddedStatementsWithoutBraces": 0,
   "InvalidLocalNameCasing": 0,
-  "Version": "0.9.1",
+  "Version": "0.10.0",
   "RulesFile": "AGENTS.md",
   "EditorConfig": ".editorconfig",
   "EnglishIdentifiersAndCommentsReviewed": true,
-  "PublicApiPreserved": true,
-  "PublicTypeAndMemberSignatures": 960,
+  "ExistingPublicApiPreserved": true,
+  "ExistingPublicTypeAndMemberSignatures": 960,
+  "AddedPublicTypeAndMemberSignatures": 62,
   "OriginalCorpusSummariesCompared": 526,
-  "OriginalCorpusSummariesIdentical": true
+  "OriginalCorpusSummaryDifferences": "Only the intentional PartialUiSemantics diagnostic text changed."
 }

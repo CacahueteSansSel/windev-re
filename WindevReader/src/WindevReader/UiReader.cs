@@ -9,7 +9,7 @@ internal static class UiReader
 
     private static readonly string[] prefixes = ["BTN_", "BT_", "SAI_", "EDT_", "LIB_", "TABLE_", "COL_", "COMBO_", "CMB_", "INT_", "SEL_", "IMG_", "ZR_", "GR_", "OPT_", "MENU_", "ONG_", "TAB_", "FEN_", "DEBUT_", "HAUT_", "BAS_", "FIN_", "CHAMP"];
 
-    public static IReadOnlyList<WindevUiElement> Elements(IReadOnlyList<WindevDecodedBlock> buffers, string name, IReadOnlyList<WindevCodeBlock> code)
+    public static IReadOnlyList<WindevUiElement> Elements(IReadOnlyList<WindevDecodedBlock> buffers, string name, IReadOnlyList<WindevCodeBlock> code, bool includeDuplicateNames = false)
     {
         HashSet<string> owners = code.Select(codeBlock => codeBlock.OwnerName).ToHashSet(StringComparer.Ordinal);
         List<WindevUiElement> result = new List<WindevUiElement>();
@@ -41,7 +41,7 @@ internal static class UiReader
             }
         }
 
-        return result.DistinctBy(entry => entry.Name).ToArray();
+        return includeDuplicateNames ? result.AsReadOnly() : result.DistinctBy(entry => entry.Name).ToArray();
     }
 
     private static string InferKind(string name)

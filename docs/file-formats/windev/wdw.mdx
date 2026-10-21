@@ -5,7 +5,7 @@ sidebar_position: 2
 description: "WDW : fenêtre — structures, positions en octets et limites du lecteur autonome."
 ---
 
-Le WDW rassemble les propriétés d’une fenêtre, ses événements WLangage et une image de prévisualisation. Le lecteur expose le titre, les dimensions, des éléments identifiés et le BMP de prévisualisation.
+Le WDW rassemble les propriétés d’une fenêtre, ses événements WLangage et une image de prévisualisation. Le lecteur expose le titre et les dimensions de la fenêtre, les rectangles et certains libellés des champs reconnus, ainsi que le BMP de prévisualisation.
 
 Les positions sont exprimées en **octets**. Les inconnues sont indiquées comme telles ; voir les [conventions](../conventions.mdx).
 
@@ -153,7 +153,7 @@ Les options de menu possèdent notamment des noms et des libellés encadrés. Ex
 | `MENU_`, `_Menu` | Menu | Inféré |
 | `GR_` | Groupe | Inféré |
 
-Les noms peuvent être modifiés par le développeur. Un contrôle portant un nom sans ces préfixes peut exister ; un nom ressemblant à un préfixe n'est pas une preuve de type. La hiérarchie parent/enfant et toutes les propriétés de chaque contrôle ne sont pas décodées.
+Les noms peuvent être modifiés par le développeur. Un contrôle portant un nom sans ces préfixes peut exister ; un nom ressemblant à un préfixe n'est pas une preuve de type. Les rectangles et certains libellés sont désormais lus dans les descripteurs décrits ci-dessous. La hiérarchie parent/enfant et les autres propriétés de chaque contrôle ne sont pas entièrement décodées.
 
 ## Code et données auxiliaires
 
@@ -331,3 +331,92 @@ Les noms, catégories et autres textes trouvés dans les propriétés restent **
 Le buffer source de **8 371 octets** restitue **23 événements et 57 lignes**. Le traitement d’ajout de PERSONNE est rattaché au propriétaire du bouton grâce à son nom à longueur explicite suivi du groupe `0x0A`. La chaîne « PROCEDURE » présente dans une autre structure n’est pas transformée artificiellement en ligne d’événement. Voir les [structures source 15](./wlangage.mdx#source-de-la-version-15--longueurs-explicites).
 
 La section 4 donne un BMP standard de **67 866 octets**, miniature **150 × 113** de la fenêtre **800 × 600** : signature `BM`, DIB 40, pixels à 66, profondeur 32 bits, compression BMP 3 et masques BGRX déjà décrits. Les coordonnées et tailles des contrôles, styles et hiérarchie complète ne sont pas reconstitués.
+
+
+## Position, taille et libellé des champs
+
+Le descripteur de la fenêtre n’est pas le seul à porter un rectangle. Les champs reconnus contiennent également un descripteur, une chaîne de nom, un identifiant interne brut et quatre entiers de géométrie. Cette structure a été recoupée dans les profils 24, 25, 29 et 31. Elle ne s’applique pas automatiquement aux candidats CP1252 du profil 15.
+
+![Rectangles des champs dans le témoin 29](../assets/champs-fenetre.svg)
+
+### Repères dans le buffer décompressé
+
+Toutes les positions ci-dessous sont relatives au **buffer décompressé de la section 1**, nommé `D`. Elles ne sont pas des positions dans le fichier compressé. Pour le témoin 29, la section commence à 375, l’enveloppe LZW à 403 et le flux à 414 ; sa sortie contient 13 982 octets. Il n’existe pas de simple addition permettant de convertir `D[4198]` en une position dans ce flux LZW.
+
+Soit `N` le début de la chaîne encadrée de nom, `C` sa longueur totale encadrée et `R = N + C` la première position après le nom.
+
+| Position dans `D` | Taille | Type de lecture | Propriété | Statut |
+| --- | --- | --- | --- | --- |
+| `N - 4` | 4 | `u32` LE | Descripteur 607 en 24/25/29, 610 en 31 | Contrôle de profil |
+| `N` | `C` | Chaîne encadrée PCS | Nom du champ | Encadrement vérifié |
+| `R + 0` | 8 | `u64` LE brut | Identifiant interne | Sens précis inconnu ; aucune relation parent/enfant déduite |
+| `R + 8` | 4 | `i32` LE | X | Vérifié sur les coordonnées fournies |
+| `R + 12` | 4 | `i32` LE | Y | Vérifié sur les coordonnées fournies |
+| `R + 16` | 4 | `i32` LE | Largeur | Vérifiée ; valeur négative refusée comme profil reconnu |
+| `R + 20` | 4 | `i32` LE | Hauteur | Vérifiée ; valeur négative refusée comme profil reconnu |
+| `[R + 24, R + 76)` | 52 | 13 vues `u32` LE | Valeurs communes brutes | Exposées dans `Layout.RawValues`, sans attribution de sens |
+| `R + 76` | Variable | Chaîne encadrée ou un octet `00` | Libellé commun lorsqu’une chaîne est présente | Reconnu pour les saisies du témoin ; `00` ne donne pas à lui seul le libellé final d’un bouton |
+
+Les coordonnées négatives sont conservées ; des champs du corpus 31 ont notamment des positions négatives. Le lecteur ne divise pas ces valeurs par le facteur de réduction du BMP. Il s’agit des valeurs de conception enregistrées, pas des coordonnées effectives après ancrage, changement de DPI ou modification par le code à l’exécution.
+
+### Les cinq champs du témoin 29
+
+| Nom | `N` | `R` | Position des quatre entiers | X | Y | Largeur | Hauteur | Libellé lu / position |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| `SAI_Nom` | 4170 | 4190 | 4198, 4202, 4206, 4210 | 24 | 24 | 272 | 31 | `Nom` à 4266 |
+| `SAI_Prenom` | 6989 | 7012 | 7020, 7024, 7028, 7032 | 24 | 64 | 272 | 31 | `Prenom` à 7088 |
+| `SAI_Desc` | 9814 | 9835 | 9843, 9847, 9851, 9855 | 24 | 104 | 504 | 70 | `Desc` à 9911 |
+| `BTN_SansNom1` | 11763 | 11788 | 11796, 11800, 11804, 11808 | 24 | 188 | 106 | 31 | `créé` à 12060 |
+| `BTN_SansNom2` | 13599 | 13624 | 13632, 13636, 13640, 13644 | 140 | 188 | 106 | 31 | `ouvre` à 13896 |
+
+Les valeurs du tableau sont celles du fichier étudié. Un libellé décrit oralement ou modifié dans une autre copie ne remplace jamais la chaîne effectivement enregistrée.
+
+### Libellé différé des boutons
+
+Soit `E` la position après le champ à `R + 76` : après la chaîne encadrée si elle est valide, ou après l’unique octet `00` lorsque ce champ est vide. Si aucune de ces formes n’est reconnue, `CommonTailOffset` reste nul et le lecteur ne tente pas de déplacement supplémentaire.
+
+| Profil | Libellé commun | Position du libellé de bouton reconnu | Portée |
+| --- | --- | --- | --- |
+| 24 | Saisie à `R + 76` | `E + 160` | Deux boutons du témoin |
+| 25 | Saisie à `R + 76` | `E + 164` | Deux boutons du témoin |
+| 29 | Saisie à `R + 76` | `E + 195` | Deux boutons du témoin |
+| 31 | Chaîne commune à `R + 76` si présente | Position différée non appliquée | Des groupes, bulles ou autres chaînes font varier les positions ; libellé de bouton laissé à `null` |
+
+Pour `SAI_Nom`, `E = 4282`. Pour `BTN_SansNom1`, le champ commun est l’octet nul à 11864, donc `E = 11865` et `E + 195 = 12060`. Le texte `créé` est encodé ici sur six octets UTF-8, avec une enveloppe de 19 octets au total. Le lecteur exige une chaîne encadrée valide à la position attendue ; il ne choisit pas simplement la prochaine chaîne du buffer, qui peut être un nom de style ou un chemin d’image.
+
+### Métadonnées numériques : ce qui est observé
+
+Ces vues sont disponibles dans `Layout.RawValues`. Leur `Offset` reste une position dans `D`, `ByteLength` vaut 4 et `Value` contient la lecture numérique brute.
+
+| Vue | `SAI_Nom` : position / valeur | `BTN_SansNom1` : position / valeur | Commentaire |
+| --- | --- | --- | --- |
+| `u32(R + 40)` | 4230 / 1 | 11828 / 1 | Ne suffit pas à identifier la visibilité |
+| `u32(R + 64)` | 4254 / 4 | 11852 / 4 | Code ou drapeaux non déterminés |
+| `u32(E + 0)` | 4282 / 0 | 11865 / 0 | Vue brute |
+| `u32(E + 4)` | 4286 / 0 | 11869 / 0 | Vue brute |
+| `u32(E + 8)` | 4290 / 1 | 11873 / 1 | Ne suffit pas à distinguer visibilité, état ou autre booléen |
+| `u32(E + 12)` | 4294 / 1 | 11877 / 1 | Même réserve |
+| `u32(E + 24)` | 4306 / 0 | 11889 / 3 | Suite 0, 1, 2, 3, 4 dans les cinq champs ; rôle exact inconnu |
+| `u32(E + 29)` | 4311 / 1 | 11894 / 4 | Suite 1, 2, 3, 4, 5 ; candidat lié à un ordre, pas une preuve d’accès par Tab |
+
+Une suite de numéros ne prouve pas qu’il s’agit de l’ordre de tabulation : ordre de création, ordre de sérialisation et navigation peuvent coïncider. Le lecteur n’expose donc pas ces valeurs sous un nom comme `TabIndex`.
+
+### Visibilité, opacité, état et type de saisie
+
+| Propriété décrite pour les témoins | Connaissance du contenu attendu | Décodage binaire actuel |
+| --- | --- | --- |
+| Visible | Vrai selon les informations fournies | Offset et codage non isolés ; pas de booléen inventé |
+| Opacité | 100 % selon les informations fournies | Champ non isolé ; aucun pourcentage déduit d’un octet ressemblant à 100 |
+| État de la saisie | Saisie active, sans grisage ni affichage seul | Enumération ou drapeaux non identifiés |
+| Accessible par Tab | Vrai selon les informations fournies | Distinct d’un éventuel numéro d’ordre ; codage non identifié |
+| Saisie texte | Type attendu de `SAI_Nom` | `InferredKind = "Input"` vient du nom ; ce n’est pas un décodage de `TypeSaisie` |
+
+Par exemple, les octets `64 02 00 00` à `D[12016]` représentent **612** lorsqu’ils sont lus comme `u32` LE. Leur premier octet vaut 100, mais cette occurrence ne justifie pas de déclarer un champ d’opacité à cet endroit.
+
+La documentation fonctionnelle de [PC SOFT sur les propriétés des champs](https://doc.pcsoft.fr/?1410087048=) distingue notamment état, visibilité, opacité et numéro de navigation. Elle ne fournit pas leurs positions dans les fichiers WDW. Pour attribuer les octets, il reste nécessaire de comparer des copies où une propriété change seule. Une variante enregistrée en 27 devra d’abord être étudiée comme un nouveau profil, sans lui appliquer automatiquement les positions 25 ou 29.
+
+### Utilisation .NET et limites
+
+Les nouveaux membres sont `WindevUiElement.Bounds`, `Caption` et `Layout`. Les champs sans descripteur reconnu restent dans `Elements`, avec ces membres à `null`. Les autres formats partageant `WindevUiElement`, comme les états WDE, ne reçoivent pas automatiquement le décodage WDW.
+
+Le repérage initial des éléments reste fondé sur les noms et propriétaires d’événements connus. Si un même nom apparaît comme référence avant sa description, le lecteur privilégie l’occurrence munie d’un descripteur reconnu. Le descripteur vérifie ensuite la structure locale ; il ne certifie ni le type fonctionnel du champ, ni une reconstruction exhaustive de la fenêtre. Voir [l’exemple de lecture des champs en .NET](../../dotnet/documents-windev.mdx#positions-et-libellés-des-champs).

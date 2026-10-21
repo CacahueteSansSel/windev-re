@@ -82,3 +82,20 @@ Ces noms de types explicites ne sont pas les codes binaires HFSQL. Les entiers s
 
 
 Dans le profil source 15, les identités et titres sont CP1252 Z ; les lignes et auteurs utilisent des longueurs explicites. Les `WindevString` candidats du buffer de propriétés ont un offset au texte et une taille incluant NUL, avec le diagnostic `HeuristicLegacyStrings`. Ils ne représentent pas des propriétés entièrement interprétées. Les pages [chaînes](../file-formats/windev/chaines.mdx) et [WDW](../file-formats/windev/wdw.mdx) précisent les repères.
+
+
+## Métadonnées des éléments WDW
+
+| Membre / type | Contenu | Limite |
+| --- | --- | --- |
+| `WindevUiElement.Bounds` | `WindevBounds?` : X, Y, largeur et hauteur de conception | `null` si le descripteur n’est pas reconnu |
+| `WindevUiElement.Caption` | `string?` : libellé lu à une position vérifiée | `null` si le profil de libellé n’est pas reconnu |
+| `WindevUiElement.Layout` | `WindevUiLayout?` : provenance et valeurs brutes | Décodage WDW uniquement |
+| `WindevUiLayout.DescriptorOffset`, `RawDescriptor` | Position et valeur du descripteur | Aucun type de contrôle déduit du seul descripteur |
+| `IdentifierOffset`, `RawIdentifier` | Position et `u64` brut après le nom | Identifiant non interprété |
+| `BoundsOffset` | Position de X dans le buffer décompressé | Y, largeur et hauteur suivent à +4, +8 et +12 |
+| `CaptionOffset` | Position de la chaîne encadrée de libellé, optionnelle | Position décodée, pas compressée |
+| `CommonTailOffset` | Repère `E` après la chaîne commune ou sa sentinelle nulle | Optionnel si la forme n’est pas reconnue |
+| `RawValues` | Vues `WindevUiRawValue(Offset, ByteLength, Value)` | Ni booléens d’état, ni pourcentages d’opacité, ni ordre Tab certifié |
+
+Le constructeur existant de `WindevUiElement` reste inchangé ; les trois nouveaux membres sont des propriétés initialisables. Consulter la [carte WDW](../file-formats/windev/wdw.mdx#position-taille-et-libellé-des-champs) pour le périmètre exact des profils.

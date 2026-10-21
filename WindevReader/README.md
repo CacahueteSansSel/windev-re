@@ -1,13 +1,13 @@
-# WindevReader 0.9.1
+# WindevReader 0.10.0
 
 Bibliothèque .NET 8 autonome, en lecture seule, pour étudier les documents WINDEV, les patchs WDL et certains profils HFSQL. Aucun composant officiel n’est chargé ou exécuté. Les formats restent partiellement documentés : une ouverture réussie ne signifie pas que toutes leurs propriétés sont connues.
 
 ## Installer
 
-Le package local est `artifacts/WindevReader.0.9.1.nupkg` :
+Le package local est `artifacts/WindevReader.0.10.0.nupkg` :
 
 ```sh
-dotnet add package WindevReader --version 0.9.1 --source /chemin/vers/WindevReader/artifacts
+dotnet add package WindevReader --version 0.10.0 --source /chemin/vers/WindevReader/artifacts
 ```
 
 La solution ne dépend d’aucun package externe. Les limites de taille et de décompression sont configurables avec `WindevOpenOptions`.
@@ -82,7 +82,7 @@ Le code utilise des types explicites, des variables en anglais et en camel case,
 - `docs/dotnet/` : installation, exemples C#, extraction, CLI, API et erreurs.
 - `examples/` : dispositions JSON des profils recoupés, notamment `personne15-schema-layout.json` et `personne24-schema-layout.json`.
 
-Les pages Docusaurus sont en français. Les exemples C# emploient des identifiants et commentaires en anglais. Les six schémas explicatifs sont en SVG ; les exemples privés ne sont pas distribués.
+Les pages Docusaurus sont en français. Les exemples C# emploient des identifiants et commentaires en anglais. Les sept schémas explicatifs sont en SVG ; les exemples privés ne sont pas distribués.
 
 ## Construire et vérifier
 
@@ -93,7 +93,7 @@ dotnet run --project tests/WindevReader.Tests -c Release -- /chemin/corpus-initi
 
 Les dossiers de corpus conservent les noms et arborescences attendus par les tests ; les projets de test comprennent leur sous-dossier Exe. Les arguments complémentaires sont facultatifs, mais leur omission réduit la couverture.
 
-La suite complète réussit **3 097 assertions**. L’étude porte sur **559 fichiers**, dont **445 fichiers physiques HFSQL**, représentant **29 contenus distincts**. La comparaison des résumés produits avant et après la réécriture est identique sur les **526 fichiers du corpus initial**. Les rapports de validation et les empreintes des livrables sont dans `artifacts/`.
+La suite complète réussit **3 134 assertions**. L’étude porte sur **559 fichiers**, dont **445 fichiers physiques HFSQL**, représentant **29 contenus distincts**. La comparaison des résumés produits avant et après la réécriture est identique sur les **526 fichiers du corpus initial**. Les rapports de validation et les empreintes des livrables sont dans `artifacts/`.
 
 
 ## Particularités du témoin 15
@@ -105,3 +105,10 @@ Le FIC PERSONNE possède un emplacement de 123 octets à 1688. Ses offsets relat
 Le WDW stocke des chaînes CP1252 terminées par NUL. Sa racine 607 donne une fenêtre 800 × 600, avec une miniature BMP 150 × 113. Les candidats de chaînes des autres propriétés restent heuristiques et signalés. Les lignes source utilisent un tag 0, des longueurs `u32` pour le texte et l’auteur, puis quatre octets de timestamp ; le lecteur restitue 23 événements de fenêtre et six de projet.
 
 Le WDP possède 19 sections, mais ses références de projet ne sont pas reconstituées : `References` reste vide avec `NoConfigurationDirectory`. Les buffers restent disponibles pour l’étude. Cette limite est détaillée dans la page WDP ; aucun inventaire n’est fabriqué à partir des fichiers voisins. Le WDA 15 supplémentaire conserve quatre sections brutes et ne fournit aucun bloc LZW reconnu ; son nom utilise celui du fichier. Les familles WDG, WDE et WDL 15 n’ont pas été fournies.
+
+
+## Positions et libellés des champs WDW
+
+`WindevUiElement` expose désormais `Bounds`, `Caption` et `Layout` lorsque le descripteur est reconnu. `Layout` contient les offsets du buffer décompressé, l’identifiant brut et des vues numériques non interprétées. Les rectangles sont recoupés dans les profils 24/25/29/31 ; les libellés différés des boutons sont reconnus dans les témoins 24/25/29. Les propriétés inconnues restent nulles. Visibilité, opacité, état, accès par Tab et type de saisie ne sont pas encore attribués à des champs binaires vérifiés.
+
+La page `docs/file-formats/windev/wdw.mdx` donne les offsets et les limites ; `docs/dotnet/documents-windev.mdx` montre leur utilisation.

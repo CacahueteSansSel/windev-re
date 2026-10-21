@@ -1,6 +1,6 @@
 {
   "Passed": true,
-  "Assertions": 3097,
+  "Assertions": 3134,
   "Documents": 98,
   "DecodedBuffers": 362,
   "SourceLines": 8224,
@@ -18,6 +18,7 @@
     "PERSONNE WINDEV 28: matching FIC/NDX, three relocated 60-byte descriptors, five clear physical 124-byte slots via explicit layout; values, sentinel and malformed-layout checks. Logical live/deleted state and automatic schema remain unknown.",
     "ERP 28: WDD checksum, two tables/eight fields, physical GUID links, WDA corroboration, schema-assisted PERSONNE layout and first relation decoded; state/cardinality semantics remain partial.",
     "HFSQL 31: both FICs matched WDD; eight holiday slots plus one week slot; compound key omitted from FIC; 7 flat NDX pages, 35 real keys and 7 sentinels; every key cross-checked against FIC; date strings, CP1252, corruption and budgets verified.",
+    "Window controls: five version 29 rectangles/captions; decoded offsets and raw numeric metadata; changed signed coordinates/caption, unsupported descriptor, invalid dimensions and damaged caption framing. Visibility, opacity, input state/type and tab semantics remain unassigned.",
     "WINDEV 29: WDP references, WDW descriptor 607/title/geometry/BMP and source, WDD table/field tags 21/17 and checksum, matching FIC/MMO/NDX, 127-byte row, 210-byte memo reference, bounded uncompressed memo block with explicit CP1252; same block structure corroborated by two UTF16LE memos in existing 31 file. Chains/compression/allocation and automatic encoding remain unsupported.",
     "WINDEV 25: six supplied families, compressed WDP configuration, 11 project and 36 window code blocks (event tag 14, owner tag 0b), WDW root descriptor at zero/caption \u002B506 and scaled 150x113 BMP, WDD tags 19/15, matching 127-byte FIC slot at 1746 with memo 210, simple CP1252 MMO and flat NDX sentinel. Versions 26/27 and other unprovided families remain unvalidated.",
     "WINDEV 24: six supplied families, compressed WDP configuration, 10 project and 36 window code blocks (event tag 14, owner tag 0b), WDW root descriptor at zero/caption \u002B506 and scaled 150x113 BMP, WDD tags 19/15, matching 127-byte FIC slot at 1734 with memo 210, simple CP1252 MMO and flat NDX sentinel. Versions 26/27 and other unprovided families remain unvalidated.",

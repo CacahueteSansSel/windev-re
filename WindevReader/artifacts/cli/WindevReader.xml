@@ -88,6 +88,27 @@
         <member name="M:WindevReader.WindevUiElement.#ctor(System.String,System.String,System.Int32,System.Int32,System.Collections.Generic.IReadOnlyList{WindevReader.WindevString})">
             <summary>An identifier found in an object property buffer. Kind is inferred from its naming prefix.</summary>
         </member>
+        <member name="P:WindevReader.WindevUiElement.Bounds">
+            <summary>Serialized design coordinates when a recognized control descriptor is present.</summary>
+        </member>
+        <member name="P:WindevReader.WindevUiElement.Caption">
+            <summary>Caption read at a checked field position; null means the caption profile is not recognized.</summary>
+        </member>
+        <member name="P:WindevReader.WindevUiElement.Layout">
+            <summary>Decoded-buffer positions and uninterpreted numeric values for the recognized layout.</summary>
+        </member>
+        <member name="T:WindevReader.WindevUiRawValue">
+            <summary>Numeric view of raw bytes. No visibility, state, opacity or navigation meaning is implied.</summary>
+        </member>
+        <member name="M:WindevReader.WindevUiRawValue.#ctor(System.Int32,System.Int32,System.UInt64)">
+            <summary>Numeric view of raw bytes. No visibility, state, opacity or navigation meaning is implied.</summary>
+        </member>
+        <member name="T:WindevReader.WindevUiLayout">
+            <summary>All offsets refer to the element's decoded property buffer, not the compressed file.</summary>
+        </member>
+        <member name="M:WindevReader.WindevUiLayout.#ctor(System.Int32,System.UInt32,System.Int32,System.UInt64,System.Int32,System.Nullable{System.Int32},System.Nullable{System.Int32},System.Collections.Generic.IReadOnlyList{WindevReader.WindevUiRawValue})">
+            <summary>All offsets refer to the element's decoded property buffer, not the compressed file.</summary>
+        </member>
         <member name="P:WindevReader.WindevDataField.RawCompositeMarker">
             <summary>Raw byte at +31 after the four field CStrings; value 1 verified against MOISJOUR in version 31.</summary>
         </member>
