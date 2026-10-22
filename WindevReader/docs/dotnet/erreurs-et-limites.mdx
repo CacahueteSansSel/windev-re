@@ -103,3 +103,14 @@ Les natures 0/2/4 et les composants sont lus dans les profils 28/31 vérifiés. 
 Les vecteurs sont bornés et résolus dans leur table. Le lecteur refuse les références hors de la table, l’auto-référence, les comptes invalides, les divergences des ordinaux de métadonnée et le dépassement de `MaxIndexEntries`. Le plafond par vecteur est de 10 000 ; le budget de composants se cumule entre les tables d’une même analyse.
 
 La nouvelle révision PERSONNE annonce un pas de 132 octets ; le FIC correspondant n’a pas été fourni. Le test synthétique de lecture d’un `UInt64` ne valide ni une allocation réelle, ni les états logiques des emplacements, ni le format général des clés composées NDX.
+
+
+## Différence de nom secondaire dans un WDD
+
+La version 0.12.1 corrige un refus trop strict : `WDD table record name mismatch`. Le lecteur exige toujours que le nom logique de la table et celui de son index correspondent. Une autre chaîne du record peut désormais différer sans bloquer l’ouverture, si les structures utilisées pour lire les rubriques sont valides.
+
+L’avertissement `TableRecordNameMismatch` indique l’offset dans `DecodedSchema`, sans inclure les noms du schéma. `WindevDataTable.RawRecordName` conserve la chaîne et `RawRecordNameOffset` son début. Ce nom secondaire n’est pas utilisé pour renommer la table ; sa signification reste inconnue. Les deux propriétés sont nulles pour un modèle construit manuellement qui ne les renseigne pas.
+
+Ce correctif ne demande pas `AllowUntestedVersions`. Il ne contourne ni le checksum, ni les contrôles des pointeurs, des comptes, des tags ou des identifiants de table. Si une autre erreur structurelle subsiste, elle est toujours remontée. Le contrôle est testé sur des mutations de témoins 29/31 ; les analyses confidentielles signalées n’ont pas été disponibles pour validation.
+
+Pour décrire un éventuel nouveau refus sans transmettre le schéma, relever uniquement la version de la bibliothèque, la version de WINDEV, le type d’exception, son message et son offset. Un export JSON complet contient les noms et autres métadonnées du projet ; il n’est pas nécessaire à ce premier diagnostic.

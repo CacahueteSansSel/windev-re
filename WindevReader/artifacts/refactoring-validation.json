@@ -1,18 +1,18 @@
 {
-  "SourceFiles": 44,
-  "LocalDeclarations": 639,
+  "SourceFiles": 45,
+  "LocalDeclarations": 666,
   "ImplicitLocalTypes": 0,
   "EmbeddedStatementsWithoutBraces": 0,
   "InvalidLocalNameCasing": 0,
-  "Version": "0.12.0",
+  "Version": "0.12.1",
   "TargetFramework": "net10.0",
   "RulesFile": "AGENTS.md",
   "EditorConfig": ".editorconfig",
   "EnglishIdentifiersAndCommentsReviewed": true,
   "ExistingPublicApiPreserved": true,
-  "ExistingPublicTypeAndMemberSignatures": 1070,
-  "AddedPublicTypeAndMemberSignatures": 72,
-  "PublicTypeAndMemberSignatures": 1142,
+  "ExistingPublicTypeAndMemberSignatures": 1142,
+  "AddedPublicTypeAndMemberSignatures": 6,
+  "PublicTypeAndMemberSignatures": 1148,
   "OriginalCorpusSummariesCompared": 526,
-  "OriginalCorpusSummaryDifferences": "Only the intentional PartialSchemaProperties diagnostic text changed."
+  "OriginalCorpusSummaryDifferences": "None."
 }

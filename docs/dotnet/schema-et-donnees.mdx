@@ -256,3 +256,10 @@ Le champ IDPERSONNEPASCLE est un type 27, déclaré et stocké sur huit octets, 
 Le nouveau pas annoncé est 132 : les champs physiques ont les offsets relatifs 9, 17, 68, 119, 123 et 124. La clé composée n’est pas ajoutée dans `Values`. La construction de cette disposition est couverte par un test synthétique ; aucun FIC correspondant à cette nouvelle révision n’a été fourni.
 
 Ne réutiliser les paramètres de l’exemple précédent à 124 octets qu’avec son ancien schéma et ses anciens fichiers. `FindTableDefinition` contrôle les identités, pas la totalité de l’historique des changements de stockage.
+
+
+## Nom logique et chaîne secondaire d’une table
+
+`WindevDataTable.Name` est le nom logique, vérifié contre l’index des tables. Depuis 0.12.1, `RawRecordName` expose aussi la chaîne secondaire située avant les répertoires de rubriques. Son début est `RawRecordNameOffset`, en octets dans `analysis.DecodedSchema`, préfixe de quatre octets compris. Cette valeur reste brute ; ne pas l’utiliser comme substitut du nom logique ou comme nom physique supposé.
+
+Une divergence est signalée par `TableRecordNameMismatch`, sans interrompre une lecture dont les contrôles de structure réussissent. Voir les [erreurs et limites](erreurs-et-limites.mdx#différence-de-nom-secondaire-dans-un-wdd) et la [carte du record de table](../file-formats/windev/wdd.mdx#description-dune-table).

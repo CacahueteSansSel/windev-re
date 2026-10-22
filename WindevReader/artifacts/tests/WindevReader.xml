@@ -133,6 +133,12 @@
         <member name="P:WindevReader.WindevDataField.Type">
             <summary>Friendly type for codes observed in the supplied schema; unknown codes remain explicit.</summary>
         </member>
+        <member name="P:WindevReader.WindevDataTable.RawRecordName">
+            <summary>Secondary CString before the field directories; its exact role is unconfirmed.</summary>
+        </member>
+        <member name="P:WindevReader.WindevDataTable.RawRecordNameOffset">
+            <summary>Byte offset of RawRecordName in DecodedSchema, including its four-byte prefix.</summary>
+        </member>
         <member name="P:WindevReader.WindevDataTable.RawRecordByteLength">
             <summary>Raw u32 at +12 after the table's six strings. Verified against the supplied fixed-record profiles.</summary>
         </member>

@@ -1,10 +1,11 @@
 {
   "Passed": true,
-  "Assertions": 3265,
+  "Assertions": 3329,
   "Documents": 98,
   "DecodedBuffers": 362,
   "SourceLines": 8224,
   "Checks": [
+    "WDD 31: secondary table names are preserved independently of indexed logical names. Synthetic relocated records with different, empty and multibyte names retain fields and report offsets without names; corrupt checksums, logical names, directories, tags and field ownership remain rejected. The reported confidential analysis was not supplied.",
     "Independent analysis.json oracle: all 37 names, types, sizes and captions match.",
     "Historical analysis versions: first 1 table/3 fields; generation 23 has 36 fields.",
     "Global procedures: 9 in Origamide and 2 in bridge; source accents and declaration text verified.",
@@ -20,6 +21,7 @@
     "HFSQL 31: both FICs matched WDD; eight holiday slots plus one week slot; compound key omitted from FIC; 7 flat NDX pages, 35 real keys and 7 sentinels; every key cross-checked against FIC; date strings, CP1252, corruption and budgets verified.",
     "Window controls: five version 29 rectangles/captions; decoded offsets and raw numeric metadata; changed signed coordinates/caption, unsupported descriptor, invalid dimensions and damaged caption framing. Visibility, interaction state and Tab access are decoded in compatible 28/29/31 layouts. Opacity and input type remain unassigned.",
     "WINDEV 29: WDP references, WDW descriptor 607/title/geometry/BMP and source, WDD table/field tags 21/17 and checksum, matching FIC/MMO/NDX, 127-byte row, 210-byte memo reference, bounded uncompressed memo block with explicit CP1252; same block structure corroborated by two UTF16LE memos in existing 31 file. Chains/compression/allocation and automatic encoding remain unsupported.",
+    "WDD 29: secondary table names are preserved independently of indexed logical names. Synthetic relocated records with different, empty and multibyte names retain fields and report offsets without names; corrupt checksums, logical names, directories, tags and field ownership remain rejected. The reported confidential analysis was not supplied.",
     "WINDEV 25: six supplied families, compressed WDP configuration, 11 project and 36 window code blocks (event tag 14, owner tag 0b), WDW root descriptor at zero/caption \u002B506 and scaled 150x113 BMP, WDD tags 19/15, matching 127-byte FIC slot at 1746 with memo 210, simple CP1252 MMO and flat NDX sentinel. Versions 26/27 and other unprovided families remain unvalidated.",
     "WINDEV 24: six supplied families, compressed WDP configuration, 10 project and 36 window code blocks (event tag 14, owner tag 0b), WDW root descriptor at zero/caption \u002B506 and scaled 150x113 BMP, WDD tags 19/15, matching 127-byte FIC slot at 1734 with memo 210, simple CP1252 MMO and flat NDX sentinel. Versions 26/27 and other unprovided families remain unvalidated.",
     "WINDEV 15: six supplied families; 19-section WDP with unresolved references; CP1252 identities and window title; 23 window/6 project source events with bounded raw length-prefixed lines and owner tag 0a; WDD analysis/table/field tags 04/12/10; four-byte automatic identifier code 38; 123-byte FIC slot at 1688; four-byte NDX key and sentinel; 46-byte CP1252 memo. Property string candidates remain heuristic. Versions 16-23 and unprovided families remain unvalidated.",
