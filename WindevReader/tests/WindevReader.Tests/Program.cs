@@ -296,6 +296,21 @@ try
         Windev28WindowTests.Run(args[10], root, Check, checks);
     }
 
+    WindowTypeTests.VerifyProfile(journal, 631, Check);
+
+    foreach ((int Argument, uint Descriptor) profile in new (int, uint)[] { (5, 629), (6, 624), (7, 623) })
+    {
+        if (args.Length > profile.Argument)
+        {
+            WindowTypeTests.VerifyProfile(WdwWindevWindow.Open(Path.Combine(args[profile.Argument], "FEN_test.wdw")), profile.Descriptor, Check);
+        }
+    }
+
+    if (args.Length > 12)
+    {
+        WindowTypeTests.Run(args[12], Check, checks);
+    }
+
     if (args.Length > 11)
     {
         WddKeyTests.Run(args[11], args[3], args[4], Check, Reject, checks);

@@ -46,7 +46,7 @@ public sealed record WindevProcedure(string Name, IReadOnlyList<WindevCodeBlock>
 
 public sealed record WindevProjectReference(string Name, int Offset, string ConfigurationName);
 public sealed record WindevBounds(int X, int Y, int Width, int Height);
-/// <summary>An identifier found in an object property buffer. Kind is inferred from its naming prefix.</summary>
+/// <summary>An object-property identifier. InferredKind uses its prefix; ControlType uses a recognized WDW record.</summary>
 public sealed record WindevUiElement(
     string Name,
     string InferredKind,
@@ -54,6 +54,11 @@ public sealed record WindevUiElement(
     int Offset,
     IReadOnlyList<WindevString> NearbyStrings)
 {
+    /// <summary>Bounded serialized record, independent of the naming prefix; null when its envelope is unrecognized.</summary>
+    public WindevUiControlRecord? ControlRecord { get; init; }
+
+    public WindevControlType? ControlType => ControlRecord?.Type;
+
     /// <summary>Serialized design coordinates when a recognized control descriptor is present.</summary>
     public WindevBounds? Bounds { get; init; }
 

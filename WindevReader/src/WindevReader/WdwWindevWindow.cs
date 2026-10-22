@@ -94,7 +94,7 @@ public sealed class WdwWindevWindow : WindevDocument
 
         Warn(
             "PartialUiSemantics",
-            "Property buffers and source events are decoded. Recognized control descriptors expose design bounds and selected captions. Compatible version 28/29/31 layouts expose initial visibility, interaction state and Tab access. Element kinds remain inferred; opacity, input type, styles, bindings and hierarchy are not fully mapped.",
+            "Property buffers and source events are decoded. Recognized control descriptors expose design bounds and selected captions. Compatible version 28/29/31 layouts expose initial visibility, interaction state and Tab access. Bounded control records expose verified family codes independently of naming prefixes. Selected version 28 records expose choices, image references, table bindings and tab pages; opacity, input subtypes, styles and general bindings/hierarchy remain incomplete.",
             1);
     }
 

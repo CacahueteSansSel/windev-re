@@ -114,3 +114,12 @@ L’avertissement `TableRecordNameMismatch` indique l’offset dans `DecodedSche
 Ce correctif ne demande pas `AllowUntestedVersions`. Il ne contourne ni le checksum, ni les contrôles des pointeurs, des comptes, des tags ou des identifiants de table. Si une autre erreur structurelle subsiste, elle est toujours remontée. Le contrôle est testé sur des mutations de témoins 29/31 ; les analyses confidentielles signalées n’ont pas été disponibles pour validation.
 
 Pour décrire un éventuel nouveau refus sans transmettre le schéma, relever uniquement la version de la bibliothèque, la version de WINDEV, le type d’exception, son message et son offset. Un export JSON complet contient les noms et autres métadonnées du projet ; il n’est pas nécessaire à ce premier diagnostic.
+
+
+## Types et contenus locaux des champs WDW
+
+`ControlType` et `InferredKind` ont des contrats distincts : le premier utilise le code d’un record borné ; le second reste une indication de préfixe. Un type numérique inconnu reste à `null`, même si le nom commence par `BTN_`. Un nom sans préfixe connu peut être reconnu grâce au record.
+
+Les en-têtes sont recoupés en 24/25/28/29/31. Les contenus spécifiques de combo, sélecteur, interrupteur, image, table et onglet sont lus uniquement dans le profil 28 étudié. Un corps local invalide ne bloque pas l’ouverture de toute la fenêtre : ses données restent dans le buffer, avec les indicateurs de décodage à faux ou les propriétés à `null`. La limite par liste, nombre de volets ou total d’enfants d’un onglet est de 10 000. Les budgets de taille du fichier et des buffers continuent de s’appliquer.
+
+Une table n’expose ses colonnes que si les signatures complètes reconnues dans son corps donnent exactement le compte annoncé. Le parcours général des corps de colonnes reste ouvert. La reconnaissance des deux volets du témoin ne certifie pas les onglets dynamiques ni les autres structures de conteneurs. L’opacité, les sous-types de saisie et les sélections restent inconnus.

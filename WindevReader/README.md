@@ -1,13 +1,13 @@
-# WindevReader 0.12.1
+# WindevReader 0.13.0
 
 Bibliothèque .NET 10 autonome, en lecture seule, pour étudier les documents WINDEV, les patchs WDL et certains profils HFSQL. Aucun composant officiel n’est chargé ou exécuté. Les formats restent partiellement documentés : une ouverture réussie ne signifie pas que toutes leurs propriétés sont connues.
 
 ## Installer
 
-Le package local est `artifacts/WindevReader.0.12.1.nupkg` :
+Le package local est `artifacts/WindevReader.0.13.0.nupkg` :
 
 ```sh
-dotnet add package WindevReader --version 0.12.1 --source /chemin/vers/WindevReader/artifacts
+dotnet add package WindevReader --version 0.13.0 --source /chemin/vers/WindevReader/artifacts
 ```
 
 La solution ne dépend d’aucun package externe. Les limites de taille et de décompression sont configurables avec `WindevOpenOptions`.
@@ -82,18 +82,18 @@ Le code utilise des types explicites, des variables en anglais et en camel case,
 - `docs/dotnet/` : installation, exemples C#, extraction, CLI, API et erreurs.
 - `examples/` : dispositions JSON des profils recoupés, notamment `personne15-schema-layout.json` et `personne24-schema-layout.json`.
 
-Les pages Docusaurus sont en français. Les exemples C# emploient des identifiants et commentaires en anglais. Les huit schémas explicatifs sont en SVG ; les exemples privés ne sont pas distribués.
+Les pages Docusaurus sont en français. Les exemples C# emploient des identifiants et commentaires en anglais. Les neuf schémas explicatifs sont en SVG ; les exemples privés ne sont pas distribués.
 
 ## Construire et vérifier
 
 ```sh
 dotnet build WindevReader.sln -c Release
-dotnet run --project tests/WindevReader.Tests -c Release -- /chemin/corpus-initial resultats.json /chemin/personne28 /chemin/analyse28 /chemin/hfsql31 /chemin/projet29 /chemin/projet25 /chemin/projet24 /chemin/projet15 /chemin/analyse15.wda /chemin/champs28.wdw /chemin/cles28.wdd
+dotnet run --project tests/WindevReader.Tests -c Release -- /chemin/corpus-initial resultats.json /chemin/personne28 /chemin/analyse28 /chemin/hfsql31 /chemin/projet29 /chemin/projet25 /chemin/projet24 /chemin/projet15 /chemin/analyse15.wda /chemin/champs28.wdw /chemin/cles28.wdd /chemin/champs-varies28.wdw
 ```
 
 Les dossiers de corpus conservent les noms et arborescences attendus par les tests ; les projets de test comprennent leur sous-dossier Exe. Les arguments complémentaires sont facultatifs, mais leur omission réduit la couverture.
 
-La suite complète réussit **3 329 assertions**. L’étude porte sur **561 fichiers**, dont **445 fichiers physiques HFSQL**, représentant **29 contenus distincts**. La comparaison des résumés produits avant et après la réécriture est identique sur les **526 fichiers du corpus initial**. Les rapports de validation et les empreintes des livrables sont dans `artifacts/`.
+La suite complète réussit **3 589 assertions**. L’étude porte sur **562 fichiers**, dont **445 fichiers physiques HFSQL**, représentant **29 contenus distincts**. Les résumés des **526 fichiers du corpus initial** restent identiques, à l’exception du texte du diagnostic décrivant la couverture WDW. Les rapports de validation et les empreintes des livrables sont dans `artifacts/`.
 
 
 ## Particularités du témoin 15
@@ -127,3 +127,10 @@ Le type 27 sur huit octets est pris en charge comme `UInt64` dans les dispositio
 ## Compatibilité des noms de table WDD
 
 La version 0.12.1 remplace le refus `WDD table record name mismatch` par un avertissement lorsque seule la chaîne secondaire diverge du nom logique. `RawRecordName` et `RawRecordNameOffset` conservent cette valeur et sa position dans le schéma décodé. Le nom indexé, le checksum, les répertoires et l’appartenance des rubriques restent vérifiés. Des variantes synthétiques 29/31 reproduisent l’ancien refus et s’ouvrent avec le correctif ; les projets confidentiels signalés ne sont pas disponibles pour validation.
+
+
+## Familles et contenus de champs WDW
+
+Depuis 0.13.0, `WindevUiElement.ControlType` utilise le code numérique d’un record borné, indépendamment de `InferredKind`. Les enveloppes sont recoupées en 24/25/28/29/31. `ControlRecord` conserve longueurs, positions et valeurs brutes ; un code inconnu reste non interprété.
+
+Le nouveau témoin 28 permet de lire le contenu LF de la combo, les options de sélecteur/interrupteur, une référence d’image, les liaisons et sept colonnes de PERSONNE, ainsi que les deux volets d’un onglet et le bouton du premier. Ces contenus spécifiques restent limités au profil 28 vérifié. Les indicateurs `ItemsDecoded`, `TabPagesDecoded` et `ColumnsDecoded` distinguent données reconnues et dispositions inconnues. Les sous-types de saisie, l’opacité et les sélections restent ouverts.

@@ -1,18 +1,18 @@
 {
-  "SourceFiles": 45,
-  "LocalDeclarations": 666,
+  "SourceFiles": 49,
+  "LocalDeclarations": 732,
   "ImplicitLocalTypes": 0,
   "EmbeddedStatementsWithoutBraces": 0,
   "InvalidLocalNameCasing": 0,
-  "Version": "0.12.1",
+  "Version": "0.13.0",
   "TargetFramework": "net10.0",
   "RulesFile": "AGENTS.md",
   "EditorConfig": ".editorconfig",
   "EnglishIdentifiersAndCommentsReviewed": true,
   "ExistingPublicApiPreserved": true,
-  "ExistingPublicTypeAndMemberSignatures": 1142,
-  "AddedPublicTypeAndMemberSignatures": 6,
-  "PublicTypeAndMemberSignatures": 1148,
+  "ExistingPublicTypeAndMemberSignatures": 1148,
+  "AddedPublicTypeAndMemberSignatures": 172,
+  "PublicTypeAndMemberSignatures": 1320,
   "OriginalCorpusSummariesCompared": 526,
-  "OriginalCorpusSummaryDifferences": "None."
+  "OriginalCorpusSummaryDifferences": "Only the intentional PartialUiSemantics diagnostic text changed."
 }

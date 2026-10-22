@@ -44,7 +44,9 @@ internal static class UiReader
         return includeDuplicateNames ? result.AsReadOnly() : result.DistinctBy(entry => entry.Name).ToArray();
     }
 
-    private static string InferKind(string name)
+    internal static bool IsIdentifier(string name) => identifierPattern.IsMatch(name);
+
+    internal static string InferKind(string name)
     {
         (string Prefix, string Kind)[] categories =
         [

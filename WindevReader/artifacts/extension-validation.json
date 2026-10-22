@@ -1,10 +1,10 @@
 {
-  "Version": "0.12.1",
+  "Version": "0.13.0",
   "ResearchDate": "2026-10-22",
-  "CorpusFilesOpened": 561,
+  "CorpusFilesOpened": 562,
   "OriginalSourceDocuments": 98,
-  "WindowPreviews": 33,
-  "PreviewDimensionsMatchWindow": 25,
+  "WindowPreviews": 34,
+  "PreviewDimensionsMatchWindow": 26,
   "WdlPatches": 1,
   "WdlEntries": 138,
   "WdlResources": 134,
@@ -14,7 +14,7 @@
   "CompiledWindowPropertyBuffers": 2,
   "PhysicalHfsqlFiles": 445,
   "DistinctPhysicalHfsqlContents": 29,
-  "Assertions": 3329,
+  "Assertions": 3589,
   "DocusaurusBuildPassed": true,
   "Limitations": [
     "Only the supplied WDL revision 3102 patch was validated.",
@@ -27,7 +27,7 @@
   "NdxDescriptorByteLength": 60,
   "AdditionalAnalysisDocuments": 4,
   "DocumentationMdxPages": 35,
-  "SvgDiagrams": 8,
+  "SvgDiagrams": 9,
   "DocumentationExamplesCompile": true,
   "Wdd28Tables": 2,
   "Wdd28Fields": 8,
@@ -37,14 +37,14 @@
   "NdxFlatSentinelsValidated": 11,
   "Windev29SourceDocuments": 3,
   "MemoBlocksValidated": 6,
-  "TotalSourceDocuments": 115,
+  "TotalSourceDocuments": 116,
   "Windev25SourceDocuments": 3,
   "NdxDistinctFileContents": 11,
   "Windev24SourceDocuments": 3,
   "PublicApiPreserved": true,
-  "SourceCSharpFiles": 45,
+  "SourceCSharpFiles": 49,
   "ImplicitLocalTypes": 0,
-  "OriginalCorpusSummariesIdentical": true,
+  "OriginalCorpusSummariesIdentical": false,
   "Windev15SourceDocuments": 4,
   "Windev15ProjectReferencesReconstructed": false,
   "WindowControlBoundsVersions": [
@@ -60,10 +60,10 @@
     28,
     29
   ],
-  "OriginalCorpusSummariesIdenticalExceptUiDiagnosticText": false,
+  "OriginalCorpusSummariesIdenticalExceptUiDiagnosticText": true,
   "TargetFramework": "net10.0",
   "Net10BuildPassed": true,
-  "Windev28AdditionalWindows": 1,
+  "Windev28AdditionalWindows": 2,
   "WindowControlInteractionVersions": [
     28,
     29,
@@ -97,5 +97,16 @@
     29,
     31
   ],
-  "ConfidentialWddProvided": false
+  "ConfidentialWddProvided": false,
+  "WindowControlTypeVersions": [
+    24,
+    25,
+    28,
+    29,
+    31
+  ],
+  "WindowControlSpecificContentVersions": [
+    28
+  ],
+  "MixedWindowNamedControls": 17
 }

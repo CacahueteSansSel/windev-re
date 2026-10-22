@@ -83,10 +83,13 @@
             <summary>Also verifies that the memo belongs to the caller's FIC by both GUIDs.</summary>
         </member>
         <member name="T:WindevReader.WindevUiElement">
-            <summary>An identifier found in an object property buffer. Kind is inferred from its naming prefix.</summary>
+            <summary>An object-property identifier. InferredKind uses its prefix; ControlType uses a recognized WDW record.</summary>
         </member>
         <member name="M:WindevReader.WindevUiElement.#ctor(System.String,System.String,System.Int32,System.Int32,System.Collections.Generic.IReadOnlyList{WindevReader.WindevString})">
-            <summary>An identifier found in an object property buffer. Kind is inferred from its naming prefix.</summary>
+            <summary>An object-property identifier. InferredKind uses its prefix; ControlType uses a recognized WDW record.</summary>
+        </member>
+        <member name="P:WindevReader.WindevUiElement.ControlRecord">
+            <summary>Bounded serialized record, independent of the naming prefix; null when its envelope is unrecognized.</summary>
         </member>
         <member name="P:WindevReader.WindevUiElement.Bounds">
             <summary>Serialized design coordinates when a recognized control descriptor is present.</summary>
@@ -174,6 +177,33 @@
         </member>
         <member name="M:WindevReader.WindevFieldKey.#ctor(System.Int32,System.UInt16,System.Nullable{System.Int32},System.Boolean,System.Collections.Generic.IReadOnlyList{WindevReader.WindevKeyComponent})">
             <summary>All offsets refer to the decoded WDD schema, including its four-byte revision prefix.</summary>
+        </member>
+        <member name="T:WindevReader.WindevControlType">
+            <summary>Control families verified in serialized WDW records, not input subtypes or all WLanguage constants.</summary>
+        </member>
+        <member name="T:WindevReader.WindevUiControlRecord">
+            <summary>A bounded record in the decoded property buffer. Specific content is currently decoded for version 28.</summary>
+        </member>
+        <member name="M:WindevReader.WindevUiControlRecord.#ctor(System.Int32,System.Int32,System.UInt32,System.UInt32,System.Int32,System.Int32,System.Int32)">
+            <summary>A bounded record in the decoded property buffer. Specific content is currently decoded for version 28.</summary>
+        </member>
+        <member name="T:WindevReader.WindevUiItem">
+            <summary>Text positions exclude framing, the terminating NUL and line separators. Metadata remains uninterpreted.</summary>
+        </member>
+        <member name="M:WindevReader.WindevUiItem.#ctor(System.String,System.Int32,System.Int32,System.Nullable{System.Int32},System.Nullable{System.Int32})">
+            <summary>Text positions exclude framing, the terminating NUL and line separators. Metadata remains uninterpreted.</summary>
+        </member>
+        <member name="T:WindevReader.WindevUiTableColumn">
+            <summary>Column width and editor codes are distinct from ordinary control rectangles and HFSQL field types.</summary>
+        </member>
+        <member name="M:WindevReader.WindevUiTableColumn.#ctor(WindevReader.WindevString,System.Int32,System.UInt64,System.UInt32,WindevReader.WindevString,WindevReader.WindevString,System.UInt32)">
+            <summary>Column width and editor codes are distinct from ordinary control rectangles and HFSQL field types.</summary>
+        </member>
+        <member name="T:WindevReader.WindevUiTabPage">
+            <summary>Child offsets identify bounded control records; the page identifier and remaining flags are not interpreted.</summary>
+        </member>
+        <member name="M:WindevReader.WindevUiTabPage.#ctor(System.Int32,WindevReader.WindevString,System.UInt64,System.Collections.Generic.IReadOnlyList{System.Int32})">
+            <summary>Child offsets identify bounded control records; the page identifier and remaining flags are not interpreted.</summary>
         </member>
         <member name="T:WindevReader.WindevControlState">
             <summary>Observed serialized state codes; combinations and other codes are not inferred.</summary>
