@@ -37,7 +37,7 @@ foreach (WindevUiElement element in window.Elements)
 }
 ```
 
-Les catégories d’éléments sont inférées à partir des préfixes de noms : elles ne constituent pas une reconstruction complète des classes de contrôles. Certaines propriétés, dont `Bounds`, peuvent être absentes d’un profil non reconnu.
+`InferredKind` conserve les catégories inférées à partir des préfixes. Depuis 0.13.0, `ControlType` donne la famille numérique d’un record WDW reconnu, indépendamment de ce préfixe. Certaines propriétés, dont `Bounds`, peuvent être absentes d’un profil non reconnu.
 
 ## Positions et libellés des champs
 
@@ -144,3 +144,67 @@ foreach (WindevUiElement element in report.Elements)
 ```
 
 Le lecteur inventorie les propriétés et les éléments reconnus ; il ne calcule pas une pagination et ne produit pas de rendu de l’état.
+
+
+## Types de champs et contenus WDW
+
+Depuis 0.13.0, `ControlRecord` expose un record borné dans le buffer de propriétés. `ControlType` est un `WindevControlType?` : `Input`, `Label`, `Button`, `CheckBox`, `RadioButton`, `Image`, `Table`, `ComboBox` ou `Tab`. Un code non confirmé donne `null` ; sa valeur reste dans `RawTypeCode`. Une enveloppe non reconnue laisse `ControlRecord == null`.
+
+```csharp
+WdwWindevWindow sampleWindow = WdwWindevWindow.Open("FEN_Controles.wdw");
+
+foreach (WindevUiElement field in sampleWindow.Elements)
+{
+    if (field.ControlRecord is not WindevUiControlRecord record)
+    {
+        continue;
+    }
+
+    Console.WriteLine($"{field.Name}: {field.ControlType}, raw={record.RawTypeCode}");
+    Console.WriteLine($"D[{record.Offset}], length={record.ByteLength}, body={record.SpecificPropertiesOffset}");
+
+    if (record.ItemsDecoded)
+    {
+        foreach (WindevUiItem item in record.Items)
+        {
+            Console.WriteLine($"D[{item.TextOffset}], {item.TextByteLength} bytes: {item.Text}");
+        }
+    }
+
+    if (record.ImageSource is WindevString imageSource)
+    {
+        Console.WriteLine($"Stored image reference at D[{imageSource.Offset}]: {imageSource.Value}");
+    }
+
+    if (record.TableBinding is WindevUiTableBinding binding)
+    {
+        Console.WriteLine($"Table={binding.TableName.Value}, browse key={binding.BrowseKey.Value}");
+
+        foreach (WindevUiTableColumn column in binding.Columns)
+        {
+            Console.WriteLine($"{column.Name.Value}: {column.DataBinding.Value}, width={column.Width}");
+        }
+    }
+
+    foreach (WindevUiTabPage page in record.TabPages)
+    {
+        Console.WriteLine($"Page={page.Caption.Value}, children={page.ChildRecordOffsets.Count}");
+
+        foreach (int childOffset in page.ChildRecordOffsets)
+        {
+            WindevUiElement? child = sampleWindow.Elements.FirstOrDefault(candidate =>
+                candidate.BufferOffset == field.BufferOffset && candidate.ControlRecord?.Offset == childOffset);
+
+            Console.WriteLine(child?.Name ?? $"Unresolved child at D[{childOffset}]");
+        }
+    }
+}
+```
+
+Les familles sont recoupées en 24/25/28/29/31. Les contenus spécifiques ajoutés sont limités au profil **28** vérifié : ne pas attendre une liste d’options 31 parce que sa famille est reconnue. Les propriétés `ItemsDecoded`, `TabPagesDecoded` et `TableBinding.ColumnsDecoded` indiquent si les listes sont reconnues, y compris lorsqu’une liste reconnue est vide.
+
+`RawItemsText` conserve la chaîne unique de contenu d’une combo ; ses items sont séparés par LF. Les options de sélecteur/interrupteur possèdent chacune une chaîne encadrée suivie de 45 octets de métadonnées, accessibles dans le buffer par `MetadataOffset`. Les sélections et valeurs de retour ne sont pas déduites de ces métadonnées.
+
+Tous les offsets de ces modèles sont relatifs au buffer décompressé désigné par `field.BufferOffset`. `WindevUiItem.TextOffset` commence au texte et `TextByteLength` exclut encadrement, NUL et séparateur. `WindevString.Offset`, comme celui de `ImageSource`, commence à l’encadrement PCS. Les références d’image et les liaisons sont du texte stocké ; elles ne déclenchent aucune ouverture de fichier ni requête HFSQL.
+
+Une colonne possède une largeur et un éditeur ; ce ne sont ni un rectangle ordinaire ni un type de stockage HFSQL. Les pages d’onglet exposent les offsets de leurs enfants, pas une hiérarchie générale de tous les conteneurs. Voir les [tables binaires WDW](../file-formats/windev/wdw.mdx#type-numérique-et-enveloppe-des-records-de-champs).

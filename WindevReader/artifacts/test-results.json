@@ -1,6 +1,6 @@
 {
   "Passed": true,
-  "Assertions": 3329,
+  "Assertions": 3589,
   "Documents": 98,
   "DecodedBuffers": 362,
   "SourceLines": 8224,
@@ -27,6 +27,7 @@
     "WINDEV 15: six supplied families; 19-section WDP with unresolved references; CP1252 identities and window title; 23 window/6 project source events with bounded raw length-prefixed lines and owner tag 0a; WDD analysis/table/field tags 04/12/10; four-byte automatic identifier code 38; 123-byte FIC slot at 1688; four-byte NDX key and sentinel; 46-byte CP1252 memo. Property string candidates remain heuristic. Versions 16-23 and unprovided families remain unvalidated.",
     "WDA 15: four raw sections, including an empty graphical section; filename identity fallback; no LZW buffer or typed schema inferred; truncation and unsupported version refused.",
     "WDW 28: seven differential buttons isolate visibility, active/inactive/grayed state and Tab access; exact names, root, rectangles and captions verified. Unknown 32-bit codes remain null with raw values preserved. Optional header/value strings relocate state and Tab offsets. Version 29 settings and version 31 context-menu/tooltip/image-value layouts corroborate the reader. Opacity, input type and unprovided version 30 remain unvalidated.",
+    "WDW mixed controls 28: bounded records expose numeric families 2/3/4/5/6/8/9/14/16, LF combo content, counted choice captions, image reference, PERSONNE browsing/column bindings and two tab pages with one contained button. Stored selector/checkbox captions reverse the supplied prose description. Renamed and changed-type controls follow bytes; malformed local layouts remain unknown without searching adjacent strings. Family envelopes corroborated in versions 24/25/29/31; specific content remains limited to 28.",
     "WDD keys: supplied PERSONNE 28 has primary IDPERSONNE, non-key text/UInt64 fields, duplicate AGE1/FLAGADMIN and ordered NOM/PRENOM/AGE1 composite components. u16 key kind at Q\u002B27, pointer at Q\u002B46, u16 count and three-byte component entries; MOIS/JOUR order corroborated in WDD/NDX 31. Unknown key codes and component options remain raw. Invalid pointers, ordinals, self-references, counts and budgets refused. A synthetic 132-byte FIC slot validates UInt64 decoding and composite omission; no new physical FIC was supplied.",
     "Complete corpus: 98 documents, 362 decoded buffers, 8224 source lines."
   ]

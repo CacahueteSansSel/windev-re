@@ -17,7 +17,8 @@ La bibliothèque et cette documentation reposent sur les fichiers fournis, des c
 | Nouveau couple d’analyse | 2 | WDD 28 : 2 tables, 8 rubriques et 1 liaison ; WDA 28 correspondant |
 | WDL | 1 | Patch d’archive 3102 ; 138 entrées, 134 ressources |
 | Fichiers physiques HFSQL | 445 | 427 initiaux, PERSONNE 28, deux couples 31 et les quatre trios 15/24/25/29 ; 29 contenus distincts |
-| Total | 561 | Les copies historiques ne sont pas des variantes indépendantes |
+| Fenêtre à champs variés 28 | 1 | Neuf familles numériques, options, image, colonnes liées et deux volets avec un bouton enfant |
+| Total | 562 | Les copies historiques ne sont pas des variantes indépendantes |
 
 L’analyse principale du corpus initial contient 6 tables et 37 rubriques ; le nouveau schéma de PERSONNE est distinct. Les GUID permettent de ne pas appliquer arbitrairement l’un à l’autre.
 
@@ -36,9 +37,10 @@ L’analyse principale du corpus initial contient 6 tables et 37 rubriques ; le 
 | Champs WDW | Sept boutons différentiels 28 ; recoupement 29/31 ; chaînes facultatives et offsets variables ; codes inconnus, géométrie, libellés et bornes contrôlés |
 | Clés WDD | Codes 0/2/4 ; vecteur ordonné 28, recoupement MOIS/JOUR 31 ; pointeurs, comptes, ordinaux et budgets invalides ; UInt64 sur FIC synthétique |
 | Noms secondaires WDD | Variantes synthétiques 29/31 : chaîne différente, vide ou UTF-8 plus longue ; rubriques inchangées, avertissement sans noms ; maintien des refus structurels |
+| Types et contenus WDW | Enveloppes 24/25/28/29/31 ; contenus 28 ; codes et noms modifiés ; options, colonnes et enfants bornés ; contenu invalide laissé inconnu |
 | Refus | Troncatures, tailles/pointeurs invalides, mauvais types, budgets et dispositions explicites incorrectes |
 
-La suite élargie réussit **3 329 assertions**. Le compteur `Documents` du rapport historique reste 98 : il désigne le sous-corpus documentaire initial ; les compléments PERSONNE et analyse ont leurs propres contrôles dans le même rapport.
+La suite élargie réussit **3 589 assertions**. Le compteur `Documents` du rapport historique reste 98 : il désigne le sous-corpus documentaire initial ; les compléments PERSONNE et analyse ont leurs propres contrôles dans le même rapport.
 
 ## Reproduire les tests
 
@@ -58,9 +60,10 @@ Depuis la solution livrée, fournir les dossiers ci-dessous. Les noms d’entré
 | 10 | Chemin du fichier WDA 15 supplémentaire |
 | 11 | Chemin de la fenêtre différentielle WDW 28 |
 | 12 | Chemin du nouveau WDD 28 décrivant les clés PERSONNE |
+| 13 | Chemin de la nouvelle fenêtre à champs variés 28, distincte de celle de l’argument 11 |
 
 ```sh
-dotnet run --project tests/WindevReader.Tests -c Release -- /chemin/corpus-initial resultats.json /chemin/personne28 /chemin/analyse28 /chemin/hfsql31 /chemin/projet29 /chemin/projet25 /chemin/projet24 /chemin/projet15 /chemin/analyse15.wda /chemin/champs28.wdw /chemin/cles28.wdd
+dotnet run --project tests/WindevReader.Tests -c Release -- /chemin/corpus-initial resultats.json /chemin/personne28 /chemin/analyse28 /chemin/hfsql31 /chemin/projet29 /chemin/projet25 /chemin/projet24 /chemin/projet15 /chemin/analyse15.wda /chemin/champs28.wdw /chemin/cles28.wdd /chemin/champs-varies28.wdw
 ```
 
 Les arguments à partir du troisième sont facultatifs ; les omettre réduit la couverture. Les tests ne chargent aucune DLL ni EXE du corpus. Les structures mesurées, changements de marqueur et positions sont regroupés dans les pages de chaque format, plutôt que dans des chapitres par livraison.

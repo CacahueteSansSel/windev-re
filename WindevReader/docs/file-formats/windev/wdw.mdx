@@ -5,7 +5,7 @@ sidebar_position: 2
 description: "WDW : fenêtre — structures, positions en octets et limites du lecteur autonome."
 ---
 
-Le WDW rassemble les propriétés d’une fenêtre, ses événements WLangage et une image de prévisualisation. Le lecteur expose le titre et les dimensions de la fenêtre, les rectangles et certains libellés des champs reconnus, ainsi que le BMP de prévisualisation.
+Le WDW rassemble les propriétés d’une fenêtre, ses événements WLangage et une image de prévisualisation. Le lecteur expose le titre et les dimensions de la fenêtre, les rectangles, certains libellés et les familles numériques des champs reconnus, ainsi que le BMP de prévisualisation. Le profil 28 étudié fournit aussi des listes d’options, références d’image, liaisons de table et volets.
 
 Les positions sont exprimées en **octets**. Les inconnues sont indiquées comme telles ; voir les [conventions](../conventions.mdx).
 
@@ -163,7 +163,7 @@ La section 3 reste partiellement interprétée. La section 4 est désormais iden
 
 ## Limites
 
-Le titre et les dimensions du descripteur 610 sont identifiés. Les coordonnées des champs individuels, les styles, les liaisons de données, les images des contrôles individuels, les plans et la hiérarchie complète restent à cartographier. Les régions inconnues sont conservées dans les buffers décodés.
+Le titre et les dimensions du descripteur 610, les rectangles reconnus des champs et leurs familles numériques sont identifiés. Les styles, les corps spécifiques 31, les plans et la hiérarchie complète restent à cartographier. Les régions inconnues sont conservées dans les buffers décodés.
 
 ## Carte mesurée en version 29
 
@@ -499,4 +499,200 @@ Les références fonctionnelles de PC SOFT distinguent [l’état et ses constan
 
 Les membres reconnus sont `WindevUiElement.Bounds`, `Caption`, `Layout`, `Interaction`, `IsVisible`, `State` et `IsTabStop`. Les paramètres typés inconnus valent `null` et les mots bruts restent accessibles. Les offsets de `Layout` et `Interaction` appartiennent au buffer décompressé associé à l’élément, identifié par `BufferOffset`.
 
-L’inventaire initial reste fondé sur les noms et propriétaires d’événements. Si un nom apparaît comme référence avant sa description, le lecteur privilégie l’occurrence munie d’un descripteur reconnu. Les autres formats partageant `WindevUiElement`, comme les états WDE, ne reçoivent pas automatiquement le décodage WDW. Voir [l’exemple .NET](../../dotnet/documents-windev.mdx#visibilité-état-et-accès-par-tab).
+L’inventaire initial fondé sur les noms et propriétaires d’événements est complété, depuis 0.13.0, par les noms valides des records de champs bornés. Si un nom apparaît comme référence avant sa description, le lecteur privilégie l’occurrence munie d’un descripteur reconnu. `ControlRecord` et `ControlType` ajoutent la famille numérique aux profils reconnus. Les autres formats partageant `WindevUiElement`, comme les états WDE, ne reçoivent pas automatiquement le décodage WDW. Voir [l’exemple .NET](../../dotnet/documents-windev.mdx#visibilité-état-et-accès-par-tab).
+
+## Type numérique et enveloppe des records de champs
+
+Depuis la version 0.13.0, le lecteur peut distinguer la famille sérialisée du champ de la catégorie suggérée par son nom. `InferredKind` conserve l’ancienne heuristique ; `ControlType` provient du code numérique d’un record borné. Le type d’un champ nommé `SAI_Exemple` peut donc être `Button` si les octets portent le code 4. Le sous-type d’une saisie, tel que texte ou numérique, est une autre propriété et reste inconnu.
+
+![En-tête de record et contenu imbriqué](../assets/types-champs.svg)
+
+### En-tête de seize octets
+
+Soit `K` le début du record dans le buffer de propriétés décompressé `D` :
+
+| Position | Taille | Type | Signification / contrôle |
+| --- | --- | --- | --- |
+| `K + 0` | 4 | `u32` LE | Longueur totale `L`, en-tête compris ; au moins 16 |
+| `K + 4` | 4 | `u32` LE | Code numérique de famille ; conservé dans `RawTypeCode` |
+| `K + 8` | 4 | `u32` LE | Descripteur du bloc commun, selon la version |
+| `K + 12` | 4 | `u32` LE | Longueur `C` du bloc commun ; au plus `L - 16` |
+| `K + 16` | `C` | Structure variable | Propriétés communes et style ; contient le descripteur 607/610 et le nom |
+| `B = K + 16 + C` | `L - 16 - C` | Structure selon le type | Corps spécifique |
+| `K + L` | — | Position | Fin exclusive du record |
+
+Le nom encadré doit se trouver dans le bloc commun, avec le descripteur 607 ou 610 juste avant et suffisamment de place pour le profil commun reconnu. Le lecteur ne rattache pas un nom au record simplement parce qu’il est proche. Des enveloppes ambiguës pour un même nom ne donnent pas un type certifié. Les offsets, longueurs et descripteurs restent disponibles dans `ControlRecord`.
+
+| WINDEV | Descripteur à `K + 8` | Descripteur avant le nom | Vérification |
+| --- | --- | --- | --- |
+| 24 | 623 | 607 | Trois saisies et deux boutons du témoin |
+| 25 | 624 | 607 | Trois saisies et deux boutons du témoin |
+| 28 | 628 | 607 | Fenêtre à champs variés et ancien témoin différentiel |
+| 29 | 629 | 607 | Trois saisies et deux boutons du témoin |
+| 31 | 631 | 610 | Plusieurs familles du corpus initial |
+| 15 / 30 | Non attribué par ce lecteur | — | Pas de nouvelle lecture de type ajoutée |
+
+Ces descripteurs sont des valeurs observées, pas une formule à extrapoler à toute version. Le lecteur reconnaît les enveloppes des versions ci-dessus ; le décodage des corps spécifiques décrit plus bas est limité au profil 28 étudié.
+
+### Codes de famille confirmés
+
+| Code `u32` | Famille | Valeur .NET | Ce que le code ne précise pas |
+| --- | --- | --- | --- |
+| 2 | Saisie | `Input` | Texte, numérique, masque ou autre sous-type |
+| 3 | Libellé | `Label` | Toutes les variantes de rendu |
+| 4 | Bouton | `Button` | Style, comportement et actions |
+| 5 | Interrupteur | `CheckBox` | État sélectionné de chaque option |
+| 6 | Sélecteur | `RadioButton` | Valeur renvoyée et sélection initiale |
+| 8 | Image | `Image` | Mode d’affichage ou contenu du fichier externe |
+| 9 | Table | `Table` | Toutes les modalités de remplissage |
+| 14 | Combo | `ComboBox` | Avec ou sans saisie |
+| 16 | Onglet | `Tab` | Tous les paramètres de navigation |
+
+Les constantes publiques de [PC SOFT pour le type Champ](https://doc.pcsoft.fr/fr-FR/?1000020967=) corroborent plusieurs familles, notamment bouton 4, interrupteur 5, sélecteur 6, image 8, table 9 et onglet 16. Elles ne spécifient pas ces structures binaires. Le code sérialisé 14 de la combo n’est pas remplacé par les constantes publiques 10001/10002 qui distinguent les variantes de combo. Un autre code reste brut, avec `ControlType == null`.
+
+### Mesures de la nouvelle fenêtre 28
+
+Le fichier mesure **86 876 octets**. Sa section de propriétés commence à **377**, mesure **13 557 octets**, et contient l’enveloppe LZW à **405 = 377 + 28**. Le flux commence à 416 et donne **69 115 octets** dans `D`. Le témoin précédent de même nom est conservé séparément ; ses offsets ne sont pas réutilisés ici.
+
+| Champ enregistré | `K` | `L` | Code à `K + 4` | `C` | Nom encadré `N` | Corps spécifique `B` |
+| --- | --- | --- | --- | --- | --- | --- |
+| `SAI_SansNom1` | 15906 | 2822 | 2 | 2578 | 18232 | 18500 |
+| `LIB_SansNom1` | 18728 | 665 | 3 | 569 | 19053 | 19313 |
+| `BTN_SansNom1` | 19393 | 1839 | 4 | 1605 | 20774 | 21014 |
+| `IMG_SansNom1` | 21232 | 1772 | 8 | 655 | 21625 | 21903 |
+| `COMBO_SansNom1` | 23004 | 6656 | 14 | 4567 | 27327 | 27587 |
+| `TABLE_PERSONNE` | 29660 | 30935 | 9 | 14232 | 43640 | 43908 |
+| `SEL_SansNom1` | 60595 | 2057 | 6 | 1742 | 62077 | 62353 |
+| `INT_SansNom1` | 62652 | 2119 | 5 | 1749 | 64139 | 64417 |
+| `ONG_SansNom1` | 64771 | 4344 | 16 | 2246 | 66774 | 67033 |
+| `BTN_Le_bouton_dans_l_onglet` | 67099 | 1870 | 4 | 1620 | 68480 | 68735 |
+
+Les sept boutons de visibilité/état/Tab sont également présents et portent le code 4. L’inventaire reconnaît 17 records de champs nommés ; les colonnes ont une structure différente, détaillée ci-dessous. Le libellé de `LIB_SansNom1` est la chaîne UTF-8 `Libellé` à 19154, de longueur encadrée 21.
+
+## Contenu d’une combo : liste interne et séparateurs LF
+
+Le corps de `COMBO_SansNom1` commence par un autre record, à **27587**, de longueur **2073**, code brut **7**, descripteur **628** et bloc commun de **1806 octets**. Cette liste interne se termine à 29660, comme la combo qui la contient. Elle n’est pas ajoutée comme champ nommé indépendant.
+
+| Position dans `D` | Taille | Type | Valeur / sens |
+| --- | --- | --- | --- |
+| 27587 | 4 | `u32` | 2073, longueur du record de liste interne |
+| 27591 | 4 | `u32` | 7, famille interne observée |
+| 27595 | 4 | `u32` | 628 |
+| 27599 | 4 | `u32` | 1806 |
+| 29409 | 12 | Trois `u32` | 0, 1, 0 ; paramètres bruts du profil reconnu |
+| 29421 | 41 | Chaîne encadrée PCS | `Huile\nPain\nEau\nFarine\nTortue` |
+| 29429 | 28 | Octets de texte | Cinq textes séparés par `0A` (LF), puis NUL et marqueur final hors de cette plage |
+
+Il n’y a pas cinq chaînes encadrées : il y en a une seule. `RawItemsText` conserve cette chaîne et `Items` expose les fragments, dans leur ordre, avec leurs positions réelles :
+
+| Élément | Début du texte | Longueur du texte, sans séparateur |
+| --- | --- | --- |
+| Huile | 29429 | 5 |
+| Pain | 29435 | 4 |
+| Eau | 29440 | 3 |
+| Farine | 29444 | 6 |
+| Tortue | 29451 | 6 |
+
+Le lecteur découpe le contenu littéral sur LF, sans simuler les remplissages programmés ou HFSQL. Il conserve les caractères des fragments, sans normalisation de CR ni interprétation de directives de liste. Les autres variantes de remplissage et les paramètres qui suivent restent ouverts.
+
+## Options d’un sélecteur ou d’un interrupteur
+
+Dans ce fichier, **le sélecteur contient les choix de sauce et l’interrupteur les montants EUR**. Cet ordre est celui des octets, même si la description initiale des deux listes était inversée. Les codes 6 et 5 sont indépendants des préfixes `SEL_` et `INT_`.
+
+Soit `B` le corps spécifique du champ :
+
+| Position | Taille | Type | Sens / lecture |
+| --- | --- | --- | --- |
+| `B + 0` | 4 | `u32` | 1 dans le profil reconnu ; autre valeur non interprétée |
+| `B + 4` | 4 | `u32` | Nombre d’options |
+| `B + 8` | Variable | Suite de records | Premier libellé encadré |
+| Après chaque libellé encadré | 45 | `octets[45]` | Métadonnées d’option, non entièrement interprétées |
+| Après ces 45 octets | Variable | Record suivant | Libellé de l’option suivante, si le compte n’est pas atteint |
+
+| Champ | Compte / position | Libellé | Début encadré | Longueur encadrée | Métadonnées, début |
+| --- | --- | --- | --- | --- | --- |
+| `SEL_SansNom1` | 2 à 62357 | Avec la sauce | 62361 | 26 | 62387 |
+| `SEL_SansNom1` | — | Sans la sauce | 62432 | 26 | 62458 |
+| `INT_SansNom1` | 3 à 64421 | 135EUR | 64425 | 19 | 64444 |
+| `INT_SansNom1` | — | 200EUR | 64489 | 19 | 64508 |
+| `INT_SansNom1` | — | 500EUR | 64553 | 19 | 64572 |
+
+Dans les métadonnées, le mot `u32` à +8 vaut 1 puis 2 pour la sauce, et 1, 2, 2 pour les montants. Il n’est donc pas exposé comme un ordinal unique ou une valeur renvoyée confirmée. La sélection, les états par option et les valeurs de retour restent inconnus. `MetadataOffset` permet d’inspecter les 45 octets dans le buffer d’origine.
+
+## Référence d’image
+
+Le record image porte le code **8**. À **`B + 20 = 21923`**, une chaîne encadrée de **39 octets** conserve un chemin se terminant par `cul.png`. Une autre occurrence du même chemin se trouve dans le bloc commun à 21731 ; le lecteur de contenu utilise le champ du corps image à 21923.
+
+`ControlRecord.ImageSource` conserve le texte stocké, y compris son échappement des antislashs. Le lecteur ne résout pas le chemin, ne charge pas le PNG et n’en déduit pas la nature de l’image. Ce champ n’est pas le BMP de prévisualisation de la fenêtre, stocké dans une autre section.
+
+## Table liée à PERSONNE et colonnes
+
+Le record de table porte le code **9**. Son corps spécifique commence à **43908** :
+
+| Position | Taille | Type | Propriété |
+| --- | --- | --- | --- |
+| `B + 0` | 13 | `octets[13]` | Paramètres non attribués |
+| `B + 13 = 43921` | 21 | Chaîne encadrée | Fichier logique `PERSONNE` |
+| 43942, juste après | 23 | Chaîne encadrée | Rubrique de parcours `IDPERSONNE` |
+| Fin de cette chaîne `J = 43965`, puis `J + 174 = 44139` | 4 | `u32` | Sept colonnes annoncées |
+| 44143 et suite | Variable | Records de colonnes | Structure distincte des champs ordinaires |
+
+Les déplacements +13 et +174 sont appliqués uniquement à ce profil 28 ; les 174 octets contiennent des paramètres non entièrement interprétés. Une liaison n’est pas reconstruite en cherchant un texte `PERSONNE` ailleurs dans la fenêtre.
+
+### En-tête reconnu d’une colonne
+
+Une colonne possède deux noms encadrés identiques, séparés par le descripteur **621**. Soit `N_c` le début du second nom et `R_c` sa fin :
+
+| Position | Taille | Type | Propriété / contrôle |
+| --- | --- | --- | --- |
+| Juste avant `N_c - 4` | Variable | Chaîne encadrée | Premier nom, devant se terminer au descripteur |
+| `N_c - 4` | 4 | `u32` | Descripteur 621 |
+| `N_c` | Variable | Chaîne encadrée | Second nom, identique au premier |
+| `R_c` | 8 | `u64` brut | Identifiant interne |
+| `R_c + 8` | 4 | `u32` | Largeur de colonne |
+| `R_c + 12` | Variable | Chaîne encadrée | Titre de colonne |
+| Après le titre | 32 | `octets[32]` | Paramètres non entièrement interprétés |
+| Ensuite | Variable | Chaîne encadrée | Liaison `FICHIER.RUBRIQUE` |
+| Juste après la liaison | 8 | Deux `u32` | Code brut de famille d’éditeur, répété et comparé |
+
+Le lecteur cherche uniquement cette signature complète dans le corps borné de la table. Il exige le nombre déclaré de colonnes reconnues ; une liste incomplète reste vide avec `ColumnsDecoded == false`. Il ne reconstruit pas encore tout le parcours séquentiel de leurs corps et sous-objets. Les colonnes restent des modèles dédiés : aucune coordonnée X/Y ou hauteur de champ ordinaire ne leur est inventée.
+
+| Colonne | `N_c` | Titre, début | Liaison, début | Largeur | Code brut d’éditeur |
+| --- | --- | --- | --- | --- | --- |
+| `COL_IDPERSONNE` | 44178 | 44217 | 44285 | 162 | 2 |
+| `COL_NOM` | 46582 | 46614 | 46670 | 306 | 2 |
+| `COL_PRENOM` | 48928 | 48963 | 49014 | 306 | 2 |
+| `COL_AGE1` | 51273 | 51306 | 51354 | 78 | 2 |
+| `COL_FLAGADMIN` | 53637 | 53675 | 53729 | 25 | 5 |
+| `COL_IDPERSONNEPASCLE` | 55474 | 55519 | 55580 | 156 | 2 |
+| `COL_NOMPRENOMAGE1` | 57892 | 57934 | 57998 | 99 | 2 |
+
+Les sept liaisons portent les noms des rubriques de PERSONNE 28 déjà étudiées, y compris sa clé composée. Le code d’éditeur 5 de FLAGADMIN est compatible avec un interrupteur ; ce n’est pas le code HFSQL du booléen. L’identifiant, l’entier AGE1, les textes et la clé composée partagent ici l’éditeur 2 : on ne peut donc pas retrouver le type de stockage HFSQL depuis ce seul code. La définition du WDD reste nécessaire.
+
+## Onglet, volets et bouton enfant
+
+Le corps spécifique de l’onglet commence à **67033**. Son nombre de volets est un `u32` à **`B + 16 = 67049`**, égal à 2. Le premier volet commence à **67053**.
+
+| Départ / position | Taille | Type | Lecture |
+| --- | --- | --- | --- |
+| Début de volet `V` | 4 | `u32` | Descripteur 603 |
+| `V + 4` | Variable | Chaîne encadrée | Titre du volet |
+| Fin du titre `Q` | 18 | `octets[18]` | Paramètres intermédiaires, non interprétés |
+| `Q + 18` | 4 | `u32` | Nombre d’enfants |
+| `Q + 22` | Variable | Records bornés de champs | Chaque enfant avance le curseur de sa propre longueur `L` |
+| Après les enfants | 4 | `u32` | Longueur de la terminaison, 12 dans le profil reconnu |
+| Ensuite | 8 | `u64` brut | Identifiant de terminaison ; rôle exact non attribué |
+| Après ces 12 octets | Variable | Volet suivant | Si le compte n’est pas atteint |
+
+| Volet | Début `V` | Titre encadré | Nombre d’enfants / position | Records enfants | Volet suivant / fin |
+| --- | --- | --- | --- | --- | --- |
+| Volet 1 | 67053 | 67057, longueur 20 | 1 à 67095 | Bouton à 67099, longueur 1870, fin 68969 | Terminaison 68969–68981, puis volet 2 |
+| Volet 2 | 68981 | 68985, longueur 20 | 0 à 69023 | Aucun | Terminaison 69027–69039 |
+
+Le nom exact du bouton contient une majuscule : `BTN_Le_bouton_dans_l_onglet`. Sa présence dans le premier volet est prouvée par l’imbrication des records, indépendamment du nom. Le texte supplémentaire `Nouvel onglet` à 69072 n’est pas compté comme un troisième volet : il se trouve après les deux volets annoncés, dans une région auxiliaire.
+
+### Limites et comportement du lecteur
+
+Les lectures spécifiques 28 sont optionnelles et bornées par leur record. Un code inconnu, une chaîne mal encadrée, une longueur invalide ou un compte dépassant 10 000 arrête le décodage local concerné. Les enfants d’un onglet sont aussi limités à 10 000 au total pour cet onglet. `ItemsDecoded`, `TabPagesDecoded` et `ColumnsDecoded` distinguent les listes reconnues des données non interprétées.
+
+Le lecteur n’établit pas une hiérarchie générale pour tous les conteneurs WINDEV. Il expose les offsets des enfants des volets reconnus ; l’appelant les rapproche de `ControlRecord.Offset` dans le même buffer. Les styles complets, l’opacité, les sous-types de saisie, les valeurs sélectionnées et les autres dispositions internes restent ouverts. Les tests changent les noms, codes, contenus, tailles, comptes et encadrements pour vérifier que la lecture dépend des octets, avec repli local quand une structure n’est plus reconnue.

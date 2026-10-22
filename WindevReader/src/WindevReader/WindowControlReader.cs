@@ -17,19 +17,39 @@ internal static class WindowControlReader
 
         List<WindevUiElement> result = new List<WindevUiElement>();
 
-        foreach (WindevUiElement element in elements)
+        foreach (WindevDecodedBlock buffer in buffers)
         {
-            WindevDecodedBlock? buffer = buffers.FirstOrDefault(candidate => candidate.Offset == element.BufferOffset);
-            WindevUiElement decoded = buffer is null
-                ? element
-                : ReadElement(element, buffer.Data.Span, version, maxStringBytes);
+            IReadOnlyList<WindowControlDefinition> definitions = WindowRecordReader.Read(buffer.Data.Span, version, maxStringBytes);
+            Dictionary<int, WindowControlDefinition> records = definitions.ToDictionary(definition => definition.Name.Offset);
+            List<WindevUiElement> candidates = elements.Where(element => element.BufferOffset == buffer.Offset).ToList();
+            HashSet<int> knownOffsets = candidates.Select(element => element.Offset).ToHashSet();
 
-            result.Add(decoded);
+            foreach (WindowControlDefinition definition in definitions)
+            {
+                if (knownOffsets.Add(definition.Name.Offset))
+                {
+                    candidates.Add(new WindevUiElement(
+                        definition.Name.Value,
+                        UiReader.InferKind(definition.Name.Value),
+                        buffer.Offset,
+                        definition.Name.Offset,
+                        Array.Empty<WindevString>()));
+                }
+            }
+
+            foreach (WindevUiElement element in candidates)
+            {
+                records.TryGetValue(element.Offset, out WindowControlDefinition? definition);
+
+                WindevUiElement decoded = ReadElement(element, buffer.Data.Span, version, maxStringBytes, definition?.Record);
+
+                result.Add(decoded);
+            }
         }
 
         return result
             .GroupBy(element => element.Name, StringComparer.Ordinal)
-            .Select(group => group.FirstOrDefault(element => element.Layout is not null) ?? group.First())
+            .Select(group => group.FirstOrDefault(element => element.ControlRecord is not null) ?? group.FirstOrDefault(element => element.Layout is not null) ?? group.First())
             .ToArray();
     }
 
@@ -37,7 +57,8 @@ internal static class WindowControlReader
         WindevUiElement element,
         ReadOnlySpan<byte> data,
         ushort version,
-        int maxStringBytes)
+        int maxStringBytes,
+        WindevUiControlRecord? record)
     {
         uint descriptor = version == 31 ? 610u : 607u;
         int descriptorOffset = element.Offset - 4;
@@ -86,7 +107,8 @@ internal static class WindowControlReader
 
         List<WindevUiRawValue> rawValues = ReadRawValues(data, nameEnd, tailOffset);
 
-        if (caption is null && tailOffset is int tail && element.InferredKind == "Button")
+        if (caption is null && tailOffset is int tail &&
+            (record?.Type == WindevControlType.Button || record is null && element.InferredKind == "Button"))
         {
             caption = ReadButtonCaption(data, tail, version, maxStringBytes);
         }
@@ -109,7 +131,8 @@ internal static class WindowControlReader
             Bounds = bounds,
             Caption = caption?.Value,
             Layout = layout,
-            Interaction = interaction
+            Interaction = interaction,
+            ControlRecord = record
         };
     }
 

@@ -98,7 +98,7 @@ Dans le profil source 15, les identités et titres sont CP1252 Z ; les lignes et
 | `CommonTailOffset` | Repère `E` après la chaîne commune ou sa sentinelle nulle | Optionnel si la forme n’est pas reconnue |
 | `RawValues` | Vues `WindevUiRawValue(Offset, ByteLength, Value)` | Inspection brute ; utiliser `Interaction` pour les paramètres d’état calculés |
 
-Le constructeur existant de `WindevUiElement` reste inchangé ; les trois nouveaux membres sont des propriétés initialisables. Consulter la [carte WDW](../file-formats/windev/wdw.mdx#position-taille-et-libellé-des-champs) pour le périmètre exact des profils.
+Le constructeur existant de `WindevUiElement` reste inchangé ; les métadonnées ajoutées sont des propriétés initialisables. Consulter la [carte WDW](../file-formats/windev/wdw.mdx#position-taille-et-libellé-des-champs) pour le périmètre exact des profils.
 
 
 ## Interaction initiale des champs WDW
@@ -137,3 +137,21 @@ L’énumération n’est pas un jeu de drapeaux : les combinaisons ne sont pas 
 | `WindevKeyComponent` | `FieldOrdinal`, `FieldId`, `FieldName`, `RawOptions`, `Offset` | Ordinal local, options et position de l’entrée brute |
 
 Les numéros de composants sont distincts des identifiants de rubrique. Les options non nulles ne sont pas converties en une direction de tri. Les règles d’intégrité, nullité et unicité des codes non vérifiés ne sont pas reconstituées.
+
+
+## Types et contenus des champs WDW
+
+| Modèle / membre | Contrat |
+| --- | --- |
+| `WindevUiElement.ControlType` | Famille nullable depuis le code sérialisé ; distincte de `InferredKind` |
+| `WindevUiElement.ControlRecord` | Enveloppe reconnue ou `null` ; versions 24/25/28/29/31 |
+| `WindevUiControlRecord` | `Offset`, `ByteLength`, `RawTypeCode`, `RawDescriptor`, `CommonPropertiesOffset`, `CommonPropertiesByteLength`, `SpecificPropertiesOffset`, `Type` |
+| `WindevUiControlRecord.Items`, `ItemsDecoded`, `RawItemsText` | Items ordonnés, reconnaissance de la liste et chaîne agrégée de combo ; contenus du profil 28 |
+| `WindevUiItem` | `Text`, `TextOffset`, `TextByteLength`, `RecordOffset`, `MetadataOffset` ; les deux dernières positions sont nulles pour les fragments de combo |
+| `WindevUiControlRecord.ImageSource` | Chaîne encadrée du corps image ; référence conservée, non suivie |
+| `WindevUiControlRecord.TableBinding` | `TableName`, `BrowseKey`, `DeclaredColumnCount`, `Columns`, `ColumnsDecoded` |
+| `WindevUiTableColumn` | Deuxième `Name`, `DescriptorOffset`, `RawIdentifier`, `Width`, `Caption`, `DataBinding`, `RawEditorTypeCode` |
+| `WindevUiControlRecord.TabPages`, `TabPagesDecoded` | Volets reconnus du profil 28 ; liste et indicateur de reconnaissance |
+| `WindevUiTabPage` | `Offset`, `Caption`, `RawIdentifier`, `ChildRecordOffsets` ; enfants résolus dans le même buffer |
+
+Ces positions sont exprimées en octets dans le buffer décompressé de l’élément. Les corps spécifiques restent optionnels ; une famille reconnue n’implique pas que tout son contenu soit interprété. Les colonnes ne reçoivent pas de faux rectangles de contrôle.

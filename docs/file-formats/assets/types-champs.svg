@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1040" height="430" viewBox="0 0 1040 430" role="img" aria-labelledby="title desc">
+  <title id="title">Record de champ WDW et contenu imbriqué</title>
+  <desc id="desc">Un en-tête de seize octets donne la longueur, le type, le descripteur et la taille des propriétés communes. Le corps spécifique commence à K plus seize plus C. Un onglet contient des volets et des records enfants bornés.</desc>
+  <rect width="1040" height="430" rx="16" fill="#f4f7fb"/>
+  <g font-family="system-ui, sans-serif" fill="#172b4d">
+    <text x="28" y="35" font-size="22" font-weight="700">Le type appartient au record, indépendamment du nom</text>
+    <text x="28" y="65" font-size="15">Positions en octets dans le buffer décompressé D ; entiers u32 petit-boutistes</text>
+    <g stroke-width="2">
+      <rect x="28" y="91" width="246" height="80" rx="8" fill="#dbeafe" stroke="#2563eb"/>
+      <rect x="278" y="91" width="242" height="80" rx="8" fill="#dcfce7" stroke="#15803d"/>
+      <rect x="524" y="91" width="242" height="80" rx="8" fill="#ede9fe" stroke="#7c3aed"/>
+      <rect x="770" y="91" width="242" height="80" rx="8" fill="#ffedd5" stroke="#c2410c"/>
+    </g>
+    <g font-size="17" text-anchor="middle">
+      <text x="151" y="120" font-weight="700">K + 0 : longueur L</text><text x="151" y="148" font-size="14">Record complet, en-tête inclus</text>
+      <text x="399" y="120" font-weight="700">K + 4 : code de type</text><text x="399" y="148" font-size="14">Exemple : 4 = bouton</text>
+      <text x="645" y="120" font-weight="700">K + 8 : descripteur</text><text x="645" y="148" font-size="14">628 dans le témoin 28</text>
+      <text x="891" y="120" font-weight="700">K + 12 : taille C</text><text x="891" y="148" font-size="14">Longueur du bloc commun</text>
+    </g>
+    <rect x="28" y="193" width="480" height="63" rx="8" fill="#ede9fe" stroke="#7c3aed" stroke-width="2"/>
+    <rect x="520" y="193" width="492" height="63" rx="8" fill="#dcfce7" stroke="#15803d" stroke-width="2"/>
+    <text x="46" y="218" font-size="17" font-weight="700">K + 16 : propriétés communes, C octets</text>
+    <text x="46" y="242" font-size="14">Style, nom encadré, identifiant, rectangle, paramètres…</text>
+    <text x="538" y="218" font-size="17" font-weight="700">B = K + 16 + C : corps spécifique</text>
+    <text x="538" y="242" font-size="14">Options, image, liaison, volets… Fin exclusive : K + L</text>
+    <text x="28" y="292" font-size="18" font-weight="700">Exemple : onglet → volets → enfants</text>
+    <rect x="28" y="310" width="984" height="90" rx="10" fill="#dbeafe" stroke="#2563eb" stroke-width="2"/>
+    <text x="46" y="338" font-size="16">Record ONG : type 16, longueur 4 344</text>
+    <rect x="385" y="324" width="360" height="59" rx="7" fill="#dcfce7" stroke="#15803d"/>
+    <text x="400" y="347" font-size="15">Volet 1 : un enfant à D[67099]</text>
+    <text x="400" y="370" font-size="14">Bouton type 4, longueur 1 870</text>
+    <rect x="762" y="324" width="231" height="59" rx="7" fill="#ffedd5" stroke="#c2410c"/>
+    <text x="779" y="357" font-size="15">Volet 2 : aucun enfant</text>
+  </g>
+</svg>
