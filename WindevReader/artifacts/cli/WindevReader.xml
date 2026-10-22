@@ -97,6 +97,18 @@
         <member name="P:WindevReader.WindevUiElement.Layout">
             <summary>Decoded-buffer positions and uninterpreted numeric values for the recognized layout.</summary>
         </member>
+        <member name="P:WindevReader.WindevUiElement.Interaction">
+            <summary>Serialized interaction settings for recognized version 28, 29 and 31 layouts.</summary>
+        </member>
+        <member name="P:WindevReader.WindevUiElement.IsVisible">
+            <summary>Initial visibility stored in the document, independent of later runtime changes.</summary>
+        </member>
+        <member name="P:WindevReader.WindevUiElement.State">
+            <summary>Initial interaction state. Unknown serialized values remain null.</summary>
+        </member>
+        <member name="P:WindevReader.WindevUiElement.IsTabStop">
+            <summary>Stored Tab-access setting, independent of visibility and interaction state.</summary>
+        </member>
         <member name="T:WindevReader.WindevUiRawValue">
             <summary>Numeric view of raw bytes. No visibility, state, opacity or navigation meaning is implied.</summary>
         </member>
@@ -114,6 +126,9 @@
         </member>
         <member name="P:WindevReader.WindevDataField.IsCompositeKey">
             <summary>Observed type-28 composite profile; ordinary type-28 binary fields retain marker 0.</summary>
+        </member>
+        <member name="P:WindevReader.WindevDataField.Key">
+            <summary>Key metadata for the validated WDD 28 and 31 layouts; null for other versions.</summary>
         </member>
         <member name="P:WindevReader.WindevDataField.Type">
             <summary>Friendly type for codes observed in the supplied schema; unknown codes remain explicit.</summary>
@@ -138,6 +153,30 @@
         </member>
         <member name="M:WindevReader.NdxHfsqlIndexFile.ReadIndexRegion(System.Int32)">
             <summary>Bytes between an announced descriptor and the next one (or the directory), without B-tree interpretation.</summary>
+        </member>
+        <member name="T:WindevReader.WindevKeyKind">
+            <summary>Key kinds verified in the supplied WDD 28 profile and corroborated in version 31.</summary>
+        </member>
+        <member name="T:WindevReader.WindevKeyComponent">
+            <summary>An ordered component resolved through the table's zero-based field directory.</summary>
+        </member>
+        <member name="M:WindevReader.WindevKeyComponent.#ctor(System.UInt16,System.UInt32,System.String,System.Byte,System.Int32)">
+            <summary>An ordered component resolved through the table's zero-based field directory.</summary>
+        </member>
+        <member name="T:WindevReader.WindevFieldKey">
+            <summary>All offsets refer to the decoded WDD schema, including its four-byte revision prefix.</summary>
+        </member>
+        <member name="M:WindevReader.WindevFieldKey.#ctor(System.Int32,System.UInt16,System.Nullable{System.Int32},System.Boolean,System.Collections.Generic.IReadOnlyList{WindevReader.WindevKeyComponent})">
+            <summary>All offsets refer to the decoded WDD schema, including its four-byte revision prefix.</summary>
+        </member>
+        <member name="T:WindevReader.WindevControlState">
+            <summary>Observed serialized state codes; combinations and other codes are not inferred.</summary>
+        </member>
+        <member name="T:WindevReader.WindevUiInteraction">
+            <summary>Initial settings and their positions in the decoded property buffer.</summary>
+        </member>
+        <member name="M:WindevReader.WindevUiInteraction.#ctor(System.Int32,System.UInt32,System.Nullable{System.Int32},System.Nullable{System.UInt32},System.Nullable{System.Int32},System.Nullable{System.UInt32})">
+            <summary>Initial settings and their positions in the decoded property buffer.</summary>
         </member>
         <member name="T:WindevReader.WdaWindevAnalysisSource">
             <summary>Additional low-level access to the editable .wda source of an analysis.</summary>

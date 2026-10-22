@@ -23,6 +23,7 @@ internal static class WindowControlTests
 
             check(element.Bounds == control.Bounds, "Control rectangle agrees with the supplied design and companion controls");
             check(element.Caption == control.Caption, "Control caption comes from its structural position");
+            check(element.IsVisible == true && element.State == WindevControlState.Active && element.IsTabStop == true, "Version 29 initial settings corroborate the supplied user descriptions");
             check(element.Layout?.RawDescriptor == 607, "Control layout requires the observed descriptor");
         }
 
@@ -106,10 +107,10 @@ internal static class WindowControlTests
             File.Delete(temporaryFile);
         }
 
-        checks.Add("Window controls: five version 29 rectangles/captions; decoded offsets and raw numeric metadata; changed signed coordinates/caption, unsupported descriptor, invalid dimensions and damaged caption framing. Visibility, opacity, input state/type and tab semantics remain unassigned.");
+        checks.Add("Window controls: five version 29 rectangles/captions; decoded offsets and raw numeric metadata; changed signed coordinates/caption, unsupported descriptor, invalid dimensions and damaged caption framing. Visibility, interaction state and Tab access are decoded in compatible 28/29/31 layouts. Opacity and input type remain unassigned.");
     }
 
-    private static byte[] ReplaceProperties(WdwWindevWindow window, byte[] properties)
+    internal static byte[] ReplaceProperties(WdwWindevWindow window, byte[] properties)
     {
         byte[] encoded = EncodeLiteralLzw(properties);
         byte[] section = new byte[39 + encoded.Length];

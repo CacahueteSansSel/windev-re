@@ -288,6 +288,16 @@ try
         Wda15Tests.Run(args[9], Check, Reject, checks);
     }
 
+    if (args.Length > 10)
+    {
+        Windev28WindowTests.Run(args[10], root, Check, checks);
+    }
+
+    if (args.Length > 11)
+    {
+        WddKeyTests.Run(args[11], args[3], args[4], Check, Reject, checks);
+    }
+
     HashSet<string> supported = new HashSet<string>([".wdp", ".wdw", ".wdg", ".wdd", ".wda", ".wde"], StringComparer.OrdinalIgnoreCase);
     string[] files = Directory.EnumerateFiles(root, "*", SearchOption.AllDirectories).Where(field => supported.Contains(Path.GetExtension(field))).ToArray();
     int blocks = 0;

@@ -57,7 +57,7 @@ public sealed class WddWindevAnalysis : WindevDocument
 
         Warn(
             "PartialSchemaProperties",
-            "Table and field definitions are decoded. Key rules, defaults, connections and remaining flags retain their raw representation.");
+            "Table and field definitions are decoded. Verified key kinds and ordered composite components are decoded for versions 28 and 31. Other key codes, sort options, defaults, connections and remaining flags retain their raw representation.");
     }
 
     public new static WddWindevAnalysis Open(string filename, WindevOpenOptions? options = null)

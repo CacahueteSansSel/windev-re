@@ -1,13 +1,13 @@
-# WindevReader 0.10.0
+# WindevReader 0.12.0
 
-Bibliothèque .NET 8 autonome, en lecture seule, pour étudier les documents WINDEV, les patchs WDL et certains profils HFSQL. Aucun composant officiel n’est chargé ou exécuté. Les formats restent partiellement documentés : une ouverture réussie ne signifie pas que toutes leurs propriétés sont connues.
+Bibliothèque .NET 10 autonome, en lecture seule, pour étudier les documents WINDEV, les patchs WDL et certains profils HFSQL. Aucun composant officiel n’est chargé ou exécuté. Les formats restent partiellement documentés : une ouverture réussie ne signifie pas que toutes leurs propriétés sont connues.
 
 ## Installer
 
-Le package local est `artifacts/WindevReader.0.10.0.nupkg` :
+Le package local est `artifacts/WindevReader.0.12.0.nupkg` :
 
 ```sh
-dotnet add package WindevReader --version 0.10.0 --source /chemin/vers/WindevReader/artifacts
+dotnet add package WindevReader --version 0.12.0 --source /chemin/vers/WindevReader/artifacts
 ```
 
 La solution ne dépend d’aucun package externe. Les limites de taille et de décompression sont configurables avec `WindevOpenOptions`.
@@ -58,7 +58,7 @@ Le début et le nombre d’emplacements restent fournis explicitement. Les état
 | Famille | Témoins et capacités |
 | --- | --- |
 | WDP, WDD | Versions 15, 24, 25, 28, 29 et 31 ; références et schémas selon les profils |
-| WDW | Versions 15, 24, 25, 29 et 31 ; racines 607/610, source et BMP |
+| WDW | Versions 15, 24, 25, 28, 29 et 31 ; racines 607/610, source et BMP |
 | WDG | Témoins 28/31 ; procédures |
 | WDA | Témoins 15/28/31 ; sections et buffers d’analyse, sans modèle éditable typé |
 | WDE | Témoins 31 ; propriétés partielles et source |
@@ -82,18 +82,18 @@ Le code utilise des types explicites, des variables en anglais et en camel case,
 - `docs/dotnet/` : installation, exemples C#, extraction, CLI, API et erreurs.
 - `examples/` : dispositions JSON des profils recoupés, notamment `personne15-schema-layout.json` et `personne24-schema-layout.json`.
 
-Les pages Docusaurus sont en français. Les exemples C# emploient des identifiants et commentaires en anglais. Les sept schémas explicatifs sont en SVG ; les exemples privés ne sont pas distribués.
+Les pages Docusaurus sont en français. Les exemples C# emploient des identifiants et commentaires en anglais. Les huit schémas explicatifs sont en SVG ; les exemples privés ne sont pas distribués.
 
 ## Construire et vérifier
 
 ```sh
 dotnet build WindevReader.sln -c Release
-dotnet run --project tests/WindevReader.Tests -c Release -- /chemin/corpus-initial resultats.json /chemin/personne28 /chemin/analyse28 /chemin/hfsql31 /chemin/projet29 /chemin/projet25 /chemin/projet24 /chemin/projet15 /chemin/analyse15.wda
+dotnet run --project tests/WindevReader.Tests -c Release -- /chemin/corpus-initial resultats.json /chemin/personne28 /chemin/analyse28 /chemin/hfsql31 /chemin/projet29 /chemin/projet25 /chemin/projet24 /chemin/projet15 /chemin/analyse15.wda /chemin/champs28.wdw /chemin/cles28.wdd
 ```
 
 Les dossiers de corpus conservent les noms et arborescences attendus par les tests ; les projets de test comprennent leur sous-dossier Exe. Les arguments complémentaires sont facultatifs, mais leur omission réduit la couverture.
 
-La suite complète réussit **3 134 assertions**. L’étude porte sur **559 fichiers**, dont **445 fichiers physiques HFSQL**, représentant **29 contenus distincts**. La comparaison des résumés produits avant et après la réécriture est identique sur les **526 fichiers du corpus initial**. Les rapports de validation et les empreintes des livrables sont dans `artifacts/`.
+La suite complète réussit **3 265 assertions**. L’étude porte sur **561 fichiers**, dont **445 fichiers physiques HFSQL**, représentant **29 contenus distincts**. La comparaison des résumés produits avant et après la réécriture est identique sur les **526 fichiers du corpus initial**. Les rapports de validation et les empreintes des livrables sont dans `artifacts/`.
 
 
 ## Particularités du témoin 15
@@ -109,6 +109,16 @@ Le WDP possède 19 sections, mais ses références de projet ne sont pas reconst
 
 ## Positions et libellés des champs WDW
 
-`WindevUiElement` expose désormais `Bounds`, `Caption` et `Layout` lorsque le descripteur est reconnu. `Layout` contient les offsets du buffer décompressé, l’identifiant brut et des vues numériques non interprétées. Les rectangles sont recoupés dans les profils 24/25/29/31 ; les libellés différés des boutons sont reconnus dans les témoins 24/25/29. Les propriétés inconnues restent nulles. Visibilité, opacité, état, accès par Tab et type de saisie ne sont pas encore attribués à des champs binaires vérifiés.
+`WindevUiElement` expose désormais `Bounds`, `Caption` et `Layout` lorsque le descripteur est reconnu. `Layout` contient les offsets du buffer décompressé, l’identifiant brut et des vues numériques non interprétées. Les rectangles sont recoupés dans les profils 24/25/28/29/31 ; les libellés différés des boutons sont reconnus dans les témoins 24/25/28/29. Les propriétés inconnues restent nulles. La visibilité, l’état et l’accès par Tab sont exposés en 28/29/31 par `IsVisible`, `State`, `IsTabStop` et `Interaction`, qui conserve les mots bruts et leurs offsets calculés. L’opacité et le type de saisie restent inconnus.
 
 La page `docs/file-formats/windev/wdw.mdx` donne les offsets et les limites ; `docs/dotnet/documents-windev.mdx` montre leur utilisation.
+
+
+Le témoin différentiel 28 distingue les états actif, inactif et grisé (codes 0, 1 et 4) ainsi que visibilité et accès par Tab (0/1). Les chaînes facultatives sont parcourues avant de lire les paramètres suivants ; les offsets courts ne sont pas appliqués universellement. Les valeurs non reconnues restent à `null`. Le ciblage .NET 10 du dépôt est conservé ; les anciens binaires .NET 8 archivés appartiennent aux livraisons précédentes.
+
+
+## Natures de clé et composition WDD
+
+Les profils 28/31 exposent `WindevDataField.Key`, `KeyKind`, `IsPrimaryKey`, `AllowsDuplicates` et `KeyComponents`. Les codes vérifiés sont 0 (non-clé), 2 (doublons) et 4 (primaire) ; les autres restent inconnus avec leur valeur brute. Les composants sont résolus dans l’ordre du vecteur binaire, sans découper le nom de la clé. Le nouveau PERSONNE 28 donne NOM, PRENOM puis AGE1 ; MOISJOUR 31 corrobore MOIS puis JOUR.
+
+Le type 27 sur huit octets est pris en charge comme `UInt64` dans les dispositions FIC compatibles. La nouvelle disposition PERSONNE de 132 octets est testée synthétiquement : le fichier physique de cette révision n’a pas été fourni. Les clés composées reconnues sont omises des valeurs physiques dans les profils 28 et 31.

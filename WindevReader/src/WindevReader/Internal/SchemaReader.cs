@@ -122,10 +122,11 @@ internal static class SchemaReader
         }
 
         List<WindevDataTable> tables = new List<WindevDataTable>();
+        int totalKeyComponents = 0;
 
         foreach ((string Name, int Offset) location in locations)
         {
-            tables.Add(ReadTable(data, location.Name, location.Offset, options, version));
+            tables.Add(ReadTable(data, location.Name, location.Offset, options, version, ref totalKeyComponents));
         }
 
         return tables.AsReadOnly();
@@ -136,7 +137,8 @@ internal static class SchemaReader
         string indexedName,
         int tableOffset,
         WindevOpenOptions options,
-        ushort version)
+        ushort version,
+        ref int totalKeyComponents)
     {
         Binary.Require(data, tableOffset, 9);
 
@@ -207,6 +209,10 @@ internal static class SchemaReader
             fields.Add(ReadField(data, fieldOffset, tableId, options, version));
         }
 
+        IReadOnlyList<WindevDataField> resolvedFields = version is 28 or 31
+            ? SchemaKeyReader.ResolveComponents(data, fields, options, ref totalKeyComponents)
+            : fields.AsReadOnly();
+
         return new WindevDataTable(
             tableId,
             tableStrings[0],
@@ -216,7 +222,7 @@ internal static class SchemaReader
             tableStrings[5],
             tableGuid,
             tableOffset,
-            fields.AsReadOnly())
+            resolvedFields)
         {
             RawRecordByteLength = recordByteLength
         };
@@ -265,7 +271,10 @@ internal static class SchemaReader
             Binary.U16(data, suffixOffset + 9),
             fieldOffset)
         {
-            RawCompositeMarker = data[suffixOffset + 31]
+            RawCompositeMarker = data[suffixOffset + 31],
+            Key = version is 28 or 31
+                ? new WindevFieldKey(suffixOffset + 27, Binary.U16(data, suffixOffset + 27), null, false, Array.Empty<WindevKeyComponent>())
+                : null
         };
     }
 

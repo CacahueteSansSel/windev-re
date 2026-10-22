@@ -1,10 +1,10 @@
 {
-  "Version": "0.10.0",
-  "ResearchDate": "2026-10-21",
-  "CorpusFilesOpened": 559,
+  "Version": "0.12.0",
+  "ResearchDate": "2026-10-22",
+  "CorpusFilesOpened": 561,
   "OriginalSourceDocuments": 98,
-  "WindowPreviews": 32,
-  "PreviewDimensionsMatchWindow": 24,
+  "WindowPreviews": 33,
+  "PreviewDimensionsMatchWindow": 25,
   "WdlPatches": 1,
   "WdlEntries": 138,
   "WdlResources": 134,
@@ -14,8 +14,7 @@
   "CompiledWindowPropertyBuffers": 2,
   "PhysicalHfsqlFiles": 445,
   "DistinctPhysicalHfsqlContents": 29,
-  "Assertions": 3134,
-  "Net8BuildPassed": true,
+  "Assertions": 3265,
   "DocusaurusBuildPassed": true,
   "Limitations": [
     "Only the supplied WDL revision 3102 patch was validated.",
@@ -26,9 +25,9 @@
   ],
   "ExplicitLayoutFicSlotsValidated": 18,
   "NdxDescriptorByteLength": 60,
-  "AdditionalAnalysisDocuments": 3,
+  "AdditionalAnalysisDocuments": 4,
   "DocumentationMdxPages": 35,
-  "SvgDiagrams": 7,
+  "SvgDiagrams": 8,
   "DocumentationExamplesCompile": true,
   "Wdd28Tables": 2,
   "Wdd28Fields": 8,
@@ -38,12 +37,12 @@
   "NdxFlatSentinelsValidated": 11,
   "Windev29SourceDocuments": 3,
   "MemoBlocksValidated": 6,
-  "TotalSourceDocuments": 113,
+  "TotalSourceDocuments": 115,
   "Windev25SourceDocuments": 3,
   "NdxDistinctFileContents": 11,
   "Windev24SourceDocuments": 3,
   "PublicApiPreserved": true,
-  "SourceCSharpFiles": 39,
+  "SourceCSharpFiles": 44,
   "ImplicitLocalTypes": 0,
   "OriginalCorpusSummariesIdentical": false,
   "Windev15SourceDocuments": 4,
@@ -51,13 +50,47 @@
   "WindowControlBoundsVersions": [
     24,
     25,
+    28,
     29,
     31
   ],
   "DeferredButtonCaptionVersions": [
     24,
     25,
+    28,
     29
   ],
-  "OriginalCorpusSummariesIdenticalExceptUiDiagnosticText": true
+  "OriginalCorpusSummariesIdenticalExceptUiDiagnosticText": false,
+  "TargetFramework": "net10.0",
+  "Net10BuildPassed": true,
+  "Windev28AdditionalWindows": 1,
+  "WindowControlInteractionVersions": [
+    28,
+    29,
+    31
+  ],
+  "Windev28AdditionalKeyAnalyses": 1,
+  "WddKeyMetadataVersions": [
+    28,
+    31
+  ],
+  "KnownWddKeyCodes": [
+    0,
+    2,
+    4
+  ],
+  "WddCompositeOrdersValidated": [
+    [
+      "NOM",
+      "PRENOM",
+      "AGE1"
+    ],
+    [
+      "MOIS",
+      "JOUR"
+    ]
+  ],
+  "SyntheticUnsignedFicSlotByteLength": 132,
+  "NewPhysicalFicSupplied": false,
+  "OriginalCorpusSummariesIdenticalExceptSchemaDiagnosticText": true
 }

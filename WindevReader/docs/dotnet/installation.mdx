@@ -5,12 +5,12 @@ sidebar_position: 1
 
 ## Utiliser le package local
 
-Le package livré est `artifacts/WindevReader.0.9.0.nupkg`. Il cible `net8.0` et ne dépend d’aucun package externe. Il n’est pas nécessaire qu’il soit publié sur NuGet.org pour l’installer.
+Le package livré est `artifacts/WindevReader.0.12.0.nupkg`. Il cible `net10.0` et ne dépend d’aucun package externe. Il n’est pas nécessaire qu’il soit publié sur NuGet.org pour l’installer.
 
 ```sh
-dotnet new console --framework net8.0 -n LectureWinDev
+dotnet new console --framework net10.0 -n LectureWinDev
 cd LectureWinDev
-dotnet add package WindevReader --version 0.9.0 --source /chemin/vers/WindevReader/artifacts
+dotnet add package WindevReader --version 0.12.0 --source /chemin/vers/WindevReader/artifacts
 ```
 
 Ajouter `using WindevReader;` dans le programme, puis suivre les [premiers pas](./premiers-pas.mdx). Le chemin `--source` désigne le dossier contenant le `.nupkg`, pas le fichier lui-même.
@@ -29,11 +29,11 @@ Depuis la racine de la solution livrée :
 dotnet build WindevReader.sln -c Release -p:UseSharedCompilation=false -m:1 -nr:false
 ```
 
-Le dépôt contient une configuration NuGet sans source distante, puisque la bibliothèque n’a pas de dépendance externe. Le SDK .NET doit disposer des packs de ciblage .NET 8.
+Le dépôt contient une configuration NuGet sans source distante, puisque la bibliothèque n’a pas de dépendance externe. Le SDK .NET doit disposer des packs de ciblage .NET 10.
 
 ## Utiliser les binaires prêts à lancer
 
-La bibliothèque est dans `artifacts/lib/net8.0/`. L’outil est dans `artifacts/cli/` avec sa DLL WindevReader et ses fichiers `.deps.json` et `.runtimeconfig.json`. Conserver ces fichiers ensemble.
+La bibliothèque est dans `artifacts/lib/net10.0/`. L’outil est dans `artifacts/cli/` avec sa DLL WindevReader et ses fichiers `.deps.json` et `.runtimeconfig.json`. Conserver ces fichiers ensemble.
 
 ```sh
 dotnet artifacts/cli/WindevReader.Cli.dll inspect /chemin/vers/SuperNoteExtra.wdd

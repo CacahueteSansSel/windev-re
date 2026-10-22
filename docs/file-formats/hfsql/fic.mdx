@@ -309,3 +309,20 @@ Le FIC 15 mesure **1 811 octets**. Le WDD correspondant annonce un pas de **123 
 ![La largeur de l’identifiant décale les champs suivants](../assets/fic-identifiants.svg)
 
 Les valeurs sont conservées sous leurs noms WDD ; le lecteur n’échange pas NOM et PRENOM pour les rendre plausibles. Les exemples documentaires restent fictifs. Les mots de gestion à G=1521 reprennent le découpage `u32` à G+0, puis cinq `u64` à G+4, G+12, G+20, G+28 et G+36 ; leurs valeurs sont 2, 1, 0, 0, 1 et tout à 1. Leur rôle comme compteurs ou méthode de localisation automatique n’est pas certifié.
+
+
+## Disposition déclarée en 28 : entier non signé et clé composée
+
+Le [nouveau WDD PERSONNE](../windev/wdd.mdx#nature-des-clés-et-composition--profils-28-et-31) annonce six valeurs physiques : identifiant automatique de 8 octets, deux textes stockés sur 51 octets chacun, entier de 4 octets, booléen de 1 octet et entier non signé de 8 octets. Avec le préfixe de gestion de 9 octets, le pas vaut **132**.
+
+| Valeur | Offset relatif au début d’emplacement | Largeur | Vue du lecteur |
+| --- | --- | --- | --- |
+| IDPERSONNE | 9 | 8 | `Int64`, interprétation existante de l’identifiant automatique |
+| NOM | 17 | 51 | CP1252 Z |
+| PRENOM | 68 | 51 | CP1252 Z |
+| AGE1 | 119 | 4 | `Int32` |
+| FLAGADMIN | 123 | 1 | `Boolean8` |
+| IDPERSONNEPASCLE | 124 | 8 | `UInt64` |
+| NOMPRENOMAGE1 | Aucun emplacement supplémentaire | — | Clé composée, omise des valeurs physiques |
+
+Il s’agit d’une disposition déduite du WDD et testée sur un enregistrement synthétique, avec une valeur `UInt64` supérieure à `Int64.MaxValue`. Aucun nouveau FIC physique de cette révision n’a été fourni. Le FIC antérieur de 124 octets reste un autre profil ; les GUID seuls ne certifient pas que les deux révisions ont le même stockage.

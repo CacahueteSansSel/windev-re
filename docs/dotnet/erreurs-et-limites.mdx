@@ -56,7 +56,7 @@ IWindevFile fileWithOptions = WindevFile.Open("SuperNoteExtra.wdd", options);
 | `MaxStringBytes` | 4 Mio | Chaînes des structures reconnues |
 | `MaxArchiveEntries` | 10 000 | Entrées WDL |
 | `MaxChunksPerEntry` | 1 024 | Par liste de segments WDL |
-| `MaxIndexEntries` | 100 000 | Entrées réelles par tableau plat NDX lu explicitement |
+| `MaxIndexEntries` | 100 000 | Entrées réelles par tableau plat NDX ; nombre total de composants de clés par WDD |
 | `AllowUntestedVersions` | `false` | Autorise un essai sur une autre version sans garantir sa structure |
 
 Les extractions WDL ultérieures ont leurs propres vérifications de taille ; `MaxTotalDecodedBytes` n’est pas un compteur permanent de toutes les extractions déjà faites. Les dispositions FIC utilisent des vues paresseuses et des bornes calculées contre le fichier ; l’appelant reste responsable du volume qu’il choisit de matérialiser ou sérialiser.
@@ -67,7 +67,7 @@ Les extractions WDL ultérieures ont leurs propres vérifications de taille ; `M
 | --- | --- |
 | WDP | 15, 24, 25, 28, 29 et 31, propriétés reconnues |
 | WDG | 28 et 31 ; 15, 24, 25 et 29 non fournis |
-| WDW | 15, 24, 25, 29 et 31 ; racines 607/610 et BMP recoupés |
+| WDW | 15, 24, 25, 28, 29 et 31 ; racines 607/610 et BMP recoupés |
 | WDE | 31 ; 15, 24, 25 et 29 non fournis |
 | WDD | 15, 24, 25, 28, 29 et 31 ; liaison non vide étudiée en 28 |
 | WDA | 15, 28 et 31 ; 24, 25 et 29 non fournis. Le témoin 15 expose uniquement des sections brutes |
@@ -86,6 +86,20 @@ La [validation binaire](../file-formats/validation.mdx) précise les témoins, l
 
 ## Propriétés des champs WDW
 
-`Elements` reste un inventaire partiel de candidats. Un candidat peut avoir `Bounds == null` sans que l’ouverture de la fenêtre échoue. La lecture des rectangles exige un nom encadré conforme et le descripteur 607 (24/25/29) ou 610 (31). Des dimensions négatives font abandonner ce décodage local ; les noms et buffers restent accessibles.
+`Elements` reste un inventaire partiel de candidats. Un candidat peut avoir `Bounds == null` sans que l’ouverture de la fenêtre échoue. La lecture des rectangles exige un nom encadré conforme et le descripteur 607 (24/25/28/29) ou 610 (31). Des dimensions négatives font abandonner ce décodage local ; les noms et buffers restent accessibles.
 
-Un libellé endommagé ou absent du profil ne déclenche pas une recherche libre dans les chaînes voisines. Les propriétés de visibilité, opacité, état, accès par Tab et type de saisie restent inconnues, même quand des valeurs brutes compatibles avec une valeur attendue sont présentes.
+Un libellé endommagé ou absent du profil ne déclenche pas une recherche libre dans les chaînes voisines. La visibilité, l’état et l’accès par Tab sont reconnus dans les profils compatibles 28/29/31. Les mots inconnus ou non localisés restent à `null`, avec les valeurs brutes disponibles quand elles sont lisibles. L’opacité et le type de saisie restent inconnus. Les versions 24/25 gardent les rectangles et libellés, sans nouvelle interprétation typée des paramètres d’interaction.
+
+
+Les chaînes facultatives sont parcourues à leurs positions attendues. Une forme invalide arrête les lectures qui en dépendent : une visibilité déjà reconnue peut rester disponible alors que `State` et `IsTabStop` sont inconnus. Une valeur brute autre que 0 ou 1 n’est pas convertie en booléen par un simple test « non nul ».
+
+Le fichier 30 n’a pas été fourni. La parenté des propriétés ne constitue pas une validation complète de cette version. Le contrôle différentiel positif/négatif est en 28 ; les variantes de structure sont recoupées en 29 et 31.
+
+
+## Clés WDD
+
+Les natures 0/2/4 et les composants sont lus dans les profils 28/31 vérifiés. Le code 1 et les autres natures non confirmées restent bruts ; ne pas remplacer un `KeyKind == null` par `None` ou par une clé primaire supposée.
+
+Les vecteurs sont bornés et résolus dans leur table. Le lecteur refuse les références hors de la table, l’auto-référence, les comptes invalides, les divergences des ordinaux de métadonnée et le dépassement de `MaxIndexEntries`. Le plafond par vecteur est de 10 000 ; le budget de composants se cumule entre les tables d’une même analyse.
+
+La nouvelle révision PERSONNE annonce un pas de 132 octets ; le FIC correspondant n’a pas été fourni. Le test synthétique de lecture d’un `UInt64` ne valide ni une allocation réelle, ni les états logiques des emplacements, ni le format général des clés composées NDX.

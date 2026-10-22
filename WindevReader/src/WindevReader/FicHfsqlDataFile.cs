@@ -29,8 +29,8 @@ public sealed class FicHfsqlDataFile : HfsqlPhysicalFile
 
         foreach (WindevDataField field in table.Fields)
         {
-            // The observed MOISJOUR compound key has no physical value in the FIC slot.
-            if (analysis.Header.WindevVersion == 31 && field.IsCompositeKey)
+            // Recognized composite keys describe index values rather than additional inline record fields.
+            if (analysis.Header.WindevVersion is 28 or 31 && field.IsCompositeKey)
             {
                 continue;
             }
@@ -40,6 +40,7 @@ public sealed class FicHfsqlDataFile : HfsqlPhysicalFile
                 (38, 4) when analysis.Header.WindevVersion == 15 => HfsqlFixedFieldType.Int32,
                 (29, 8) => HfsqlFixedFieldType.UInt64, // Memo reference, not inline text.
                 (24, 8) or (25, 8) => HfsqlFixedFieldType.Int64,
+                (27, 8) => HfsqlFixedFieldType.UInt64,
                 (2, > 0) when field.StorageSize == field.Size + 1 => HfsqlFixedFieldType.Cp1252Z,
                 (5, 4) => HfsqlFixedFieldType.Int32,
                 (37, 1) => HfsqlFixedFieldType.Boolean8,
