@@ -68,9 +68,46 @@ foreach (WindevUiElement element in window.Elements)
 
 `Bounds`, `Caption` et `Layout` sont optionnels. `Caption == null` signifie que le libellé n’est pas reconnu ; cela ne signifie pas nécessairement qu’il est vide. Les positions de `Layout` sont relatives au buffer décompressé associé à l’élément, identifié par `BufferOffset`, et ne sont pas des offsets du fichier compressé.
 
-Les rectangles sont lus dans les profils 24/25/29/31 conformes au descripteur attendu. Les libellés différés des boutons sont reconnus uniquement dans les témoins 24/25/29. Le profil 15 conserve la lecture antérieure de la racine et des candidats de noms ; il ne reçoit pas ce décodage des rectangles enfants.
+Les rectangles sont lus dans les profils 24/25/28/29/31 conformes au descripteur attendu. Les libellés différés des boutons sont reconnus uniquement dans les témoins 24/25/28/29. Le profil 15 conserve la lecture antérieure de la racine et des candidats de noms ; il ne reçoit pas ce décodage des rectangles enfants.
 
-`RawValues` ne transforme pas les valeurs `0` et `1` en booléens supposés. Visibilité, opacité, état, accès par Tab et type de saisie ne sont pas encore attribués à des champs binaires vérifiés. Le détail des positions, exemples et limites est dans la [page WDW](../file-formats/windev/wdw.mdx#position-taille-et-libellé-des-champs).
+`RawValues` conserve des vues numériques brutes. Les paramètres de visibilité, état et accès par Tab ont leur lecture typée dédiée ci-dessous ; l’opacité et le type de saisie restent inconnus. Le détail des positions, exemples et limites est dans la [page WDW](../file-formats/windev/wdw.mdx#position-taille-et-libellé-des-champs).
+
+## Visibilité, état et accès par Tab
+
+Depuis la version 0.11.0, les profils WDW 28/29/31 reconnus exposent trois paramètres initiaux indépendants. Les autres versions conservent `Interaction == null`.
+
+```csharp
+foreach (WindevUiElement control in window.Elements)
+{
+    string visibility = control.IsVisible switch
+    {
+        true => "Visible",
+        false => "Hidden",
+        null => "Unknown visibility"
+    };
+    string state = control.State?.ToString() ?? "Unknown state";
+    string tabAccess = control.IsTabStop switch
+    {
+        true => "Tab access enabled",
+        false => "Tab access disabled",
+        null => "Unknown Tab access"
+    };
+
+    Console.WriteLine($"{control.Name}: {visibility}, {state}, {tabAccess}");
+
+    if (control.Interaction is WindevUiInteraction interaction)
+    {
+        Console.WriteLine($"State at D[{interaction.StateOffset}]: {interaction.RawStateCode}");
+        Console.WriteLine($"Tab setting at D[{interaction.TabAccessOffset}]: {interaction.RawTabAccess}");
+    }
+}
+```
+
+`State` est un `WindevControlState?` : `Active`, `Inactive` ou `GrayedOut` pour les codes 0, 1 et 4 observés. Les codes non reconnus donnent `null`, sans être transformés en un état par défaut. `RawStateCode` conserve la valeur d’origine.
+
+`IsVisible` et `IsTabStop` sont des `bool?` : seuls les mots bruts 0 et 1 sont interprétés. Une valeur inconnue donne `null`. Un bouton caché ou inactif peut avoir `IsTabStop == true` dans le fichier ; la bibliothèque conserve ce paramètre sans simuler le focus ni le comportement de l’application.
+
+Des chaînes facultatives déplacent l’état et l’accès par Tab : les offsets donnés par `Interaction` sont calculés pendant le parcours du buffer. Le lecteur ne généralise pas les offsets `R + 47` et `E + 8` à toutes les variantes. Les [tables WDW](../file-formats/windev/wdw.mdx#visibilité-état-et-accès-par-tab) décrivent les repères et les différences du descripteur 610.
 
 ## Procédures et événements source
 

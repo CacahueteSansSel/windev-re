@@ -62,6 +62,18 @@ public sealed record WindevUiElement(
 
     /// <summary>Decoded-buffer positions and uninterpreted numeric values for the recognized layout.</summary>
     public WindevUiLayout? Layout { get; init; }
+
+    /// <summary>Serialized interaction settings for recognized version 28, 29 and 31 layouts.</summary>
+    public WindevUiInteraction? Interaction { get; init; }
+
+    /// <summary>Initial visibility stored in the document, independent of later runtime changes.</summary>
+    public bool? IsVisible => Interaction?.IsVisible;
+
+    /// <summary>Initial interaction state. Unknown serialized values remain null.</summary>
+    public WindevControlState? State => Interaction?.State;
+
+    /// <summary>Stored Tab-access setting, independent of visibility and interaction state.</summary>
+    public bool? IsTabStop => Interaction?.IsTabStop;
 }
 
 /// <summary>Numeric view of raw bytes. No visibility, state, opacity or navigation meaning is implied.</summary>
@@ -96,6 +108,17 @@ public sealed record WindevDataField(
     }
     /// <summary>Observed type-28 composite profile; ordinary type-28 binary fields retain marker 0.</summary>
     public bool IsCompositeKey => RawTypeCode == 28 && RawCompositeMarker == 1;
+    /// <summary>Key metadata for the validated WDD 28 and 31 layouts; null for other versions.</summary>
+    public WindevFieldKey? Key { get; init; }
+
+    public WindevKeyKind? KeyKind => Key?.Kind;
+
+    public bool? IsPrimaryKey => Key?.IsPrimaryKey;
+
+    public bool? AllowsDuplicates => Key?.AllowsDuplicates;
+
+    public IReadOnlyList<WindevKeyComponent> KeyComponents => Key?.Components ?? Array.Empty<WindevKeyComponent>();
+
     /// <summary>Friendly type for codes observed in the supplied schema; unknown codes remain explicit.</summary>
     public string Type => RawTypeCode switch
     {

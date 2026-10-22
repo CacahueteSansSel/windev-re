@@ -63,7 +63,7 @@ public sealed class WdwWindevWindow : WindevDocument
             {
                 int cursor = first.Offset + first.ByteLength + 8;
                 int descriptorOffset = Header.WindevVersion is 24 or 25 ? 0 : 4;
-                uint descriptor = Header.WindevVersion is 24 or 25 or 29 ? 607u : 610u;
+                uint descriptor = Header.WindevVersion is 24 or 25 or 28 or 29 ? 607u : 610u;
 
                 if (first.Offset == descriptorOffset + 4 && cursor <= root.Data.Length - 24 && Binary.U32(root.Data.Span, descriptorOffset) == descriptor)
                 {
@@ -76,7 +76,7 @@ public sealed class WdwWindevWindow : WindevDocument
                     int captionOffset = first.Offset + first.ByteLength + (Header.WindevVersion switch
                     {
                         24 or 25 => 506,
-                        29 => 563,
+                        28 or 29 => 563,
                         _ => 571
                     });
 
@@ -94,7 +94,7 @@ public sealed class WdwWindevWindow : WindevDocument
 
         Warn(
             "PartialUiSemantics",
-            "Property buffers and source events are decoded. Recognized control descriptors expose design bounds and selected captions. Element kinds remain inferred from names; visibility, opacity, input state, tab access, styles, bindings and hierarchy are not mapped.",
+            "Property buffers and source events are decoded. Recognized control descriptors expose design bounds and selected captions. Compatible version 28/29/31 layouts expose initial visibility, interaction state and Tab access. Element kinds remain inferred; opacity, input type, styles, bindings and hierarchy are not fully mapped.",
             1);
     }
 

@@ -96,6 +96,44 @@ Dans le profil source 15, les identités et titres sont CP1252 Z ; les lignes et
 | `BoundsOffset` | Position de X dans le buffer décompressé | Y, largeur et hauteur suivent à +4, +8 et +12 |
 | `CaptionOffset` | Position de la chaîne encadrée de libellé, optionnelle | Position décodée, pas compressée |
 | `CommonTailOffset` | Repère `E` après la chaîne commune ou sa sentinelle nulle | Optionnel si la forme n’est pas reconnue |
-| `RawValues` | Vues `WindevUiRawValue(Offset, ByteLength, Value)` | Ni booléens d’état, ni pourcentages d’opacité, ni ordre Tab certifié |
+| `RawValues` | Vues `WindevUiRawValue(Offset, ByteLength, Value)` | Inspection brute ; utiliser `Interaction` pour les paramètres d’état calculés |
 
 Le constructeur existant de `WindevUiElement` reste inchangé ; les trois nouveaux membres sont des propriétés initialisables. Consulter la [carte WDW](../file-formats/windev/wdw.mdx#position-taille-et-libellé-des-champs) pour le périmètre exact des profils.
+
+
+## Interaction initiale des champs WDW
+
+| Membre / type | Contenu | Inconnu |
+| --- | --- | --- |
+| `WindevUiElement.Interaction` | `WindevUiInteraction?` pour un descripteur compatible 28/29/31 | `null` si le profil n’est pas appliqué |
+| `IsVisible` | Visibilité initiale enregistrée (`bool?`) | `null` si le mot n’est ni 0 ni 1 |
+| `State` | État initial (`WindevControlState?`) | `null` si le code n’est pas reconnu ou pas localisé |
+| `IsTabStop` | Accès par Tab enregistré (`bool?`) | `null` si le mot est inconnu ou non localisé |
+| `WindevUiInteraction.VisibilityOffset`, `RawVisibility` | Position décodée et mot `u32` de visibilité | Valeur brute conservée |
+| `StateOffset`, `RawStateCode` | Position calculée et mot `u32` d’état, tous deux optionnels | Absents si les textes précédents ne sont pas reconnus |
+| `TabAccessOffset`, `RawTabAccess` | Position calculée et mot `u32` d’accès par Tab, optionnels | Absents si le parcours ou les bornes ne sont pas valides |
+
+| `WindevControlState` | Code brut observé | Sens |
+| --- | --- | --- |
+| `Active` | 0 | Actif |
+| `Inactive` | 1 | Inactif |
+| `GrayedOut` | 4 | Grisé |
+
+L’énumération n’est pas un jeu de drapeaux : les combinaisons ne sont pas déduites. Ces valeurs décrivent le fichier source, sans exécuter le WLangage. Les paramètres de visibilité et de Tab sont distincts de l’état ; ils ne sont pas recalculés à partir de celui-ci.
+
+
+## Clés du schéma WDD
+
+| Membre / type | Contenu | Limite |
+| --- | --- | --- |
+| `WindevDataField.Key` | `WindevFieldKey?` : mot de nature et composants | Profils 28/31 ; `null` dans les autres versions |
+| `KeyKind` | `WindevKeyKind?` : `None`, `Duplicates`, `Primary` | Codes 0/2/4 ; autres codes inconnus |
+| `IsPrimaryKey` | `bool?` | `null` si la nature n’est pas reconnue |
+| `AllowsDuplicates` | `bool?` | `null` pour une non-clé ou une nature inconnue |
+| `KeyComponents` | `IReadOnlyList<WindevKeyComponent>` | Liste ordonnée ; vérifier aussi `ComponentsDecoded` |
+| `WindevFieldKey.Offset`, `RawKind` | Position de `Q+27` et mot `u16` brut | Offset dans le schéma décompressé |
+| `ComponentsOffset` | Position du vecteur pointé par `Q+46` | Optionnelle ; profil composé reconnu uniquement |
+| `ComponentsDecoded` | Vecteur lu et références résolues | Faux pour les rubriques non composées |
+| `WindevKeyComponent` | `FieldOrdinal`, `FieldId`, `FieldName`, `RawOptions`, `Offset` | Ordinal local, options et position de l’entrée brute |
+
+Les numéros de composants sont distincts des identifiants de rubrique. Les options non nulles ne sont pas converties en une direction de tri. Les règles d’intégrité, nullité et unicité des codes non vérifiés ne sont pas reconstituées.

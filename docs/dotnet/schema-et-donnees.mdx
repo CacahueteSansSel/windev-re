@@ -50,7 +50,7 @@ Les noms de fichiers ne prouvent pas cette association. `FindTableDefinition` ex
 
 ## Lire PERSONNE avec les noms du schéma
 
-Avec le WDD correspondant, la bibliothèque 0.9.0 peut construire la disposition des rubriques fixes. Dans le témoin, le premier emplacement commence à **1 776** et le fichier contient **cinq emplacements**. Ces deux paramètres viennent de l’étude physique ; l’API ne les découvre pas.
+Avec le WDD correspondant, la bibliothèque 0.12.0 peut construire la disposition des rubriques fixes. Dans le témoin, le premier emplacement commence à **1 776** et le fichier contient **cinq emplacements**. Ces deux paramètres viennent de l’étude physique ; l’API ne les découvre pas.
 
 ```csharp
 HfsqlFixedRecordLayout layout = fic.CreateFixedRecordLayout(analysis, dataOffset: 1776, recordCount: 5);
@@ -212,3 +212,47 @@ Console.WriteLine(page15.Entries[0].KeyHex);
 Utiliser les compagnons réellement liés par leurs GUID. Le pas vaut 123 et l’identifiant devient un `int`, pas un `long` ; les huit octets de DESC restent une référence `ulong`. Le mémo du témoin commence à 210, ses données à 250 sur 46 octets. Les pages [WDD](../file-formats/windev/wdd.mdx), [FIC](../file-formats/hfsql/fic.mdx), [NDX](../file-formats/hfsql/ndx.mdx) et [MMO](../file-formats/hfsql/mmo.mdx) donnent les structures et les limites.
 
 Les extensions majuscules sont acceptées par le répartiteur de signatures. Le chemin transmis doit néanmoins respecter la casse réelle sur un système de fichiers sensible à la casse. Les références du projet WDP 15 ne sont pas reconstituées : une liste vide accompagnée de `NoConfigurationDirectory` n’est pas un inventaire complet.
+
+
+## Natures de clé et composants ordonnés
+
+Depuis 0.12.0, les WDD 28 et 31 reconnus exposent les clés sans les déduire du nom ou du type de la rubrique :
+
+```csharp
+WddWindevAnalysis extendedAnalysis = WddWindevAnalysis.Open("SuperNoteExtra-v2.wdd");
+WindevDataTable personTable = extendedAnalysis.Tables.Single(table => table.Name == "PERSONNE");
+
+foreach (WindevDataField field in personTable.Fields)
+{
+    string keyKind = field.KeyKind?.ToString() ?? "Unknown key kind";
+
+    Console.WriteLine($"{field.Name}: {field.Type}, {keyKind}");
+
+    if (field.Key is WindevFieldKey key)
+    {
+        Console.WriteLine($"Raw key code {key.RawKind} at H[{key.Offset}]");
+
+        if (key.ComponentsDecoded)
+        {
+            foreach (WindevKeyComponent component in key.Components)
+            {
+                Console.WriteLine($"Ordinal {component.FieldOrdinal}: {component.FieldName}, ID {component.FieldId}");
+            }
+        }
+    }
+}
+```
+
+`WindevKeyKind.None`, `Duplicates` et `Primary` correspondent aux codes observés 0, 2 et 4. Les autres codes restent à `null`, avec le mot d’origine dans `Key.RawKind`. `IsPrimaryKey` vaut vrai uniquement pour une nature primaire reconnue. `AllowsDuplicates` vaut vrai pour une clé doublon, faux pour une clé primaire et `null` pour une non-clé ou une nature inconnue.
+
+Pour le nouveau schéma PERSONNE, `KeyComponents` de NOMPRENOMAGE1 retourne **NOM, PRENOM, AGE1**, dans cet ordre. Cette liste provient des références binaires du WDD. Dans MOISJOUR 31, elle retourne MOIS puis JOUR, conformément au NDX déjà étudié. `RawOptions` reste brut : aucune direction de tri n’est inventée.
+
+Les offsets de `Key` et des composants sont relatifs à `DecodedSchema`, préfixe de révision inclus. Ils ne sont pas des positions dans le fichier WDD compressé. Les [tables de la page WDD](../file-formats/windev/wdd.mdx#nature-des-clés-et-composition--profils-28-et-31) détaillent les structures et les contrôles.
+
+### Révision PERSONNE avec UInt64
+
+Le champ IDPERSONNEPASCLE est un type 27, déclaré et stocké sur huit octets, exposé comme `UInt64`. Il ne devient pas un identifiant automatique. Dans une disposition compatible, sa valeur physique est un `ulong`, y compris au-delà de `long.MaxValue`.
+
+Le nouveau pas annoncé est 132 : les champs physiques ont les offsets relatifs 9, 17, 68, 119, 123 et 124. La clé composée n’est pas ajoutée dans `Values`. La construction de cette disposition est couverte par un test synthétique ; aucun FIC correspondant à cette nouvelle révision n’a été fourni.
+
+Ne réutiliser les paramètres de l’exemple précédent à 124 octets qu’avec son ancien schéma et ses anciens fichiers. `FindTableDefinition` contrôle les identités, pas la totalité de l’historique des changements de stockage.

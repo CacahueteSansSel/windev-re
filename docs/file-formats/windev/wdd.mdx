@@ -315,7 +315,13 @@ Soit `Q` le curseur juste après le masque :
 | `+6` | 1 | `u8` brut | Octet auxiliaire, nul dans les exemples |
 | `+7` | 2 | `u16` | Taille déclarée dans le schéma |
 | `+9` | 2 | `u16` | Autre taille, exposée comme taille de stockage par le lecteur ; unité exacte dépendante du type |
-| À partir de `+11` | Variable | `octets[n]` | Règles, défauts et autres propriétés non entièrement interprétés |
+| `[+11, +23)` | 12 | `octets[12]` | Métadonnées non interprétées |
+| `+23` | 2 | `u16` brut | Premier ordinal observé ; contrôlé lors de la résolution des composants |
+| `+25` | 2 | `u16` brut | Second ordinal observé ; même valeur dans les profils de clés composées validés |
+| `+27` | 2 | `u16` LE | Nature de clé : 0 non-clé, 2 doublons, 4 primaire dans les profils 28/31 vérifiés |
+| `+29` | 2 | `u16` brut | Valeur 1 dans le témoin ; rôle non établi |
+| `+31` | 1 | `u8` | Marqueur de clé composée ; le lecteur exige aussi le type 28 |
+| Après `+32` | Variable | `octets[n]` | Défauts et autres propriétés ; le profil composé possède un pointeur détaillé plus bas |
 
 L'identifiant de table à `R + 9` doit correspondre à la table dont l'index a fourni la rubrique.
 
@@ -368,7 +374,7 @@ La carte détaillée des 37 rubriques est donnée dans l'[annexe des valeurs](./
 
 Les WDD 31 du corpus initial annoncent zéro liaison. Le supplément 28 ci-dessus apporte la première liaison non vide décodée, avec des propriétés de contrainte encore brutes.
 
-Les clés, contraintes, valeurs par défaut, connexions, encodages protégés et autres flags ne sont pas entièrement interprétés. Les flags sont exposés comme `u32` brut, sans nommer chaque bit d'après une simple corrélation de valeurs.
+Les natures de clé 0/2/4 et les composants ordonnés des profils 28/31 sont interprétés comme décrit ci-dessous. Les autres codes de clé, contraintes, valeurs par défaut, connexions, encodages protégés et autres flags ne sont pas entièrement interprétés. Les flags sont exposés comme `u32` brut, sans nommer chaque bit d'après une simple corrélation de valeurs.
 
 ## Fichiers physiques et protection
 
@@ -407,7 +413,7 @@ Le code de rubrique **29** de DESC indique un mémo texte ; ce nombre n’est pa
 
 Le profil WDD de MOISJOUR est `RawTypeCode = 28`, `RawFlags = 0x1C`, `Size = 2`, `StorageSize = 4`. Son suffixe typé commence à `H[9028]` ; l’octet à **Q+31**, donc `H[9059]`, vaut 1. Il est exposé comme `RawCompositeMarker`. La rubrique binaire HASH du même schéma porte aussi le code 28 et les flags 0x1C, mais cet octet vaut 0 : les flags seuls ne distinguent donc pas ces deux cas.
 
-`IsCompositeKey` exige le type 28 et ce marqueur à 1 ; le libellé devient `CompositeKey`. L’association du marqueur est recoupée sur MOISJOUR et reste une interprétation du profil étudié. Les autres rubriques binaires conservent leur type. Les composants et l’ordre de la clé sont vérifiés dans le NDX, pas reconstitués automatiquement par le lecteur WDD.
+`IsCompositeKey` exige le type 28 et ce marqueur à 1 ; le libellé devient `CompositeKey`. L’association du marqueur est recoupée sur MOISJOUR et reste une interprétation du profil étudié. Les autres rubriques binaires conservent leur type. Les composants et leur ordre sont désormais reconstruits depuis le WDD 28/31 ; l’ordre MOIS puis JOUR reste recoupé indépendamment avec le NDX. Le parcours du vecteur est décrit ci-dessous.
 
 ## Profil de schéma observé en version 25
 
@@ -499,3 +505,120 @@ La racine à **192**, au lieu de 252 dans les témoins récents, ne doit pas êt
 Le code **38** est exposé comme `AutomaticIdentifier32`, avec une largeur de stockage de quatre octets. Le code 24 des identifiants de huit octets des autres témoins n’est pas réutilisé par approximation. La disposition FIC choisit une lecture explicite `Int32` de ce profil ; l’unique valeur positive 1 ne suffit pas à démontrer le domaine numérique complet du moteur.
 
 L’ordre est NOM puis PRENOM et les valeurs sont conservées sous ces noms, même si leur signification humaine semble inversée. Le type 29 de DESC reste une référence de mémo de huit octets. Les marqueurs `0x10` des rubriques et `0x10` des événements source appartiennent à des structures différentes : un octet seul n’identifie pas une famille globale d’enregistrement.
+
+
+## Nature des clés et composition : profils 28 et 31
+
+Le type d’une rubrique et sa nature de clé sont deux informations distinctes. Un identifiant automatique ne suffit pas à conclure « clé primaire », et un entier de huit octets non signé peut être non clé. La comparaison différentielle du WDD 28 de PERSONNE isole la nature de clé au mot **`u16(Q + 27)`** ; `RawFlags`, lu à `Q + 2`, reste une autre propriété.
+
+### Codes vérifiés
+
+| Mot `u16` LE à `Q + 27` | Interprétation | API | Vérification |
+| --- | --- | --- | --- |
+| 0 | Non-clé | `WindevKeyKind.None` | NOM, PRENOM et IDPERSONNEPASCLE décrits comme non-clés |
+| 2 | Clé acceptant les doublons | `WindevKeyKind.Duplicates` | AGE1, FLAGADMIN et NOMPRENOMAGE1 ; recoupement JOUR/MOIS/MOISJOUR en 31 |
+| 4 | Clé primaire | `WindevKeyKind.Primary` | IDPERSONNE décrit comme primaire ; même code sur l’identifiant de JOUR_FERIE en 31 |
+| 1 ou autre valeur | Sens non confirmé par un témoin explicite dans cette étude | `KeyKind == null` | Le mot reste disponible dans `Key.RawKind` |
+
+Le code 1 est présent dans la seconde table du WDD. Il n’est pas automatiquement classé comme clé unique ou primaire à partir du type d’identifiant ou de son nom. Les codes ne sont pas traités comme un jeu de bits : aucune signification n’est déduite pour 3, 5 ou une autre combinaison.
+
+Une clé primaire n’accepte pas les doublons ; `AllowsDuplicates` vaut donc faux pour le code 4 et vrai pour le code 2. Pour une non-clé, cette propriété vaut `null` : il n’y a pas de politique de doublons d’index à décrire. Cela ne constitue pas un décodage indépendant des contraintes de nullité, de suppression ou de modification.
+
+La [documentation fonctionnelle de PC SOFT sur les prérequis de réplication](https://doc.windev.com/en-US/?1000020587=) distingue l’identifiant automatique et la clé primaire. Elle ne donne pas le codage du WDD ; les positions et les codes ci-dessus proviennent des fichiers étudiés.
+
+### Carte du nouveau témoin 28
+
+Le fichier mesure **3 676 octets**. La section 0 est vide à 111, puis la section 1 couvre `[111, 3676)`, soit 3 565 octets. La transformation héritée et le LZW produisent **7 148 octets dans `H`**, préfixe de révision inclus ; la somme de contrôle est vérifiée.
+
+| Élément | Position dans `H` | Type / valeur |
+| --- | --- | --- |
+| Description d’analyse | 252 | Tag 5 ; métadonnées de l’analyse |
+| Table PERSONNE | 653 | Tag `0x20` ; pas brut déclaré 132 octets |
+| Table PERSONNE_MESSAGE | 1004 | Tag `0x20` ; pas déclaré 33 octets |
+| Liaison | 3652 | Une liaison ; extrémités décodées avec le lecteur existant |
+| Répertoire PERSONNE | 5685 | Sept entrées de rubrique |
+| Répertoire PERSONNE_MESSAGE | 6732 | Trois entrées |
+| Index des noms de tables | 6860 | Deux entrées |
+
+Le WDD antérieur de PERSONNE reste un autre témoin : cinq rubriques et un pas de 124 octets. Il n’est pas remplacé dans les tests par cette nouvelle révision.
+
+| Rubrique PERSONNE | Début de description | Suffixe `Q` | Type `u16(Q)` | Flags `u32(Q+2)` | Taille déclarée / stockage | Nature de clé : position / valeur |
+| --- | --- | --- | --- | --- | --- | --- |
+| IDPERSONNE | 3790 | 3876 | 24 : identifiant automatique 64 bits | `0x09` | 8 / 8 | 3903 / 4 : primaire |
+| NOM | 4078 | 4145 | 2 : texte | `0x12` | 50 / 51 | 4172 / 0 : non-clé |
+| PRENOM | 4320 | 4385 | 2 : texte | `0x12` | 50 / 51 | 4412 / 0 : non-clé |
+| AGE1 | 4566 | 4638 | 5 : entier signé 32 bits | `0x08` | 4 / 4 | 4665 / 2 : doublons |
+| FLAGADMIN | 4815 | 4888 | 37 : booléen | `0x01` | 1 / 1 | 4915 / 2 : doublons |
+| IDPERSONNEPASCLE | 5076 | 5186 | 27 : entier non signé 64 bits | `0x05` | 8 / 8 | 5213 / 0 : non-clé |
+| NOMPRENOMAGE1 | 5388 | 5473 | 28 + marqueur composé 1 | `0x1C` | 104 / 106 | 5500 / 2 : doublons |
+
+Les textes de 50 octets gardent ici une taille de stockage de 51, incluant leur terminaison observée. Le type 27 est exposé comme `UInt64` ; il est distinct du type 24 d’identifiant automatique.
+
+### Vecteur des composants
+
+Pour les clés composées de type 28 avec `RawCompositeMarker == 1`, le profil vérifié porte un pointeur à **`Q + 46`**. Il est lu comme un `u64` LE et désigne une position absolue dans `H`, sans ajouter le début de la section compressée.
+
+| Position | Taille | Type de lecture | Sens retenu |
+| --- | --- | --- | --- |
+| `Q + 31` | 1 | `u8` | Marqueur composé égal à 1 |
+| `Q + 46` | 8 | `u64` LE | Position `P` du vecteur dans `H` |
+| `P + 0` | 2 | `u16` LE | Nombre `n` de composants |
+| `P + 2 + 3 × j` | 2 | Vue `u16` LE | Ordinal local de la rubrique composante |
+| `P + 4 + 3 × j` | 1 | `u8` brut | Options du composant, sans direction de tri déduite |
+| Fin du vecteur | — | — | `P + 2 + 3 × n` |
+
+La lecture de `Q + 46` est limitée au profil composé reconnu. À cet endroit d’une rubrique ordinaire, d’autres valeurs et des textes par défaut peuvent se trouver : il ne faut pas appliquer ce pointeur à toutes les rubriques.
+
+Les références observées sont des ordinaux locaux, pas les identifiants internes de rubrique. Dans les témoins validés, elles correspondent à l’ordre du répertoire de la table et aux mots stockés à `Q + 23` et `Q + 25` des rubriques référencées. Le lecteur vérifie cette correspondance. Si ces ordinaux divergent, la résolution est refusée comme variante non validée plutôt que de retourner un nom supposé.
+
+Les indices observés tiennent tous dans un octet, avec un second octet nul. La vue retenue est `u16` pour l’ordinal, puis un octet d’options ; le domaine des grandes valeurs et la signification des options non nulles ne sont pas certifiés par ces témoins.
+
+### NOMPRENOMAGE1 : détail octet par octet
+
+Le suffixe commence à `Q = 5473`. Le marqueur est à 5504 et le pointeur `u64` à **5519 = Q + 46** vaut **5674**.
+
+| Position dans `H` | Taille | Type | Valeur | Résolution |
+| --- | --- | --- | --- | --- |
+| 5674 | 2 | `u16` LE | 3 | Trois composants |
+| 5676 | 2 | Ordinal `u16` | 1 | NOM : identifiant interne 2 |
+| 5678 | 1 | Options `u8` | 0 | Sens détaillé non attribué |
+| 5679 | 2 | Ordinal `u16` | 2 | PRENOM : identifiant interne 3 |
+| 5681 | 1 | Options `u8` | 0 | Sens détaillé non attribué |
+| 5682 | 2 | Ordinal `u16` | 3 | AGE1 : identifiant interne 4 |
+| 5684 | 1 | Options `u8` | 0 | Sens détaillé non attribué |
+| 5685 | — | Fin exclusive | `5674 + 2 + 3 × 3` | Correspond au début du répertoire de rubriques dans ce témoin |
+
+L’ordre vient du vecteur. Le lecteur ne découpe ni le nom `NOMPRENOMAGE1` ni son libellé pour fabriquer une liste de composants. Un test modifie les ordinaux sans changer ces textes : la liste retournée suit bien les nouveaux ordinaux.
+
+### Recoupement MOISJOUR en version 31
+
+Dans le WDD 31, MOISJOUR garde son suffixe à 9028 et son marqueur à 9059. Le mot de nature de clé à **9055 = Q + 27** vaut 2. Le pointeur à **9074 = Q + 46** vaut **9233**.
+
+| Position | Taille | Type | Valeur / composant |
+| --- | --- | --- | --- |
+| 9233 | 2 | `u16` LE | 2 composants |
+| 9235 | 2 | Ordinal `u16` | 2 : MOIS, identifiant interne 9 |
+| 9237 | 1 | Options `u8` | 0 |
+| 9238 | 2 | Ordinal `u16` | 1 : JOUR, identifiant interne 8 |
+| 9240 | 1 | Options `u8` | 0 |
+| 9241 | — | Fin exclusive | `9233 + 2 + 3 × 2` |
+
+Cet ordre est recoupé avec les octets des clés MOIS puis JOUR du [NDX](../hfsql/ndx.mdx). La distinction entre ordinaux 2/1 et identifiants 9/8 exclut une résolution par identifiant de rubrique dans ce profil.
+
+### Effet sur les valeurs FIC
+
+Le pas déclaré PERSONNE vaut maintenant :
+
+`9 + 8 + 51 + 51 + 4 + 1 + 8 = 132`.
+
+Les 106 octets de métadonnée de stockage de la clé composée ne sont pas ajoutés comme une valeur physique supplémentaire. Les tailles 104/106 coïncident avec les sommes des tailles des trois composants, mais cela ne spécifie pas à lui seul le codec binaire de leurs clés NDX.
+
+Aucun FIC de cette nouvelle révision n’a été fourni. La lecture `UInt64` et l’omission de la clé composée dans une disposition de 132 octets sont testées avec un enregistrement synthétique. Le FIC antérieur de 124 octets reste validé séparément ; un GUID conservé entre deux révisions ne suffit pas à certifier que leurs dispositions physiques sont interchangeables.
+
+### API, contrôles et limites
+
+`WindevDataField.Key` contient `Offset`, `RawKind`, `ComponentsOffset`, `ComponentsDecoded` et `Components`. Les raccourcis `KeyKind`, `IsPrimaryKey`, `AllowsDuplicates` et `KeyComponents` exposent les résultats les plus courants. Les composants fournissent leur ordinal, l’identifiant et le nom résolus, leurs options brutes et leur position dans `H`.
+
+La lecture typée des natures et composants est limitée aux profils 28 et 31 étudiés. Les autres versions gardent `Key == null`, sans perdre leurs propriétés de type et de taille précédemment décodées. Une liste vide de composants n’est pas à elle seule une preuve de non-clé : consulter `IsCompositeKey` et `Key.ComponentsDecoded`.
+
+Le lecteur refuse les pointeurs hors limites, comptes nuls ou trop grands, ordinaux étrangers à la table, références à la rubrique composée elle-même et divergences d’ordinaux non validées. `MaxIndexEntries` borne le nombre total de composants reconstruits par analyse, avec un plafond supplémentaire de 10 000 par vecteur. Les options inconnues restent brutes ; le tri, les comparateurs, les contraintes complètes et le parcours général des index restent ouverts.

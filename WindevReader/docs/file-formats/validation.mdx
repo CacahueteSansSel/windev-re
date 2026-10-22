@@ -12,10 +12,12 @@ La bibliothèque et cette documentation reposent sur les fichiers fournis, des c
 | Documents source initiaux | 98 | WDP, WDW, WDG, WDD, WDA et WDE, avec historiques |
 | Projets de test 15, 24, 25 et 29 | 12 | WDP, WDW et WDD de chaque version |
 | WDA 15 supplémentaire | 1 | Quatre sections brutes, dont la section graphique vide |
+| Fenêtre différentielle 28 | 1 | Sept boutons : visibilité, état et accès par Tab |
+| Révision WDD 28 avec clés | 1 | Sept rubriques PERSONNE, clés primaire/doublons et composition ordonnée |
 | Nouveau couple d’analyse | 2 | WDD 28 : 2 tables, 8 rubriques et 1 liaison ; WDA 28 correspondant |
 | WDL | 1 | Patch d’archive 3102 ; 138 entrées, 134 ressources |
 | Fichiers physiques HFSQL | 445 | 427 initiaux, PERSONNE 28, deux couples 31 et les quatre trios 15/24/25/29 ; 29 contenus distincts |
-| Total | 559 | Les copies historiques ne sont pas des variantes indépendantes |
+| Total | 561 | Les copies historiques ne sont pas des variantes indépendantes |
 
 L’analyse principale du corpus initial contient 6 tables et 37 rubriques ; le nouveau schéma de PERSONNE est distinct. Les GUID permettent de ne pas appliquer arbitrairement l’un à l’autre.
 
@@ -31,10 +33,11 @@ L’analyse principale du corpus initial contient 6 tables et 37 rubriques ; le 
 | Liaison 28 | Noms et identifiants de tables et rubriques vérifiés contre le schéma |
 | Prévisualisations | 32 BMP ; dimensions, masques, orientation et conversion RGBA ; une miniature 25 distincte de la taille de fenêtre |
 | WDL | Segments bornés ; 128 PNG avec CRC, 2 ICO compressés et 4 SVG valides |
-| Champs WDW | Cinq rectangles/libellés 29 ; recoupement 24/25/31 ; variations artificielles de coordonnées et libellés ; descripteur inconnu et encadrement endommagé |
+| Champs WDW | Sept boutons différentiels 28 ; recoupement 29/31 ; chaînes facultatives et offsets variables ; codes inconnus, géométrie, libellés et bornes contrôlés |
+| Clés WDD | Codes 0/2/4 ; vecteur ordonné 28, recoupement MOIS/JOUR 31 ; pointeurs, comptes, ordinaux et budgets invalides ; UInt64 sur FIC synthétique |
 | Refus | Troncatures, tailles/pointeurs invalides, mauvais types, budgets et dispositions explicites incorrectes |
 
-La suite élargie réussit **3 134 assertions**. Le compteur `Documents` du rapport historique reste 98 : il désigne le sous-corpus documentaire initial ; les compléments PERSONNE et analyse ont leurs propres contrôles dans le même rapport.
+La suite élargie réussit **3 265 assertions**. Le compteur `Documents` du rapport historique reste 98 : il désigne le sous-corpus documentaire initial ; les compléments PERSONNE et analyse ont leurs propres contrôles dans le même rapport.
 
 ## Reproduire les tests
 
@@ -52,9 +55,11 @@ Depuis la solution livrée, fournir les dossiers ci-dessous. Les noms d’entré
 | 8 | Projet 24 et sous-dossier Exe |
 | 9 | Projet 15 et sous-dossier Exe |
 | 10 | Chemin du fichier WDA 15 supplémentaire |
+| 11 | Chemin de la fenêtre différentielle WDW 28 |
+| 12 | Chemin du nouveau WDD 28 décrivant les clés PERSONNE |
 
 ```sh
-dotnet run --project tests/WindevReader.Tests -c Release -- /chemin/corpus-initial resultats.json /chemin/personne28 /chemin/analyse28 /chemin/hfsql31 /chemin/projet29 /chemin/projet25 /chemin/projet24 /chemin/projet15 /chemin/analyse15.wda
+dotnet run --project tests/WindevReader.Tests -c Release -- /chemin/corpus-initial resultats.json /chemin/personne28 /chemin/analyse28 /chemin/hfsql31 /chemin/projet29 /chemin/projet25 /chemin/projet24 /chemin/projet15 /chemin/analyse15.wda /chemin/champs28.wdw /chemin/cles28.wdd
 ```
 
 Les arguments à partir du troisième sont facultatifs ; les omettre réduit la couverture. Les tests ne chargent aucune DLL ni EXE du corpus. Les structures mesurées, changements de marqueur et positions sont regroupés dans les pages de chaque format, plutôt que dans des chapitres par livraison.
