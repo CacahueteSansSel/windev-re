@@ -1,5 +1,5 @@
 {
-  "Version": "0.12.0",
+  "Version": "0.12.1",
   "ResearchDate": "2026-10-22",
   "CorpusFilesOpened": 561,
   "OriginalSourceDocuments": 98,
@@ -14,7 +14,7 @@
   "CompiledWindowPropertyBuffers": 2,
   "PhysicalHfsqlFiles": 445,
   "DistinctPhysicalHfsqlContents": 29,
-  "Assertions": 3265,
+  "Assertions": 3329,
   "DocusaurusBuildPassed": true,
   "Limitations": [
     "Only the supplied WDL revision 3102 patch was validated.",
@@ -42,9 +42,9 @@
   "NdxDistinctFileContents": 11,
   "Windev24SourceDocuments": 3,
   "PublicApiPreserved": true,
-  "SourceCSharpFiles": 44,
+  "SourceCSharpFiles": 45,
   "ImplicitLocalTypes": 0,
-  "OriginalCorpusSummariesIdentical": false,
+  "OriginalCorpusSummariesIdentical": true,
   "Windev15SourceDocuments": 4,
   "Windev15ProjectReferencesReconstructed": false,
   "WindowControlBoundsVersions": [
@@ -92,5 +92,10 @@
   ],
   "SyntheticUnsignedFicSlotByteLength": 132,
   "NewPhysicalFicSupplied": false,
-  "OriginalCorpusSummariesIdenticalExceptSchemaDiagnosticText": true
+  "OriginalCorpusSummariesIdenticalExceptSchemaDiagnosticText": false,
+  "WddSecondaryNameMutationVersions": [
+    29,
+    31
+  ],
+  "ConfidentialWddProvided": false
 }

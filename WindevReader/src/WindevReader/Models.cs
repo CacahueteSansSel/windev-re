@@ -152,6 +152,18 @@ public sealed record WindevDataTable(
     int Offset,
     IReadOnlyList<WindevDataField> Fields)
 {
+    /// <summary>Secondary CString before the field directories; its exact role is unconfirmed.</summary>
+    public string? RawRecordName
+    {
+        get; init;
+    }
+
+    /// <summary>Byte offset of RawRecordName in DecodedSchema, including its four-byte prefix.</summary>
+    public int? RawRecordNameOffset
+    {
+        get; init;
+    }
+
     /// <summary>Raw u32 at +12 after the table's six strings. Verified against the supplied fixed-record profiles.</summary>
     public uint RawRecordByteLength
     {

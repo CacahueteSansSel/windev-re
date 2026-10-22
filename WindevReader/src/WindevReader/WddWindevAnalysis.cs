@@ -41,6 +41,11 @@ public sealed class WddWindevAnalysis : WindevDocument
 
         Relations = schema.Relations;
 
+        foreach (WindevDiagnostic diagnostic in schema.Diagnostics)
+        {
+            Warn(diagnostic.Code, diagnostic.Message, diagnostic.SectionIndex);
+        }
+
         if (DeclaredRelationCount != Relations.Count)
         {
             Warn(

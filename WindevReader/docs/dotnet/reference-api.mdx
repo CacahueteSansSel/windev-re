@@ -28,7 +28,7 @@ Toutes les classes ci-dessous appartiennent à l’espace de noms `WindevReader`
 
 | Modèle | Propriétés utiles | Coordonnées |
 | --- | --- | --- |
-| `WindevDataTable` | `Id`, `Name`, `PhysicalName`, `Guid`, `Fields`, `RawRecordByteLength` | `Offset` dans `DecodedSchema` |
+| `WindevDataTable` | `Id`, `Name`, `PhysicalName`, `Guid`, `Fields`, `RawRecordByteLength`, `RawRecordName` | `Offset` et `RawRecordNameOffset` dans `DecodedSchema` |
 | `WindevDataField` | `Id`, `Name`, `Caption`, `RawTypeCode`, `Type`, `Size`, `StorageSize`, `RawFlags`, `RawCompositeMarker`, `IsCompositeKey` | `Offset` dans `DecodedSchema` |
 | `WindevDataRelation` | Tables/rubriques source et cible avec identifiants, `Name`, `RawFlags`, `RawTrailer` | `Offset` dans `DecodedSchema` |
 | `WindevSchemaDirectoryEntry` | `Name`, `Offset`, `Count` | Destination dans `DecodedSchema` |

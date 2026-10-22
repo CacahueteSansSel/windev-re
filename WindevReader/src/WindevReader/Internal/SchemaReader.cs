@@ -7,7 +7,8 @@ internal sealed record DecodedSchema(
     IReadOnlyList<WindevSchemaDirectoryEntry> Directory,
     uint RelationCount,
     IReadOnlyList<WindevDataRelation> Relations,
-    ReadOnlyMemory<byte> Data);
+    ReadOnlyMemory<byte> Data,
+    IReadOnlyList<WindevDiagnostic> Diagnostics);
 internal static class SchemaReader
 {
     private const int headerLength = 252;
@@ -46,7 +47,21 @@ internal static class SchemaReader
         uint relationCount = Binary.U32(data, 40);
         IReadOnlyList<WindevDataRelation> relations = version == 28 && relationCount != 0 ? ReadRelations(data, options, tables, relationCount) : Array.Empty<WindevDataRelation>();
 
-        return new DecodedSchema(name, guid, generation, tables, directory, relationCount, relations, memory);
+        List<WindevDiagnostic> diagnostics = new List<WindevDiagnostic>();
+
+        foreach (WindevDataTable table in tables)
+        {
+            if (table.RawRecordName != table.Name)
+            {
+                diagnostics.Add(new WindevDiagnostic(
+                    "TableRecordNameMismatch",
+                    DiagnosticSeverity.Warning,
+                    $"A secondary table-record name differs from the indexed logical name at decoded schema offset 0x{table.RawRecordNameOffset:X}. The table index, field directories and field ownership were validated; the secondary name remains uninterpreted.",
+                    1));
+            }
+        }
+
+        return new DecodedSchema(name, guid, generation, tables, directory, relationCount, relations, memory, diagnostics.AsReadOnly());
     }
 
     private static void ValidateHeader(ReadOnlySpan<byte> data, ushort version)
@@ -180,14 +195,10 @@ internal static class SchemaReader
 
         cursor += 2;
 
-        string repeatedName = BinaryText.CString(data, ref cursor, options.MaxStringBytes, version == 15);
+        int recordNameOffset = cursor;
+        string recordName = BinaryText.CString(data, ref cursor, options.MaxStringBytes, version == 15);
 
         cursor += 2;
-
-        if (repeatedName != indexedName)
-        {
-            throw new WindevFormatException("WDD table record name mismatch", cursor);
-        }
 
         int fieldCount = Binary.Count(Binary.U32(data, cursor + 8), maximumDefinitionCount, cursor + 8);
         int fieldDirectoryOffset = Binary.Offset(Binary.U64(data, cursor + 70), data.Length);
@@ -224,7 +235,9 @@ internal static class SchemaReader
             tableOffset,
             resolvedFields)
         {
-            RawRecordByteLength = recordByteLength
+            RawRecordByteLength = recordByteLength,
+            RawRecordName = recordName,
+            RawRecordNameOffset = recordNameOffset
         };
     }
 

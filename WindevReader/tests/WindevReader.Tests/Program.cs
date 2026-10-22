@@ -43,6 +43,8 @@ try
 {
     WddWindevAnalysis schema = WddWindevAnalysis.Open(Path.Combine(root, "Origamide/Origamide.wdd"));
 
+    WddTableNameTests.Run(schema, Check, Reject, checks);
+
     Check(schema.Name == "Origamide" && schema.Header.WindevVersion == 31, "Analysis header/name");
 
     Check(
@@ -266,6 +268,7 @@ try
     if (args.Length > 5)
     {
         Windev29Tests.Run(args[5], root, Check, Reject, checks);
+        WddTableNameTests.Run(WddWindevAnalysis.Open(Path.Combine(args[5], "Test29.wdd")), Check, Reject, checks);
     }
 
     if (args.Length > 6)

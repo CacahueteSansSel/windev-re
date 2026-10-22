@@ -257,11 +257,24 @@ Soit `P_6` le curseur juste après ces six chaînes. La suite est :
 | `P_6 + 48` | Variable | `CString` | GUID textuel de la table |
 | Juste après | Variable | `CString` | GUID textuel de l'analyse |
 | Juste après | 2 | `octets[2]` | Données auxiliaires |
-| Ensuite | Variable | `CString` | Nom logique de table dupliqué |
+| Ensuite, curseur nommé `N` | Variable `Z_r` | `CString` | Nom secondaire du record ; rôle exact non confirmé |
 | Ensuite | 2 | `octets[2]` | Données auxiliaires |
 | Ensuite, curseur nommé `P` | Variable | Répertoires internes | Carte ci-dessous |
 
-Le nom initial, le nom de l'index et le nom dupliqué doivent concorder.
+Le nom initial doit concorder exactement avec celui de l’index. La chaîne à `N` est identique au nom logique dans les témoins étudiés, mais cette observation ne démontre pas une contrainte du format. Elle est conservée dans `RawRecordName`, avec sa position `RawRecordNameOffset` dans `H`. Le lecteur ne l’utilise ni pour identifier la table, ni pour retrouver ses rubriques.
+
+```text
+P = N + Z_r + 2
+Z_r = longueur en octets de la chaîne secondaire, NUL final compris
+```
+
+Depuis la version 0.12.1, une différence produit le diagnostic `TableRecordNameMismatch` après validation du schéma. Elle ne bloque plus l’ouverture à elle seule. La chaîne peut être vide ou de longueur différente ; le curseur suit sa terminaison NUL, sans recherche de nom dans les octets voisins. Son rôle exact reste inconnu : aucun sens d’alias, de nom physique ou de connexion ne lui est attribué.
+
+Le checksum, l’accord des deux noms logiques, les comptes de répertoire, les bornes des pointeurs, les tags des rubriques et leur appartenance à la table restent vérifiés. Une divergence de cette chaîne accompagnée d’un répertoire invalide reste donc une erreur.
+
+L’ancien message `WDD table record name mismatch (offset …)` désignait le curseur `P`, après la chaîne et les deux octets auxiliaires. Cet offset appartient au schéma décodé `H`, préfixe de quatre octets compris ; ce n’est pas une position directe dans le WDD stocké. Le nouveau diagnostic donne le début `N` de la chaîne secondaire et n’inclut aucun nom de table.
+
+La correction a été vérifiée avec des variantes synthétiques des témoins 29 et 31 : l’ancien lecteur les refuse, le nouveau conserve les tables et rubriques. Des records déplacés testent également une chaîne vide et une chaîne UTF-8 plus longue. Ces essais ne déterminent pas la signification de la chaîne et ne certifient pas les analyses privées ayant motivé le signalement.
 
 ## Répertoires internes de rubriques
 

@@ -26,8 +26,8 @@
   },
   {
     "path": "README.md",
-    "bytes": 9848,
-    "sha256": "1bd677c2a5d7092e4a1a1eaa6204e7dfea6bfc9df0c38cbc837717599f24d56a"
+    "bytes": 10423,
+    "sha256": "69a60dc5992a1f086611f4914204aa6120cb1766b8a9f3a602f5ec1f7cfc0ac1"
   },
   {
     "path": "WindevReader.sln",
@@ -53,6 +53,11 @@
     "path": "artifacts/WindevReader.0.12.0.nupkg",
     "bytes": 72897,
     "sha256": "151c90a0019db90706c079ac8601563104788a0e72c965b0337a8f865bb71abf"
+  },
+  {
+    "path": "artifacts/WindevReader.0.12.1.nupkg",
+    "bytes": 73957,
+    "sha256": "439767b0eaa097aab982c1373966f75d7c8d24f245cc32ab17092bc422d0fc99"
   },
   {
     "path": "artifacts/WindevReader.0.2.0.nupkg",
@@ -112,7 +117,7 @@
   {
     "path": "artifacts/cli/WindevReader.Cli.dll",
     "bytes": 31232,
-    "sha256": "141add23e41ecdd39f9280bbc332c64ac3d8f25e7e6c1ea6e5c7f0138d6cffad"
+    "sha256": "fab01b204810aaf5c5da93c00bb28a0d926a6139b54e6998ec033d9c5b800d90"
   },
   {
     "path": "artifacts/cli/WindevReader.Cli.runtimeconfig.json",
@@ -121,13 +126,13 @@
   },
   {
     "path": "artifacts/cli/WindevReader.dll",
-    "bytes": 156160,
-    "sha256": "56ba62efd0826c1bb77e45662bd2826bd200a2272a3b00c3c7f16e4b613f33a5"
+    "bytes": 158208,
+    "sha256": "0e2eed4d27737653fea3c9248227e75e6e4f2ccefe6849c61f1e55be19d96113"
   },
   {
     "path": "artifacts/cli/WindevReader.xml",
-    "bytes": 16448,
-    "sha256": "000cec60adc4b17e349dbba803b054e8537688a47bf069a33b428fe15586d524"
+    "bytes": 16848,
+    "sha256": "18cfc513841ea16cfb2c464498350c0ec9af3b3557f3d428549acdfb6675e817"
   },
   {
     "path": "artifacts/corpus-validation.json",
@@ -136,8 +141,8 @@
   },
   {
     "path": "artifacts/extension-validation.json",
-    "bytes": 2779,
-    "sha256": "12fcff32d576bf2f3358f1321d504fcde3583c81e9db3e89c655aef55dbb6679"
+    "bytes": 2875,
+    "sha256": "b71b9c0ac843e1c0822e4fe71434a6fd5fa7245eb1b3aad748f95a627a7bf28b"
   },
   {
     "path": "artifacts/hfsql31-validation.json",
@@ -147,17 +152,17 @@
   {
     "path": "artifacts/lib/net10.0/WindevReader.deps.json",
     "bytes": 410,
-    "sha256": "63985591ccf19c69fcf2b789b5194e30d32b112fb3628cce1abf03a09b53079c"
+    "sha256": "168eaee3abb2ee8a560f68fb93783884dfaf5c8a09f4ea21a113437438df8dd6"
   },
   {
     "path": "artifacts/lib/net10.0/WindevReader.dll",
-    "bytes": 156160,
-    "sha256": "56ba62efd0826c1bb77e45662bd2826bd200a2272a3b00c3c7f16e4b613f33a5"
+    "bytes": 158208,
+    "sha256": "0e2eed4d27737653fea3c9248227e75e6e4f2ccefe6849c61f1e55be19d96113"
   },
   {
     "path": "artifacts/lib/net10.0/WindevReader.xml",
-    "bytes": 16448,
-    "sha256": "000cec60adc4b17e349dbba803b054e8537688a47bf069a33b428fe15586d524"
+    "bytes": 16848,
+    "sha256": "18cfc513841ea16cfb2c464498350c0ec9af3b3557f3d428549acdfb6675e817"
   },
   {
     "path": "artifacts/lib/net8.0/WindevReader.deps.json",
@@ -186,13 +191,13 @@
   },
   {
     "path": "artifacts/refactoring-validation.json",
-    "bytes": 642,
-    "sha256": "7d516dff7f5774cfe4e7d8c0ff03cf7a958c54a23c085836bda2fe395f18cf1a"
+    "bytes": 577,
+    "sha256": "a27aa4ae6b0cbfd88110782701608aeadaeb40270cf5b797dde22fd58b012c60"
   },
   {
     "path": "artifacts/test-results.json",
-    "bytes": 5231,
-    "sha256": "a75bf6407f1ca369c81e983157b5421b2d6dcc59584dbaed40d24bde9fb016fa"
+    "bytes": 5933,
+    "sha256": "78c03aff162b89664ba679709616069e3792db24093fd67778cc273c4cd453be"
   },
   {
     "path": "artifacts/tests/WindevReader.Tests.deps.json",
@@ -201,8 +206,8 @@
   },
   {
     "path": "artifacts/tests/WindevReader.Tests.dll",
-    "bytes": 130560,
-    "sha256": "06f1c8d5acab3537b56375682eb61364bb71a5f923137cf6c3ec78d5e22f6547"
+    "bytes": 136704,
+    "sha256": "6875c31b75ed1497f4c25c951a8b5e3ca030bc5266cb1395f188e64066e57565"
   },
   {
     "path": "artifacts/tests/WindevReader.Tests.runtimeconfig.json",
@@ -211,13 +216,13 @@
   },
   {
     "path": "artifacts/tests/WindevReader.dll",
-    "bytes": 156160,
-    "sha256": "56ba62efd0826c1bb77e45662bd2826bd200a2272a3b00c3c7f16e4b613f33a5"
+    "bytes": 158208,
+    "sha256": "0e2eed4d27737653fea3c9248227e75e6e4f2ccefe6849c61f1e55be19d96113"
   },
   {
     "path": "artifacts/tests/WindevReader.xml",
-    "bytes": 16448,
-    "sha256": "000cec60adc4b17e349dbba803b054e8537688a47bf069a33b428fe15586d524"
+    "bytes": 16848,
+    "sha256": "18cfc513841ea16cfb2c464498350c0ec9af3b3557f3d428549acdfb6675e817"
   },
   {
     "path": "artifacts/wda15-validation.json",
@@ -228,6 +233,11 @@
     "path": "artifacts/wdd-keys-validation.json",
     "bytes": 7128,
     "sha256": "ed9ab38875e07522ea82891991f04db65a34635c8cd712a0bc5e5d24501f8512"
+  },
+  {
+    "path": "artifacts/wdd-table-name-validation.json",
+    "bytes": 2085,
+    "sha256": "311c0630f9d2571a4df69eaf8e36cafcfbf4690ccba3c2f3608c32a8b8d4af5a"
   },
   {
     "path": "artifacts/windev15-validation.json",
@@ -286,8 +296,8 @@
   },
   {
     "path": "docs/dotnet/erreurs-et-limites.mdx",
-    "bytes": 6565,
-    "sha256": "6cfecae2f4b5e5920befeb518d193b34c93e0f14f94dfada99288f4a585a91df"
+    "bytes": 8060,
+    "sha256": "835005b805e15710ba9aefb46461b901a413b280a993987968a199262980075f"
   },
   {
     "path": "docs/dotnet/extraction.mdx",
@@ -297,12 +307,12 @@
   {
     "path": "docs/dotnet/index.mdx",
     "bytes": 1690,
-    "sha256": "aa72a277820b5c83d837914569b380675802ce336bf34c6b4276d8cc3b19e700"
+    "sha256": "f9a3c06aec85091fcc4d26979130b58661eaf2120e29dc40f8d9144cea44e024"
   },
   {
     "path": "docs/dotnet/installation.mdx",
     "bytes": 1675,
-    "sha256": "3928bd904650d2e1519d77b586223be2374002428bd169c214252d558d2ca827"
+    "sha256": "638a89ec7924d6d403eccaa866e859061fd324057876fa40876c67f19d670572"
   },
   {
     "path": "docs/dotnet/premiers-pas.mdx",
@@ -311,13 +321,13 @@
   },
   {
     "path": "docs/dotnet/reference-api.mdx",
-    "bytes": 10801,
-    "sha256": "552a02e9213d9258162fa6fefbc0f47d48e0b28df02b7c77a86a31068ac5816a"
+    "bytes": 10843,
+    "sha256": "5a64da0e68f97ce5ae13a6c1705117330671ba523ef8ac6bd83768212a188e72"
   },
   {
     "path": "docs/dotnet/schema-et-donnees.mdx",
-    "bytes": 15526,
-    "sha256": "6b7963b0d781eb70a71c2b3c4163c012f1dee13047618dcc1199434d1b444906"
+    "bytes": 16319,
+    "sha256": "1b17a6e5198eb8596b7fc9a3df09f3f17458e7a0e0981a2df5398910d2a975c5"
   },
   {
     "path": "docs/file-formats/_category_.json",
@@ -416,8 +426,8 @@
   },
   {
     "path": "docs/file-formats/validation.mdx",
-    "bytes": 6175,
-    "sha256": "d995ee07f00a2d095fc45af0c226103ec242a228ee5218f3940675fe70d58993"
+    "bytes": 6363,
+    "sha256": "6575c77b748e8c2ff3aada1418abd916f1260fbf2d718547950a99830dbe4934"
   },
   {
     "path": "docs/file-formats/windev/_category_.json",
@@ -471,8 +481,8 @@
   },
   {
     "path": "docs/file-formats/windev/wdd.mdx",
-    "bytes": 39599,
-    "sha256": "2f0a73d330cf4f4af0e052fb225f78c4fe3f78d3b9be0a4fb9a6c7130cf05f51"
+    "bytes": 41530,
+    "sha256": "ba58771ee155e23efbfb8a640fe399d1eb3feb396428fa9169dd02e5070ef96c"
   },
   {
     "path": "docs/file-formats/windev/wde.mdx",
@@ -611,8 +621,8 @@
   },
   {
     "path": "src/WindevReader/Internal/SchemaReader.cs",
-    "bytes": 13047,
-    "sha256": "fd3b4c1eb60273bae095f659bf508e6173f065d7534fff20a38e0cc16eebf1f4"
+    "bytes": 13765,
+    "sha256": "64c5887703ecb34145794adaaa0b9de54ac16b66f4a4a94d732d1e95d8f5dff4"
   },
   {
     "path": "src/WindevReader/MmoHfsqlMemoFile.cs",
@@ -621,8 +631,8 @@
   },
   {
     "path": "src/WindevReader/Models.cs",
-    "bytes": 9194,
-    "sha256": "71eca396494df7c1a70fab19ca3bc41e4bb22870e7f08c8b78f81916002256c7"
+    "bytes": 9539,
+    "sha256": "e69cf9f556587502703a9698f20ec7f5372b242e53cb4c62720799db2263765f"
   },
   {
     "path": "src/WindevReader/NdxHfsqlIndexFile.cs",
@@ -651,8 +661,8 @@
   },
   {
     "path": "src/WindevReader/WddWindevAnalysis.cs",
-    "bytes": 2349,
-    "sha256": "9266c0b57af07d2632b060cd8178400f191f67af69dd18840cddeee4165b76d2"
+    "bytes": 2518,
+    "sha256": "465374db40debf6e392b6dddf52b30e8c7cf0a88a3e0c75088b78690ccea5fe2"
   },
   {
     "path": "src/WindevReader/WdeWindevReport.cs",
@@ -692,7 +702,7 @@
   {
     "path": "src/WindevReader/WindevReader.csproj",
     "bytes": 692,
-    "sha256": "d4e222893a66a1a2dd8fb97e433103c101076a6d6a87d5bfda1b20f0b05a882e"
+    "sha256": "665e4335194bef4d177837473e7c4faeea5b14c817d8f5a9acda67366f050c7c"
   },
   {
     "path": "src/WindevReader/WindowControlReader.cs",
@@ -726,8 +736,8 @@
   },
   {
     "path": "tests/WindevReader.Tests/Program.cs",
-    "bytes": 11352,
-    "sha256": "e80dc90e5689a8b975c8de5c77a073e0389b9103117b7cc53b305f2f26cd4713"
+    "bytes": 11526,
+    "sha256": "646b9adb6ae490ba270d65144b24c40932ee2d8959250a608fd2024e7a85e3a1"
   },
   {
     "path": "tests/WindevReader.Tests/Wda15Tests.cs",
@@ -738,6 +748,11 @@
     "path": "tests/WindevReader.Tests/WddKeyTests.cs",
     "bytes": 10882,
     "sha256": "da19ba40441c32516b9838addf680ae22907fb24fc0433ce993d4e3aa1d62a5f"
+  },
+  {
+    "path": "tests/WindevReader.Tests/WddTableNameTests.cs",
+    "bytes": 8472,
+    "sha256": "6058020eabb0e1a8f32d6258be43355476e926b3ab88b3ab915cae37554e90ef"
   },
   {
     "path": "tests/WindevReader.Tests/Windev15Tests.cs",

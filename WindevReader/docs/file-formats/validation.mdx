@@ -35,9 +35,10 @@ L’analyse principale du corpus initial contient 6 tables et 37 rubriques ; le 
 | WDL | Segments bornés ; 128 PNG avec CRC, 2 ICO compressés et 4 SVG valides |
 | Champs WDW | Sept boutons différentiels 28 ; recoupement 29/31 ; chaînes facultatives et offsets variables ; codes inconnus, géométrie, libellés et bornes contrôlés |
 | Clés WDD | Codes 0/2/4 ; vecteur ordonné 28, recoupement MOIS/JOUR 31 ; pointeurs, comptes, ordinaux et budgets invalides ; UInt64 sur FIC synthétique |
+| Noms secondaires WDD | Variantes synthétiques 29/31 : chaîne différente, vide ou UTF-8 plus longue ; rubriques inchangées, avertissement sans noms ; maintien des refus structurels |
 | Refus | Troncatures, tailles/pointeurs invalides, mauvais types, budgets et dispositions explicites incorrectes |
 
-La suite élargie réussit **3 265 assertions**. Le compteur `Documents` du rapport historique reste 98 : il désigne le sous-corpus documentaire initial ; les compléments PERSONNE et analyse ont leurs propres contrôles dans le même rapport.
+La suite élargie réussit **3 329 assertions**. Le compteur `Documents` du rapport historique reste 98 : il désigne le sous-corpus documentaire initial ; les compléments PERSONNE et analyse ont leurs propres contrôles dans le même rapport.
 
 ## Reproduire les tests
 

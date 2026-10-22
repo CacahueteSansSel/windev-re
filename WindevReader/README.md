@@ -1,13 +1,13 @@
-# WindevReader 0.12.0
+# WindevReader 0.12.1
 
 Bibliothèque .NET 10 autonome, en lecture seule, pour étudier les documents WINDEV, les patchs WDL et certains profils HFSQL. Aucun composant officiel n’est chargé ou exécuté. Les formats restent partiellement documentés : une ouverture réussie ne signifie pas que toutes leurs propriétés sont connues.
 
 ## Installer
 
-Le package local est `artifacts/WindevReader.0.12.0.nupkg` :
+Le package local est `artifacts/WindevReader.0.12.1.nupkg` :
 
 ```sh
-dotnet add package WindevReader --version 0.12.0 --source /chemin/vers/WindevReader/artifacts
+dotnet add package WindevReader --version 0.12.1 --source /chemin/vers/WindevReader/artifacts
 ```
 
 La solution ne dépend d’aucun package externe. Les limites de taille et de décompression sont configurables avec `WindevOpenOptions`.
@@ -93,7 +93,7 @@ dotnet run --project tests/WindevReader.Tests -c Release -- /chemin/corpus-initi
 
 Les dossiers de corpus conservent les noms et arborescences attendus par les tests ; les projets de test comprennent leur sous-dossier Exe. Les arguments complémentaires sont facultatifs, mais leur omission réduit la couverture.
 
-La suite complète réussit **3 265 assertions**. L’étude porte sur **561 fichiers**, dont **445 fichiers physiques HFSQL**, représentant **29 contenus distincts**. La comparaison des résumés produits avant et après la réécriture est identique sur les **526 fichiers du corpus initial**. Les rapports de validation et les empreintes des livrables sont dans `artifacts/`.
+La suite complète réussit **3 329 assertions**. L’étude porte sur **561 fichiers**, dont **445 fichiers physiques HFSQL**, représentant **29 contenus distincts**. La comparaison des résumés produits avant et après la réécriture est identique sur les **526 fichiers du corpus initial**. Les rapports de validation et les empreintes des livrables sont dans `artifacts/`.
 
 
 ## Particularités du témoin 15
@@ -122,3 +122,8 @@ Le témoin différentiel 28 distingue les états actif, inactif et grisé (codes
 Les profils 28/31 exposent `WindevDataField.Key`, `KeyKind`, `IsPrimaryKey`, `AllowsDuplicates` et `KeyComponents`. Les codes vérifiés sont 0 (non-clé), 2 (doublons) et 4 (primaire) ; les autres restent inconnus avec leur valeur brute. Les composants sont résolus dans l’ordre du vecteur binaire, sans découper le nom de la clé. Le nouveau PERSONNE 28 donne NOM, PRENOM puis AGE1 ; MOISJOUR 31 corrobore MOIS puis JOUR.
 
 Le type 27 sur huit octets est pris en charge comme `UInt64` dans les dispositions FIC compatibles. La nouvelle disposition PERSONNE de 132 octets est testée synthétiquement : le fichier physique de cette révision n’a pas été fourni. Les clés composées reconnues sont omises des valeurs physiques dans les profils 28 et 31.
+
+
+## Compatibilité des noms de table WDD
+
+La version 0.12.1 remplace le refus `WDD table record name mismatch` par un avertissement lorsque seule la chaîne secondaire diverge du nom logique. `RawRecordName` et `RawRecordNameOffset` conservent cette valeur et sa position dans le schéma décodé. Le nom indexé, le checksum, les répertoires et l’appartenance des rubriques restent vérifiés. Des variantes synthétiques 29/31 reproduisent l’ancien refus et s’ouvrent avec le correctif ; les projets confidentiels signalés ne sont pas disponibles pour validation.
