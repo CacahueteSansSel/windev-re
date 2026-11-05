@@ -3,6 +3,13 @@ using System.Text.Json;
 using System.Text.Json.Nodes;
 using WindevReader;
 
+if (args.Length == 1 && args[0] == "--synthetic-keys")
+{
+    SyntheticKeyTests.Run();
+
+    return 0;
+}
+
 if (args.Length == 0)
 {
     Console.Error.WriteLine("Usage: dotnet run --project tests/WindevReader.Tests -- /path/to/Origamide [report.json]");

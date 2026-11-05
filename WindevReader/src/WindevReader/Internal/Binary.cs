@@ -33,11 +33,13 @@ internal static class Binary
         return BinaryPrimitives.ReadUInt64LittleEndian(data[offset..]);
     }
 
-    public static int Offset(ulong value, int length)
+    public static int Offset(ulong value, int length, int? sourceOffset = null, string context = "record")
     {
         if (value > (ulong)length)
         {
-            throw new WindevFormatException("Invalid record pointer");
+            throw new WindevFormatException(
+                $"Invalid {context} pointer: target 0x{value:X} exceeds buffer length 0x{length:X}",
+                sourceOffset);
         }
 
         return (int)value;

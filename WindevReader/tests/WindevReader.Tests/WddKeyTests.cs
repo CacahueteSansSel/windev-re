@@ -120,7 +120,12 @@ internal static class WddKeyTests
 
         changed = analysis.DecodedSchema.ToArray();
         BinaryPrimitives.WriteUInt16LittleEndian(changed.AsSpan(4168), 2);
-        reject(() => Parse(changed), "Ambiguous reordered field ordinals are rejected rather than resolved to a guessed name");
+        WindevDataField unresolved = Parse(changed).Tables.Single(table => table.Name == "PERSONNE").Fields[6];
+
+        check(unresolved.Key?.ComponentsDecoded == false && unresolved.KeyComponents.Count == 0,
+            "Ambiguous reordered field ordinals leave the entire composite unresolved without preventing schema reading");
+        check(unresolved.Key?.ComponentsOffset == 5674 && unresolved.KeyKind == WindevKeyKind.Duplicates,
+            "Unresolved components preserve their raw directory location and key kind");
 
         reject(() => WddWindevAnalysis.Open(analysis.FileName, new WindevOpenOptions { MaxIndexEntries = 2 }), "Schema component budget is enforced before allocation");
     }

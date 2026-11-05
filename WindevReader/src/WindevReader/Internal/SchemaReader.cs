@@ -201,12 +201,7 @@ internal static class SchemaReader
         cursor += 2;
 
         int fieldCount = Binary.Count(Binary.U32(data, cursor + 8), maximumDefinitionCount, cursor + 8);
-        int fieldDirectoryOffset = Binary.Offset(Binary.U64(data, cursor + 70), data.Length);
-
-        if (Binary.U32(data, cursor + 78) != fieldCount)
-        {
-            throw new WindevFormatException("WDD field directory count mismatch", cursor + 78);
-        }
+        int fieldDirectoryOffset = ReadFieldDirectoryPointer(data, cursor, tableOffset, fieldCount, version);
 
         Binary.Require(data, fieldDirectoryOffset, 4 + fieldCount * directoryEntryLength);
 
@@ -239,6 +234,97 @@ internal static class SchemaReader
             RawRecordName = recordName,
             RawRecordNameOffset = recordNameOffset
         };
+    }
+
+    internal static int ReadFieldDirectoryPointer(ReadOnlySpan<byte> data, int metadataOffset, int tableOffset, int fieldCount, ushort version)
+    {
+        try
+        {
+            int directoryOffset = Binary.Offset(
+                Binary.U64(data, metadataOffset + 70),
+                data.Length,
+                metadataOffset + 70,
+                $"WDD {version} field directory (table offset 0x{tableOffset:X}, metadata offset 0x{metadataOffset:X}, field count {fieldCount})");
+
+            if (Binary.U32(data, metadataOffset + 78) != fieldCount)
+            {
+                throw new WindevFormatException("WDD field directory count mismatch", metadataOffset + 78);
+            }
+
+            return directoryOffset;
+        }
+        catch (WindevFormatException exception)
+        {
+            if (version == 31 && TryReadExtendedFieldDirectory(data, metadataOffset, tableOffset, fieldCount, out int directoryOffset))
+            {
+                return directoryOffset;
+            }
+
+            // Export only the metadata segment requested for diagnosing this pointer failure.
+            try
+            {
+                string dumpPath = Path.GetFullPath("except.bin");
+                int availableLength = Math.Min(82, data.Length - metadataOffset);
+
+                File.WriteAllBytes(dumpPath, data.Slice(metadataOffset, availableLength).ToArray());
+                exception.Data["MetadataDumpPath"] = dumpPath;
+            }
+            catch (Exception dumpException) when (dumpException is IOException or UnauthorizedAccessException or ArgumentException or System.Security.SecurityException)
+            {
+                // A failed diagnostic write must not replace the original format exception.
+                exception.Data["MetadataDumpError"] = dumpException.Message;
+            }
+
+            throw;
+        }
+    }
+
+    private static bool TryReadExtendedFieldDirectory(ReadOnlySpan<byte> data, int metadataOffset, int tableOffset, int fieldCount, out int directoryOffset)
+    {
+        directoryOffset = 0;
+
+        // The supplied metadata places a possible directory eight bytes after the original layout.
+        // Accept that location only when the complete directory independently validates it.
+        if (fieldCount <= 0 || metadataOffset > data.Length - 90 ||
+            Binary.U32(data, metadataOffset + 86) != fieldCount)
+        {
+            return false;
+        }
+
+        ulong pointer = Binary.U64(data, metadataOffset + 78);
+        long directoryLength = 4L + fieldCount * (long)directoryEntryLength;
+
+        if (directoryLength > data.Length || pointer > (ulong)(data.Length - directoryLength))
+        {
+            return false;
+        }
+
+        int candidateOffset = (int)pointer;
+        uint tableId = Binary.U32(data, tableOffset + 1);
+        HashSet<ulong> fieldPointers = new HashSet<ulong>();
+        HashSet<uint> fieldIds = new HashSet<uint>();
+
+        for (int index = 0; index < fieldCount; index++)
+        {
+            ulong fieldPointer = Binary.U64(data, candidateOffset + 4 + index * directoryEntryLength);
+
+            if (fieldPointer > (ulong)(data.Length - 17) || !fieldPointers.Add(fieldPointer))
+            {
+                return false;
+            }
+
+            int fieldOffset = (int)fieldPointer;
+
+            if (data[fieldOffset] != 0x20 || Binary.U32(data, fieldOffset + 9) != tableId ||
+                !fieldIds.Add(Binary.U32(data, fieldOffset + 1)))
+            {
+                return false;
+            }
+        }
+
+        directoryOffset = candidateOffset;
+
+        return true;
     }
 
     private static WindevDataField ReadField(ReadOnlySpan<byte> data, int fieldOffset, uint tableId, WindevOpenOptions options, ushort version)
