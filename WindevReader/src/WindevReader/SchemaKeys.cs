@@ -16,7 +16,11 @@ public sealed record WindevKeyComponent(
     byte RawOptions,
     int Offset);
 
-/// <summary>All offsets refer to the decoded WDD schema, including its four-byte revision prefix.</summary>
+/// <summary>
+/// All offsets refer to the decoded WDD schema, including its four-byte revision prefix.
+/// ComponentsDecoded is false and Components is empty when composite ordinal mapping is unvalidated.
+/// ComponentsOffset still identifies the raw vector in the decoded schema in that case.
+/// </summary>
 public sealed record WindevFieldKey(
     int Offset,
     ushort RawKind,

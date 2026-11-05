@@ -36,6 +36,7 @@ internal static class SchemaKeyReader
             Binary.Require(data, directoryOffset + 2, count * 3);
 
             List<WindevKeyComponent> components = new List<WindevKeyComponent>();
+            bool mappingValidated = true;
 
             for (int componentIndex = 0; componentIndex < count; componentIndex++)
             {
@@ -53,7 +54,7 @@ internal static class SchemaKeyReader
                 if (Binary.U16(data, componentSuffixOffset + 23) != fieldOrdinal ||
                     Binary.U16(data, componentSuffixOffset + 25) != fieldOrdinal)
                 {
-                    throw new UnsupportedWindevFormatException("Composite ordinal mapping is unvalidated for reordered field metadata", entryOffset);
+                    mappingValidated = false;
                 }
 
                 components.Add(new WindevKeyComponent(
@@ -66,11 +67,13 @@ internal static class SchemaKeyReader
 
             totalComponents += count;
 
+            // An unvalidated mapping must not expose guessed names or a partial component list.
+            // Keep the raw directory accessible without blocking the rest of the analysis.
             WindevFieldKey resolvedKey = key with
             {
                 ComponentsOffset = directoryOffset,
-                ComponentsDecoded = true,
-                Components = components.AsReadOnly()
+                ComponentsDecoded = mappingValidated,
+                Components = mappingValidated ? components.AsReadOnly() : Array.Empty<WindevKeyComponent>()
             };
 
             result.Add(field with { Key = resolvedKey });
