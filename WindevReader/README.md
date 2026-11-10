@@ -134,3 +134,25 @@ La version 0.12.1 remplace le refus `WDD table record name mismatch` par un aver
 Depuis 0.13.0, `WindevUiElement.ControlType` utilise le code numérique d’un record borné, indépendamment de `InferredKind`. Les enveloppes sont recoupées en 24/25/28/29/31. `ControlRecord` conserve longueurs, positions et valeurs brutes ; un code inconnu reste non interprété.
 
 Le nouveau témoin 28 permet de lire le contenu LF de la combo, les options de sélecteur/interrupteur, une référence d’image, les liaisons et sept colonnes de PERSONNE, ainsi que les deux volets d’un onglet et le bouton du premier. Ces contenus spécifiques restent limités au profil 28 vérifié. Les indicateurs `ItemsDecoded`, `TabPagesDecoded` et `ColumnsDecoded` distinguent données reconnues et dispositions inconnues. Les sous-types de saisie, l’opacité et les sélections restent ouverts.
+
+## Fond des fenêtres WDW 29
+
+`window.BackgroundColor` expose `Red`, `Green`, `Blue` et `Hex` pour les couleurs explicites de conception. Le profil est vérifié sur trois fenêtres : rouge `#FF0000`, vert `#00FF00` et gris `#F5F5F5`. `RawBackgroundColor` et `BackgroundColorOffset` conservent la provenance dans le buffer décompressé. Les autres versions et les valeurs spéciales restent sans couleur RGB interprétée.
+
+Tests autonomes entièrement synthétiques, sans spécimens :
+
+```sh
+dotnet run --project tests/WindevReader.Tests -- --window-background
+```
+
+## États et analyses éditables en version 24
+
+Les couples WDE 24 (`0x00000003`) et WDA 24 (`0x00080002`) sont maintenant reconnus sans `AllowUntestedVersions`. Les fenêtres, projets, WDD et fichiers HFSQL 24 conservent leur prise en charge existante. Les autres couples non validés restent refusés par défaut.
+
+Validation autonome, sans spécimen privé :
+
+```sh
+dotnet run --project tests/WindevReader.Tests -- --synthetic-v24
+```
+
+Ces tests vérifient l'ouverture typée et par signature, la décompression, le source synthétique et son auteur fictif, ainsi que le rejet des répertoires corrompus, des dépassements de budget et des couples version/type non validés.

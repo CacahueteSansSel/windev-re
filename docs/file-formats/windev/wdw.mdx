@@ -696,3 +696,21 @@ Le nom exact du bouton contient une majuscule : `BTN_Le_bouton_dans_l_onglet`. S
 Les lectures spécifiques 28 sont optionnelles et bornées par leur record. Un code inconnu, une chaîne mal encadrée, une longueur invalide ou un compte dépassant 10 000 arrête le décodage local concerné. Les enfants d’un onglet sont aussi limités à 10 000 au total pour cet onglet. `ItemsDecoded`, `TabPagesDecoded` et `ColumnsDecoded` distinguent les listes reconnues des données non interprétées.
 
 Le lecteur n’établit pas une hiérarchie générale pour tous les conteneurs WINDEV. Il expose les offsets des enfants des volets reconnus ; l’appelant les rapproche de `ControlRecord.Offset` dans le même buffer. Les styles complets, l’opacité, les sous-types de saisie, les valeurs sélectionnées et les autres dispositions internes restent ouverts. Les tests changent les noms, codes, contenus, tailles, comptes et encadrements pour vérifier que la lecture dépend des octets, avec repli local quand une structure n’est plus reconnue.
+
+## Fond de fenêtre WDW 29
+
+Le fond de conception est lu dans les métadonnées racines, sans utiliser la miniature. Le profil a été établi sur des témoins privés ; aucun témoin ni extrait de leurs métadonnées ne fait partie du dépôt.
+
+Soit `S` la position après la première chaîne encadrée du premier buffer décompressé de la section 1. Pour le profil 29, le descripteur `u32` à `D + 4` vaut 607, le nom racine commence à `D + 8` et le fond est un `u32` little-endian à `S + 81`.
+
+Les couleurs explicites sont stockées sous la forme `0x00BBGGRR` : rouge dans les bits 0–7, vert dans les bits 8–15, bleu dans les bits 16–23. Ainsi, les valeurs abstraites `0x000000FF`, `0x0000FF00` et `0x00F5F5F5` représentent respectivement `#FF0000`, `#00FF00` et `#F5F5F5`.
+
+`WdwWindevWindow.BackgroundColor` expose `WindevRgbColor` (`Red`, `Green`, `Blue`, `Hex`). `RawBackgroundColor` conserve le nombre brut et `BackgroundColorOffset` sa position dans `PropertyBuffers[0].Data`. La version, le descripteur, le nom racine, la chaîne encadrée et les bornes sont vérifiés. Les versions non validées restent sans résultat ; une valeur dont l'octet de poids fort est non nul reste brute avec `BackgroundColor == null`.
+
+Les couleurs système, la transparence, les changements à l'exécution et les autres paramètres de style ne sont pas interprétés. La prise en charge est limitée au profil WDW 29.
+
+Les tests construisent uniquement des buffers synthétiques en mémoire, avec des noms fictifs. Ils vérifient les canaux, les couleurs spéciales, les noms de tailles différentes, les versions, les chaînes malformées et les troncatures. Aucun fichier WinDev n'est requis :
+
+```sh
+dotnet run --project tests/WindevReader.Tests -- --window-background
+```

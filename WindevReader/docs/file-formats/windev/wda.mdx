@@ -167,3 +167,11 @@ Le premier `u32` de la section 2 vaut 8 ; les huit octets suivants sont nuls. Le
 `WdaWindevAnalysisSource.Open(filename)` accepte ce profil 15 et conserve les quatre sections dans `Sections`. Les listes `DecodedBlocks` sont vides : la bibliothèque ne fabrique aucun buffer décodé à partir des régions opaques. `Name` utilise le nom du fichier sans extension, car aucune identité interne n’est interprétée pour ce WDA.
 
 Le diagnostic `LowLevelAnalysisSource` reste présent. Ce témoin ne valide ni une description typée des tables dans le WDA, ni une équivalence de son contenu avec le WDD 15 fourni séparément. Pour les tables et rubriques, utiliser le [lecteur WDD](./wdd.mdx).
+
+## Compatibilité WDA 24
+
+Les analyses éditables de version 24 (type PCS `0x00080002`) sont acceptées avec les options par défaut. Leur enveloppe PCS et leurs buffers compressés ont été vérifiés sur des fichiers privés non distribués. Le refus précédent venait du filtre version/type, non d'une nouvelle variante de compression.
+
+La portée reste celle de `WdaWindevAnalysisSource` : sections, buffers et chaînes décodés. Les tables et rubriques typées doivent être obtenues depuis le WDD correspondant. Cette correction n'étend pas automatiquement la prise en charge aux autres versions ou familles encore non validées.
+
+Les tests associés emploient uniquement des métadonnées fictives et des flux LZW générés en mémoire. Aucun spécimen ou rapport contenant des chemins, noms, auteurs ou identifiants privés n'est requis dans le dépôt.

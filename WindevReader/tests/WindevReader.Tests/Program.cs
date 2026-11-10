@@ -3,6 +3,20 @@ using System.Text.Json;
 using System.Text.Json.Nodes;
 using WindevReader;
 
+if (args.Length == 1 && args[0] == "--synthetic-v24")
+{
+    Windev24Tests.RunSynthetic();
+
+    return 0;
+}
+
+if (args.Length == 1 && args[0] == "--window-background")
+{
+    WindowBackgroundTests.Run();
+
+    return 0;
+}
+
 if (args.Length == 1 && args[0] == "--synthetic-keys")
 {
     SyntheticKeyTests.Run();

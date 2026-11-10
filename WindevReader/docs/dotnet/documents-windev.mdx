@@ -25,11 +25,10 @@ WdwWindevWindow window = WdwWindevWindow.Open("FEN_Notes.wdw");
 
 Console.WriteLine(window.Caption);
 
-if (window.Bounds is { } bounds)
+if (window.Bounds is WindevBounds bounds)
 {
     Console.WriteLine($"{bounds.Width} × {bounds.Height}");
 }
-
 
 foreach (WindevUiElement element in window.Elements)
 {
@@ -208,3 +207,18 @@ Les familles sont recoupées en 24/25/28/29/31. Les contenus spécifiques ajout�
 Tous les offsets de ces modèles sont relatifs au buffer décompressé désigné par `field.BufferOffset`. `WindevUiItem.TextOffset` commence au texte et `TextByteLength` exclut encadrement, NUL et séparateur. `WindevString.Offset`, comme celui de `ImageSource`, commence à l’encadrement PCS. Les références d’image et les liaisons sont du texte stocké ; elles ne déclenchent aucune ouverture de fichier ni requête HFSQL.
 
 Une colonne possède une largeur et un éditeur ; ce ne sont ni un rectangle ordinaire ni un type de stockage HFSQL. Les pages d’onglet exposent les offsets de leurs enfants, pas une hiérarchie générale de tous les conteneurs. Voir les [tables binaires WDW](../file-formats/windev/wdw.mdx#type-numérique-et-enveloppe-des-records-de-champs).
+
+## Couleur de fond de la fenêtre
+
+Le profil WDW 29 expose la couleur de fond de conception depuis les métadonnées racines. Le nom ci-dessous est fictif.
+
+```csharp
+WdwWindevWindow window = WdwWindevWindow.Open("ExampleWindow.wdw");
+
+if (window.BackgroundColor is WindevRgbColor color)
+{
+    Console.WriteLine($"RGB({color.Red}, {color.Green}, {color.Blue}) {color.Hex}");
+}
+```
+
+`BackgroundColor` est nullable pour les profils non validés et les valeurs spéciales. `RawBackgroundColor` conserve la valeur brute ; `BackgroundColorOffset` indique sa position dans `PropertyBuffers[0].Data`. L'octet de poids fort non nul n'est pas interprété comme une couleur système, un alpha ou une transparence. Les tests sont entièrement synthétiques et ne nécessitent aucun spécimen privé.

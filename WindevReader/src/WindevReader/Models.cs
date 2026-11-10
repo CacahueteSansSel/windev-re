@@ -215,6 +215,14 @@ public sealed class WindevOpenOptions
         get; init;
     }
 
+    /// <summary>Allows partial PCS-document inspection when bytes follow all declared sections.
+    /// Trailing bytes remain uninterpreted and are reported as a warning. Truncated sections are still rejected.</summary>
+    public bool AllowTrailingPcsData { get; init; }
+
+    /// <summary>Recovers a unique, structurally validated appended WDW 29 snapshot with matching identity by default.
+    /// Set false to retain strict original-directory handling.</summary>
+    public bool RecoverAppendedWindowData { get; init; } = true;
+
     internal void Validate()
     {
         if (MaxFileBytes < 85 || MaxDecodedBlockBytes < 1 || MaxTotalDecodedBytes < 1 || MaxDecodedBlocks < 1 || MaxStringBytes < 1 || MaxArchiveEntries < 1 || MaxChunksPerEntry < 1 || MaxIndexEntries < 1)

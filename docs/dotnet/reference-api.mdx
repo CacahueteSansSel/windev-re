@@ -155,3 +155,15 @@ Les numéros de composants sont distincts des identifiants de rubrique. Les opti
 | `WindevUiTabPage` | `Offset`, `Caption`, `RawIdentifier`, `ChildRecordOffsets` ; enfants résolus dans le même buffer |
 
 Ces positions sont exprimées en octets dans le buffer décompressé de l’élément. Les corps spécifiques restent optionnels ; une famille reconnue n’implique pas que tout son contenu soit interprété. Les colonnes ne reçoivent pas de faux rectangles de contrôle.
+
+## Fond de fenêtre
+
+| Propriété | Type | Sens |
+| --- | --- | --- |
+| `WdwWindevWindow.BackgroundColor` | `WindevRgbColor?` | Fond explicite de conception, profil WDW 29 ; sinon `null` |
+| `RawBackgroundColor` | `uint?` | Valeur brute, y compris les valeurs spéciales non interprétées |
+| `BackgroundColorOffset` | `int?` | Position dans `PropertyBuffers[0].Data` |
+| `WindevRgbColor.Red`, `.Green`, `.Blue` | `byte` | Canaux RGB de 0 à 255 |
+| `WindevRgbColor.Hex` | `string` | Représentation `#RRGGBB` |
+
+Pour une version ou une structure non validée, les trois propriétés de fond sont nulles. Les tests de cette API utilisent uniquement des données synthétiques en mémoire.

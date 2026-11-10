@@ -152,3 +152,11 @@ Les sections 3 et 5 contiennent des buffers LZW qui sont accessibles après déc
 ## Limites
 
 Les messages, noms et événements sont lisibles. Aucun interpréteur complet de pagination, de styles ou de sources de données n'est présenté. Les chaînes de police, de date ou de formule restent des valeurs observées, à distinguer des champs qui leur donnent leur fonction.
+
+## Compatibilité WDE 24
+
+Les états de version 24 (type PCS `0x00000003`) sont acceptés avec les options par défaut, après vérification sur des fichiers privés non distribués. Le blocage précédent provenait de la liste des couples version/type autorisés, avant le décodage des sections.
+
+Le lecteur existant décode les buffers de propriétés, les éléments nommés et les événements source. Pour le source 24, le tag de propriétaire est `0x0B` et celui des événements `0x14`. Cette compatibilité ne constitue pas une reconstitution de la pagination, des styles ou des liaisons de données. Les cartes d'offsets historiques de cette page concernent leurs profils de référence ; elles ne doivent pas être appliquées aveuglément à tous les états 24.
+
+Les contrôles de signature, révision de conteneur, répertoire de sections et budgets de décompression restent actifs. Les tests ajoutés construisent des conteneurs, chaînes et flux LZW entièrement synthétiques ; aucun état privé ni extrait binaire n'est conservé dans le dépôt.

@@ -27,6 +27,20 @@ public abstract class WindevDocument : IWindevFile
     [JsonIgnore]
     public ReadOnlyMemory<byte> RawData { get; }
 
+    /// <summary>Absolute position of bytes beyond the declared sections, or null when none exist.</summary>
+    public int? TrailingDataOffset { get; }
+
+    /// <summary>Bytes beyond the declared sections. A nonzero value indicates partial inspection.</summary>
+    public int TrailingDataByteLength { get; }
+
+    /// <summary>Selected appended directory position for explicit experimental snapshot recovery.</summary>
+    public int? RecoveredDirectoryOffset { get; }
+
+    /// <summary>Uninterpreted trailing bytes, retained without attempting to decode their contents.</summary>
+    [JsonIgnore]
+    public ReadOnlyMemory<byte> UninterpretedTrailingData => TrailingDataOffset.HasValue
+        ? RawData[TrailingDataOffset.Value..] : ReadOnlyMemory<byte>.Empty;
+
     private protected WindevDocument(string filename, WindevDocumentKind kind, PcsContainer container, WindevOpenOptions options)
     {
         FileName = Path.GetFullPath(filename);
@@ -38,6 +52,12 @@ public abstract class WindevDocument : IWindevFile
         Sections = container.Sections;
 
         RawData = container.RawData;
+        RecoveredDirectoryOffset = container.RecoveredDirectoryOffset;
+
+        WindevSection lastSection = Sections[^1];
+        int declaredEnd = lastSection.Offset + lastSection.ByteLength;
+        TrailingDataByteLength = RawData.Length - declaredEnd;
+        TrailingDataOffset = TrailingDataByteLength > 0 ? declaredEnd : null;
 
         diagnostics = container.Diagnostics;
 

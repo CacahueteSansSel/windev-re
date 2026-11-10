@@ -7,6 +7,7 @@ internal sealed record PcsContainer(
     IReadOnlyList<WindevSection> Sections,
     List<WindevDiagnostic> Diagnostics)
 {
+    internal int? RecoveredDirectoryOffset { get; init; }
     private const int directoryOffset = 85;
     private const int directoryEntryLength = 5;
     private const int compressionHeaderLength = 11;
@@ -36,9 +37,12 @@ internal sealed record PcsContainer(
 
         ushort version = Binary.U16(data, 14);
         uint documentType = Binary.U32(data, 8);
-        bool knownVersion = version is 28 or 31 ||
-            (version is 15 or 24 or 25 or 29 && documentType is 0x1001 or 2 or 0x70004) ||
-            (version == 15 && documentType == 0x80002);
+        bool commonVersion = version == 15 || version == 24 || version == 25 || version == 29;
+        bool commonDocument = documentType == 0x1001 || documentType == 2 || documentType == 0x70004;
+        bool analysisSource = documentType == 0x80002 && (version == 15 || version == 24);
+        bool report24 = version == 24 && documentType == 3;
+        bool knownVersion = version == 28 || version == 31 ||
+            (commonVersion && commonDocument) || analysisSource || report24;
 
         if (!knownVersion && !options.AllowUntestedVersions)
         {
@@ -46,8 +50,52 @@ internal sealed record PcsContainer(
         }
 
         int sectionCount = Binary.Count(Binary.U32(data, 81), 256, 81);
-        int payloadOffset = ReadPayloadOffset(data, sectionCount);
+        int payloadOffset = ReadPayloadOffset(data, sectionCount, options, out int declaredEnd);
         List<WindevDiagnostic> diagnostics = new List<WindevDiagnostic>();
+        int selectedDirectoryOffset = directoryOffset;
+        int validationBytes = 0;
+        int validationBlocks = 0;
+        int? recoveredDirectoryOffset = null;
+
+        if (declaredEnd < data.Length && options.RecoverAppendedWindowData && version == 29 && documentType == 2)
+        {
+            WindevPcsStructureReport report = WindevPcsStructure.Inspect(data, options);
+
+            if (report.LzwScanLimited || report.WindowDirectoryCandidates.Count != 1)
+            {
+                throw new UnsupportedWindevFormatException("Appended snapshot recovery requires one fully validated window directory candidate");
+            }
+
+            WindevPcsWindowDirectoryCandidate candidate = report.WindowDirectoryCandidates[0];
+            uint originalIdentityLength = Binary.U32(data, directoryOffset + 1);
+            IReadOnlyList<WindevString> originalIdentity = BinaryText.FindStrings(data.AsSpan(payloadOffset, (int)originalIdentityLength), options.MaxStringBytes);
+            WindevPcsSectionRange identity = candidate.Sections[0];
+            IReadOnlyList<WindevString> recoveredIdentity = BinaryText.FindStrings(data.AsSpan((int)identity.Offset, (int)identity.StoredByteLength), options.MaxStringBytes);
+
+            if (originalIdentity.Count == 0 || recoveredIdentity.Count == 0 || originalIdentity[0].Value != recoveredIdentity[0].Value)
+            {
+                throw new UnsupportedWindevFormatException("Appended snapshot identity does not match the original window");
+            }
+
+            selectedDirectoryOffset = candidate.DirectoryOffset;
+            recoveredDirectoryOffset = selectedDirectoryOffset;
+            sectionCount = candidate.Sections.Count;
+            payloadOffset = (int)candidate.InferredPayloadOffset;
+            declaredEnd = (int)candidate.DeclaredEnd;
+            validationBytes = (int)report.ValidationDecodedByteBudgetUsed;
+            validationBlocks = report.ValidationAttempts;
+            diagnostics.Add(new WindevDiagnostic("RecoveredAppendedWindowSnapshot", DiagnosticSeverity.Warning,
+                $"Experimental recovery selected the appended directory at file offset 0x{selectedDirectoryOffset:X}. Its sections end at EOF and its window identity matches. The role and active status of this snapshot remain unconfirmed.", null));
+        }
+
+        if (declaredEnd < data.Length)
+        {
+            diagnostics.Add(new WindevDiagnostic(
+                "UninterpretedTrailingData",
+                DiagnosticSeverity.Warning,
+                $"Partial PCS inspection: {data.Length - declaredEnd} bytes at file offset 0x{declaredEnd:X} follow the declared sections and remain uninterpreted. Source and properties may be incomplete.",
+                null));
+        }
 
         if (!knownVersion)
         {
@@ -56,12 +104,12 @@ internal sealed record PcsContainer(
 
         List<WindevSection> sections = new List<WindevSection>();
         int sectionOffset = payloadOffset;
-        int totalDecodedBytes = 0;
-        int decodedBlockCount = 0;
+        int totalDecodedBytes = validationBytes;
+        int decodedBlockCount = validationBlocks;
 
         for (int sectionIndex = 0; sectionIndex < sectionCount; sectionIndex++)
         {
-            int entryOffset = directoryOffset + sectionIndex * directoryEntryLength;
+            int entryOffset = selectedDirectoryOffset + sectionIndex * directoryEntryLength;
             byte tag = data[entryOffset];
             int sectionLength = (int)Binary.U32(data, entryOffset + 1);
             ReadOnlyMemory<byte> sectionData = data.AsMemory(sectionOffset, sectionLength);
@@ -103,7 +151,10 @@ internal sealed record PcsContainer(
             payloadOffset,
             sectionCount);
 
-        return new PcsContainer(data, header, sections.AsReadOnly(), diagnostics);
+        return new PcsContainer(data, header, sections.AsReadOnly(), diagnostics)
+        {
+            RecoveredDirectoryOffset = recoveredDirectoryOffset
+        };
     }
 
     private static void ValidateHeader(ReadOnlySpan<byte> data)
@@ -121,7 +172,7 @@ internal sealed record PcsContainer(
         }
     }
 
-    private static int ReadPayloadOffset(ReadOnlySpan<byte> data, int sectionCount)
+    private static int ReadPayloadOffset(ReadOnlySpan<byte> data, int sectionCount, WindevOpenOptions options, out int declaredEnd)
     {
         if (sectionCount == 0)
         {
@@ -146,10 +197,22 @@ internal sealed record PcsContainer(
             expectedEnd += Binary.U32(data, directoryOffset + 1 + sectionIndex * directoryEntryLength);
         }
 
-        if (expectedEnd != data.Length)
+        bool recoveryAllowed = options.RecoverAppendedWindowData && Binary.U16(data, 14) == 29 && Binary.U32(data, 8) == 2;
+
+        if (expectedEnd > data.Length || (expectedEnd < data.Length && !options.AllowTrailingPcsData && !recoveryAllowed))
         {
-            throw new WindevFormatException("PCS section lengths do not cover the file exactly", directoryOffset);
+            long difference = data.Length - expectedEnd;
+            string mismatch = difference > 0 ? "trailing bytes after declared sections" : "declared sections exceed file length";
+
+            throw new WindevFormatException(
+                $"PCS section lengths do not cover the file exactly: {mismatch}; " +
+                $"WINDEV {Binary.U16(data, 14)}, type 0x{Binary.U32(data, 8):X}, " +
+                $"sections {sectionCount}, payload 0x{payloadOffset:X}, " +
+                $"expected end 0x{expectedEnd:X}, file length 0x{data.Length:X}, delta {difference} bytes",
+                directoryOffset);
         }
+
+        declaredEnd = (int)expectedEnd;
 
         return payloadOffset;
     }

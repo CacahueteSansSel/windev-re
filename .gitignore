@@ -24,3 +24,19 @@ WindevReader/artifacts/*.json
 
 bin
 obj
+
+# Private WINDEV specimens and diagnostic captures must remain local.
+*.[wW][dD][wW]
+*.[wW][dD][pP]
+*.[wW][dD][gG]
+*.[wW][dD][eE]
+*.[wW][dD][aA]
+*.[wW][dD][dD]
+*.[wW][dD][lL]
+*.[wW][dD][lL].*
+*.[fF][iI][cC]
+*.[nN][dD][xX]
+*.[mM][mM][oO]
+*.bin
+**/Fixtures/
+**/specimens/

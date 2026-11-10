@@ -1,2 +1,10 @@
 **/bin/
 **/obj/
+tests
+
+# Allow only the self-contained synthetic color test as a new test source.
+!/tests/
+/tests/*
+!/tests/WindevReader.Tests/
+/tests/WindevReader.Tests/*
+!/tests/WindevReader.Tests/WindowBackgroundTests.cs

@@ -13,6 +13,15 @@ public sealed class WdwWindevWindow : WindevDocument
 
     public WindevBounds? Bounds { get; }
 
+    /// <summary>Design-time background RGB, verified for WDW 29; null for unsupported or special values.</summary>
+    public WindevRgbColor? BackgroundColor { get; }
+
+    /// <summary>Uninterpreted background value; null when the root layout is unsupported.</summary>
+    public uint? RawBackgroundColor { get; }
+
+    /// <summary>Background value position in PropertyBuffers[0].Data, not in the stored WDW.</summary>
+    public int? BackgroundColorOffset { get; }
+
     /// <summary>Complete BMP recovered from the LZW envelope of section 4, when recognized.</summary>
     public WindevWindowPreview? Preview { get; }
 
@@ -45,6 +54,15 @@ public sealed class WdwWindevWindow : WindevDocument
         }
 
         WindevDecodedBlock? root = PropertyBuffers.FirstOrDefault();
+
+        if (root != null)
+        {
+            (RawBackgroundColor, BackgroundColorOffset, BackgroundColor) = WindowBackgroundReader.Read(
+                root.Data.Span,
+                Header.WindevVersion,
+                Name,
+                options.MaxStringBytes);
+        }
 
         if (root is not null && Header.WindevVersion == 15)
         {

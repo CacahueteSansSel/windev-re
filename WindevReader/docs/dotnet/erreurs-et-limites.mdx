@@ -123,3 +123,67 @@ Pour décrire un éventuel nouveau refus sans transmettre le schéma, relever un
 Les en-têtes sont recoupés en 24/25/28/29/31. Les contenus spécifiques de combo, sélecteur, interrupteur, image, table et onglet sont lus uniquement dans le profil 28 étudié. Un corps local invalide ne bloque pas l’ouverture de toute la fenêtre : ses données restent dans le buffer, avec les indicateurs de décodage à faux ou les propriétés à `null`. La limite par liste, nombre de volets ou total d’enfants d’un onglet est de 10 000. Les budgets de taille du fichier et des buffers continuent de s’appliquer.
 
 Une table n’expose ses colonnes que si les signatures complètes reconnues dans son corps donnent exactement le compte annoncé. Le parcours général des corps de colonnes reste ouvert. La reconnaissance des deux volets du témoin ne certifie pas les onglets dynamiques ni les autres structures de conteneurs. L’opacité, les sous-types de saisie et les sélections restent inconnus.
+
+## États et analyses éditables en version 24
+
+Les couples WDE 24 (`0x00000003`) et WDA 24 (`0x00080002`) sont maintenant reconnus sans `AllowUntestedVersions`. Les fenêtres, projets, WDD et fichiers HFSQL 24 conservent leur prise en charge existante. Les autres couples non validés restent refusés par défaut.
+
+Validation autonome, sans spécimen privé :
+
+```sh
+dotnet run --project tests/WindevReader.Tests -- --synthetic-v24
+```
+
+Ces tests vérifient l'ouverture typée et par signature, la décompression, le source synthétique et son auteur fictif, ainsi que le rejet des répertoires corrompus, des dépassements de budget et des couples version/type non validés.
+
+## Écart entre les sections PCS et la longueur du fichier
+
+`PCS section lengths do not cover the file exactly (offset 0x55)` signale que le début des données, additionné aux tailles déclarées des sections, ne correspond pas à la longueur physique du fichier. `0x55` est le début du répertoire de sections ; il ne localise pas à lui seul une donnée corrompue.
+
+Le message fournit maintenant uniquement les paramètres structurels nécessaires au diagnostic : version WinDev, type numérique du document, nombre de sections, début des données, fin attendue, longueur réelle et écart signé en octets. Un écart positif indique des octets supplémentaires après les sections déclarées ; un écart négatif indique que les sections dépassent le fichier. Cela ne suffit pas à distinguer un trailer valide non reconnu, un décalage de structure, une lecture pendant une sauvegarde ou un fichier tronqué.
+
+Utiliser `winspect --warn fichier.wdw` sur une copie enregistrée/stable et transmettre seulement le message numérique, sans fichier ni contenu métier. Le contrôle reste strict : aucun octet supplémentaire n'est ignoré automatiquement et aucun dump n'est créé par ce diagnostic. Les tests de fichiers tronqués et de données supplémentaires sont entièrement synthétiques.
+
+### Lecture partielle explicite en présence de données finales
+
+`WindevOpenOptions.AllowTrailingPcsData = true` autorise une inspection partielle des documents PCS dont toutes les sections déclarées tiennent dans le fichier, mais sont suivies d'octets supplémentaires. Cette option est désactivée par défaut. Les sections tronquées ou hors limites restent refusées, de même que les erreurs de décodage et les dépassements de budget.
+
+```csharp
+WindevOpenOptions options = new WindevOpenOptions
+{
+    AllowTrailingPcsData = true,
+    RecoverAppendedWindowData = false
+};
+
+WdwWindevWindow window = WdwWindevWindow.Open("ExampleWindow.wdw", options);
+```
+
+Le diagnostic `UninterpretedTrailingData` signale le caractère partiel de l'ouverture et le risque d'un source ou de propriétés incomplets. `WindevDocument.TrailingDataOffset` et `TrailingDataByteLength` donnent la position et la taille de cette zone ; `UninterpretedTrailingData` conserve sa vue binaire, exclue de la sérialisation JSON. Les octets restent également présents dans `RawData`. Rien n'est ajouté automatiquement aux sections reconnues et aucune signification n'est attribuée à cette zone.
+
+Les tests emploient uniquement des conteneurs et suffixes synthétiques : refus strict par défaut, lecture partielle sur option explicite, conservation des octets et des sections, avertissement visible, maintien du refus des troncatures et des limites de décompression. Aucun spécimen privé n'est utilisé ni ajouté au dépôt pour cette variante.
+
+## Diagnostic numérique de structure PCS
+
+`WindevPcsStructure.Read(path)` et `Inspect(bytes)` produisent uniquement un `WindevPcsStructureReport` numérique : longueur, version, type, révision, sections déclarées avec leurs bornes, positions des enveloppes LZW validées et conteneurs PCS imbriqués plausibles. Ils ne retournent ni chemin, ni build textuel, ni nom, ni auteur, ni identifiant applicatif, ni chaîne extraite, ni source, ni octets bruts.
+
+Le balayage examine aussi les octets hors des sections déclarées. Pour chaque enveloppe LZW validée, `SectionIndex` identifie la section qui contient entièrement le bloc, ou reste nul ; `AfterDeclaredSections` précise si le bloc commence après leur fin. Un conteneur imbriqué est un candidat structurel dont signature, révision, répertoire et bornes concordent ; il n'est pas ouvert automatiquement comme un document valide.
+
+Cette cartographie n'est pas un décodage complet et ne modifie pas les règles d'ouverture. Les tentatives LZW sont bornées à 256 au plus, en respectant également les limites configurées de blocs et d'octets décodés ; `LzwScanLimited` indique un balayage incomplet. Les buffers temporairement décompressés servent à valider les enveloppes puis ne sont pas inclus dans le rapport. Les tests sont entièrement synthétiques et vérifient notamment la découverte de blocs après les sections et l'absence de contenu textuel dans le rapport sérialisé.
+
+### Répertoires de fenêtre candidats dans la zone finale
+
+Le rapport numérique peut aussi contenir `WindowDirectoryCandidates`. Cette recherche diagnostique examine les 64 Kio suivant la fin déclarée, sans exiger une seconde signature PCS. Elle reconnaît uniquement le profil de 12 tags de sections WDW étudié et infère un début de contenu depuis la longueur totale du fichier.
+
+Un candidat n'est retenu que si son répertoire précède ce début avec un espace borné et si trois enveloppes LZW déjà validées concordent exactement avec les sections de propriétés (préfixe 28), de source (préfixe 4) et de miniature (préfixe 0). Le rapport conserve uniquement offsets, longueurs et tags. Il ne prouve pas qu'il s'agit de l'enregistrement actif ou le plus récent, et ne change pas le répertoire employé à l'ouverture. Les faux tags ou les ancres incohérentes sont rejetés ; les tests sont entièrement synthétiques.
+
+### Récupération explicite d'un enregistrement de fenêtre ajouté
+
+`WindevOpenOptions.RecoverAppendedWindowData = true` permet une récupération expérimentale limitée aux fenêtres WDW 29 ayant des données après les sections du répertoire initial. Le lecteur exige un seul candidat de répertoire de 12 sections, trois ancres LZW validées (propriétés, source, aperçu), une couverture jusqu'à la fin du fichier et une identité de fenêtre identique entre les sections d'identité initiale et candidate.
+
+Le diagnostic `RecoveredAppendedWindowSnapshot` indique que le répertoire ajouté a été choisi. `WindevDocument.RecoveredDirectoryOffset` expose sa position absolue ; les offsets des sections et le `Header.PayloadOffset` correspondent alors au contenu sélectionné. Les données du fichier original restent intégralement conservées dans `RawData`. Aucun octet du fichier sur disque n'est réécrit.
+
+Cette sélection est activée par défaut pour WDW 29 et ne constitue pas une affirmation que cet enregistrement est la version active ou la plus récente : la signification du préfixe ajouté n'est pas entièrement établie. Les informations de version/build continuent de provenir de l'en-tête initial. Comparer la vue récupérée à celle attendue dans WinDev avant de s'y fier. `RecoverAppendedWindowData = false` rétablit le refus strict, ou la lecture partielle si `AllowTrailingPcsData` est activée.
+
+Une identité différente, plusieurs candidats, un balayage de validation limité ou des ancres incohérentes empêchent la récupération. Les tentatives de décompression de validation sont comptées dans les budgets globaux avant le décodage des sections sélectionnées. Les tests synthétiques distinguent le source de l'enregistrement initial du source ajouté et vérifient les refus ; aucun spécimen privé n'est conservé.
+
+La récupération validée est active par défaut dans la bibliothèque et ses utilitaires. Le diagnostic `RecoveredAppendedWindowSnapshot` et les contrôles de candidat unique, identité, ancres et budgets restent actifs. Un candidat non validé reste refusé.
